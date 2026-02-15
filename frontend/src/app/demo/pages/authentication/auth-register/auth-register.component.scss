@@ -96,4 +96,82 @@
       justify-content: space-between;
     }
   }
+
+  .custom-alert {
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    animation: fadeIn 0.3s ease-in-out;
+
+    i {
+      font-size: 1.1rem;
+    }
+  }
+
+  .alert-success {
+    background: rgba(25, 135, 84, 0.1);
+    color: #198754;
+    border: 1px solid rgba(25, 135, 84, 0.2);
+  }
+
+  .alert-error {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+  }
+
+  .alert-warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.2);
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .password-strength {
+    .strength-bar {
+      height: 4px;
+      background: var(--bs-border-color);
+      border-radius: 2px;
+      overflow: hidden;
+      .strength-fill {
+        display: block;
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.2s ease, background 0.2s ease;
+        &.level-1 { background: #dc3545; }
+        &.level-2 { background: #fd7e14; }
+        &.level-3 { background: #ffc107; }
+        &.level-4 { background: #198754; }
+      }
+    }
+    .strength-label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-top: 4px;
+      display: inline-block;
+    }
+  }
+
+  .password-rules {
+    li.rule-ok {
+      color: #198754;
+    }
+    li:not(.rule-ok) {
+      color: var(--bs-secondary-color);
+    }
+  }
 }
