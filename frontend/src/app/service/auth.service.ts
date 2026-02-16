@@ -8,6 +8,10 @@ export class AuthService {
 
     constructor(private http: HttpClient) { }
 
+    connexion(data: { email: string, password: string }) {
+        return this.http.post(`${this.API_URI}/login`, data);
+    }
+
     inscription(data: { username: string, email: string, password: string, captchaToken?: string }) {
         return this.http.post(`${this.API_URI}/register`, data);
     }
