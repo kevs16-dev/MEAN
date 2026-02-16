@@ -1,5 +1,27 @@
 const authService = require('../service/auth.service');
 
+exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email et mot de passe sont requis' });
+        }
+
+        const result = await authService.login({ email, password });
+        res.status(200).json({ message: 'Connexion réussie', token: result.token, user: result.user });
+    } catch (error) {
+        if (error.code === 'INVALID_CREDENTIALS') {
+            return res.status(401).json({ message: 'Email incorrect ou compte inexistant' });
+        }
+
+        if (error.code === 'INVALID_PASSWORD') {
+            return res.status(401).json({ message: 'Mot de passe incorrect' });
+        }
+
+        res.status(500).json({ message: error.message || 'Erreur lors de la connexion' });
+    }
+};
+
 exports.register = async (req, res) => {
     try {
         const message = await authService.register(req.body);

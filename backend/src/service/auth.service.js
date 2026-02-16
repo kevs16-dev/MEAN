@@ -1,5 +1,29 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const AppError = require('../utils/AppError');
 const userService = require('./user.service');
+const tokenConfig = require('../config/token.config');
+
+const login = async ({ email, password }) => {
+    const user = await userService.getUserByEmail(email);
+    if (!user) {
+        throw new AppError('INVALID_CREDENTIALS');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+        throw new AppError('INVALID_PASSWORD');
+    }
+
+    const token = jwt.sign(
+        { userId: user._id, role: user.role },
+        tokenConfig.JWT_SECRET,
+        { expiresIn: tokenConfig.JWT_EXPIRES_IN }
+    );
+
+    return { token, user: {id: user._id, username: user.username, email: user.email, role: user.role} };
+}
 
 const register = async ({ username, email, password, captchaToken }) => {
     if (!username || !email || !password) {
@@ -24,5 +48,6 @@ const register = async ({ username, email, password, captchaToken }) => {
 };
 
 module.exports = {
-    register
+    register,
+    login
 };
