@@ -5,11 +5,12 @@ import { RouterModule, Routes } from '@angular/router';
 // Project import
 import { AdminLayout } from './theme/layouts/admin-layout/admin-layout.component';
 import { GuestLayoutComponent } from './theme/layouts/guest-layout/guest-layout.component';
+import { ClientLayoutComponent } from './theme/layouts/client-layout/client-layout.component';
 
 import { AuthGuard } from './guard/auth.guard';
 
 const routes: Routes = [
-  // ZONE PROTEGÉE (AUTHENTIFIÉS)
+  // ZONE PROTEGÉE (AUTHENTIFIÉS) - ADMIN / BOUTIQUE
   {
     path: '',
     component: AdminLayout,
@@ -25,6 +26,18 @@ const routes: Routes = [
         loadComponent: () =>
           import('./demo/dashboard/default/default.component')
             .then((c) => c.DefaultComponent)
+      },
+      {
+        path: 'admin/home',
+        loadComponent: () =>
+          import('./demo/dashboard/admin/admin-home.component')
+            .then((c) => c.AdminHomeComponent)
+      },
+      {
+        path: 'boutique/home',
+        loadComponent: () =>
+          import('./demo/dashboard/boutique/boutique-home.component')
+            .then((c) => c.BoutiqueHomeComponent)
       },
       {
         path: 'profil',
@@ -49,6 +62,26 @@ const routes: Routes = [
         loadComponent: () =>
           import('./demo/others/sample-page/sample-page.component')
             .then((c) => c.SamplePageComponent)
+      }
+    ]
+  },
+
+  // ZONE PROTEGÉE CLIENT (sans aside)
+  {
+    path: 'client',
+    component: ClientLayoutComponent,
+    canActivate: [AuthGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'home',
+        pathMatch: 'full'
+      },
+      {
+        path: 'home',
+        loadComponent: () =>
+          import('./demo/dashboard/client/client-home.component')
+            .then((c) => c.ClientHomeComponent)
       }
     ]
   },
