@@ -4,8 +4,7 @@ import { RouterModule } from '@angular/router';
 
 // project import
 import { SharedModule } from 'src/app/theme/shared/shared.module';
-
-// third party
+import { AuthService } from 'src/app/service/auth.service';
 
 // icon
 import { IconService } from '@ant-design/icons-angular';
@@ -46,7 +45,7 @@ export class NavRightComponent {
   direction: string = 'ltr';
 
   // constructor
-  constructor() {
+  constructor(private authService: AuthService) {
     this.windowWidth = window.innerWidth;
     this.iconService.addIcon(
       ...[
@@ -72,6 +71,11 @@ export class NavRightComponent {
     );
   }
 
+  deconnexion() {
+    event.preventDefault();
+    this.authService.deconnexion();
+  }
+
   profile = [
     {
       icon: 'edit',
@@ -91,7 +95,8 @@ export class NavRightComponent {
     },
     {
       icon: 'logout',
-      title: 'Logout'
+      title: 'Déconnexion',
+      action: () => this.deconnexion()
     }
   ];
 
