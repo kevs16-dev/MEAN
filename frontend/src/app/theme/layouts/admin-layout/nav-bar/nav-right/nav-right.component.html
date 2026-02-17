@@ -92,7 +92,7 @@
   <li class="dropdown pc-h-item header-user-profile" ngbDropdown>
     <a href="javascript:" class="pc-head-link dropdown-toggle arrow-none me-0" ngbDropdownToggle>
       <img src="assets/images/user/avatar-2.jpg" alt="user-image" class="user-avatar me-2" />
-      <span class="f-w-600">John Doe</span>
+      <span class="f-w-600">{{ utilisateur?.username || 'Utilisateur' }}</span>
     </a>
     <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown" ngbDropdownMenu>
       <div class="dropdown-header">
@@ -102,7 +102,7 @@
           </div>
           <div class="flex-grow-1 ms-3 text-start">
             <h6 class="mb-0">JWT User</h6>
-            <span>UI/UX Designer</span>
+            <span>{{ utilisateur?.role || 'CLIENT' }}</span>
           </div>
           <a href="#" class="bg-transparent" (click)="deconnexion()"><i class="d-flex f-20" antIcon theme="outline" type="logout"></i></a>
         </div>
@@ -116,7 +116,7 @@
           <ng-template ngbNavContent>
             @for (task of profile; track task) {
               <div>
-                <a href="#" class="dropdown-item" (click)="task.action && task.action()">
+                <a href="javascript:void(0)" class="dropdown-item" (click)="$event.preventDefault(); task.action && task.action()">
                   <i class="text-muted" antIcon theme="outline" type="{{ task.icon }}"></i>
                   <span>{{ task.title }}</span>
                 </a>

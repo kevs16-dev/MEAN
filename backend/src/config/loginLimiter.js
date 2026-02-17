@@ -1,6 +1,6 @@
 const rateLimit = require('express-rate-limit');
 
-const { login } = require('../config/rateLimit.config');
+const { login } = require('./rateLimit.config');
 
 const loginLimiter = rateLimit({
     windowMs : login.windowMs,
