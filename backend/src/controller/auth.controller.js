@@ -1,5 +1,9 @@
 const authService = require('../service/auth.service');
 
+exports.logout = async (req, res) => {
+    return res.status(200).json({ message: 'Déconnexion réussie' });
+};
+
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
