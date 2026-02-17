@@ -1,0 +1,9 @@
+// Layout spécifique client : même structure que l'admin, mais sans aside
+
+.client-layout {
+  // On annule la marge réservée à la sidebar pour le client
+  .pc-container {
+    margin-left: 0;
+  }
+}
+

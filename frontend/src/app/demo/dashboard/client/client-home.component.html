@@ -1,0 +1,46 @@
+<div class="row g-3">
+  <div class="col-xl-8 col-lg-7">
+    <app-card cardTitle="Bienvenue dans votre espace client">
+      <p class="mb-3">
+        Cette page est votre point d'entrée principal. Vous retrouverez ici un résumé rapide de votre activité et des
+        accès directs vers les actions les plus courantes.
+      </p>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="quick-card quick-card-primary">
+            <h6 class="mb-1">Mon profil</h6>
+            <p class="mb-2 text-muted">Mettre à jour vos informations personnelles et vos coordonnées.</p>
+            <a routerLink="/profil" class="link-primary">Gérer mon profil</a>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="quick-card quick-card-secondary">
+            <h6 class="mb-1">Sécurité du compte</h6>
+            <p class="mb-2 text-muted">Modifier votre mot de passe pour sécuriser votre accès.</p>
+            <a routerLink="/profil" fragment="password" class="link-primary">Modifier mon mot de passe</a>
+          </div>
+        </div>
+      </div>
+    </app-card>
+  </div>
+
+  <div class="col-xl-4 col-lg-5">
+    <app-card cardTitle="Raccourcis rapides">
+      <ul class="list-unstyled mb-0 client-shortcuts">
+        <li>
+          <i class="ti ti-user-check me-2"></i>
+          <span>Consulter mes informations</span>
+        </li>
+        <li>
+          <i class="ti ti-lock-check me-2"></i>
+          <span>Vérifier la sécurité de mon compte</span>
+        </li>
+        <li>
+          <i class="ti ti-bell me-2"></i>
+          <span>Gérer mes notifications (à venir)</span>
+        </li>
+      </ul>
+    </app-card>
+  </div>
+</div>
+

@@ -1,0 +1,38 @@
+// Styles spécifiques au dashboard client
+
+.quick-card {
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--bs-border-color);
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  }
+
+  &.quick-card-primary {
+    border-left: 3px solid var(--bs-primary);
+  }
+
+  &.quick-card-secondary {
+    border-left: 3px solid var(--bs-secondary);
+  }
+}
+
+.client-shortcuts {
+  li {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 0.95rem;
+    color: var(--bs-body-color);
+
+    i {
+      font-size: 18px;
+      color: var(--bs-primary);
+    }
+  }
+}
+

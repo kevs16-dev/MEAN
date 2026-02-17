@@ -43,11 +43,22 @@ export class AuthLoginComponent {
       email: this.email,
       password: this.password
     }).subscribe({
-      next: () => {
+      next: (res) => {
+        const role = res?.user?.role;
+        let targetRoute = '/dashboard/default';
+
+        if (role === 'CLIENT') {
+          targetRoute = '/client/home';
+        } else if (role === 'ADMIN') {
+          targetRoute = '/admin/home';
+        } else if (role === 'BOUTIQUE') {
+          targetRoute = '/boutique/home';
+        }
+
         this.message = 'Connexion réussie. Redirection…';
         this.alertType = 'alert-success';
         this.cdr.detectChanges();
-        setTimeout(() => this.router.navigate(['/login']), 1500);
+        setTimeout(() => this.router.navigate([targetRoute]), 1200);
       },
       error: err => {
         this.message = err.error.message;
