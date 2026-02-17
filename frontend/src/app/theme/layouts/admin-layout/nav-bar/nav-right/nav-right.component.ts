@@ -1,6 +1,7 @@
 // angular import
 import { Component, output, inject, input } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 
 // project import
 import { SharedModule } from 'src/app/theme/shared/shared.module';
@@ -27,6 +28,8 @@ import {
   ArrowRightOutline,
   GithubOutline
 } from '@ant-design/icons-angular/icons';
+import { title } from 'process';
+import { UserService } from 'src/app/service/user.service';
 
 @Component({
   selector: 'app-nav-right',
@@ -36,6 +39,7 @@ import {
 })
 export class NavRightComponent {
   private iconService = inject(IconService);
+  utilisateur : any;
 
   // public props
   styleSelectorToggle = input<boolean>();
@@ -45,7 +49,7 @@ export class NavRightComponent {
   direction: string = 'ltr';
 
   // constructor
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private userService: UserService, private router: Router) {
     this.windowWidth = window.innerWidth;
     this.iconService.addIcon(
       ...[
@@ -71,6 +75,10 @@ export class NavRightComponent {
     );
   }
 
+  ngOnInit() {
+    this.utilisateur = this.userService.getUtilisateur();
+  }
+
   deconnexion() {
     event.preventDefault();
     this.authService.deconnexion();
@@ -79,7 +87,8 @@ export class NavRightComponent {
   profile = [
     {
       icon: 'edit',
-      title: 'Edit Profile'
+      title: 'Modifier Profil',
+      action: () => this.router.navigate(['/profil'])
     },
     {
       icon: 'user',

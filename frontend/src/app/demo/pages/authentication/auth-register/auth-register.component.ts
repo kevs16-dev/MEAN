@@ -15,6 +15,8 @@ import { AuthService } from '../../../../service/auth.service';
 })
 export class AuthRegisterComponent implements AfterViewInit {
   username = '';
+  nom = '';
+  prenom = '';
   email = '';
   password = '';
   passwordConfirm = '';
@@ -91,6 +93,8 @@ export class AuthRegisterComponent implements AfterViewInit {
 
     this.authService.inscription({
       username: this.username,
+      nom: this.nom,
+      prenom: this.prenom,
       email: this.email,
       password: this.password
     }).subscribe({

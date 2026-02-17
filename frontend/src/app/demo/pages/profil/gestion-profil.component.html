@@ -1,0 +1,253 @@
+<div class="row">
+  <div class="col-xl-4 col-lg-5">
+    <!-- Profile Card -->
+    <app-card cardTitle="Photo de profil" cardClass="mb-4">
+      <div class="text-center">
+        <div class="profile-avatar-wrapper mb-3">
+          <img
+            [src]="utilisateur.avatar || 'assets/images/user/avatar-1.jpg'"
+            alt="Avatar"
+            class="profile-avatar"
+          />
+          <label for="avatar-upload" class="avatar-upload-btn">
+            <i class="ti ti-camera"></i>
+          </label>
+          <input
+            type="file"
+            id="avatar-upload"
+            accept="image/*"
+            (change)="onFileSelected($event)"
+            class="d-none"
+          />
+        </div>
+        <h5 class="mb-1">{{ utilisateur.username }}</h5>
+        <p class="text-muted mb-0">{{ utilisateur.email }}</p>
+      </div>
+    </app-card>
+
+    <!-- Account Info Card -->
+    <app-card cardTitle="Informations du compte">
+      <div class="account-info">
+        <div class="info-item mb-3">
+          <label class="text-muted small">Nom d'utilisateur</label>
+          <p class="mb-0 fw-semibold">{{ utilisateur.username }}</p>
+        </div>
+        <div class="info-item mb-3">
+          <label class="text-muted small">Email</label>
+          <p class="mb-0 fw-semibold">{{ utilisateur.email }}</p>
+        </div>
+        <div class="info-item mb-3">
+          <label class="text-muted small">Téléphone</label>
+          <p class="mb-0 fw-semibold">{{ utilisateur.telephone || 'Non renseigné' }}</p>
+        </div>
+        <div class="info-item mb-3">
+          <label class="text-muted small">Membre depuis</label>
+          <p class="mb-0 fw-semibold">{{ utilisateur.createdAt | date:'dd/MM/yyyy' }}</p>
+        </div>
+        <div class="info-item">
+          <label class="text-muted small">Rôle</label>
+          <p class="mb-0 fw-semibold">
+            {{ utilisateur.role ? (utilisateur.role | lowercase | slice:0:1).toUpperCase() + (utilisateur.role | lowercase | slice:1) : '' }}
+          </p>
+        </div>
+      </div>
+    </app-card>
+  </div>
+
+  <div class="col-xl-8 col-lg-7">
+    <!-- Profile Form Card -->
+    <app-card cardTitle="Modifier le profil" cardClass="mb-4">
+      <!-- Alert Message -->
+      <div *ngIf="message" class="custom-alert mb-4" [ngClass]="alertType">
+        <i class="ti ti-info-circle me-2"></i>
+        {{ message }}
+      </div>
+
+      <form #profileForm="ngForm">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="nom">Nom <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="nom"
+              placeholder="Nom"
+              [(ngModel)]="utilisateur.nom"
+              name="nom"
+              required
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="prenom">Prénom <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control"
+              id="prenom"
+              placeholder="Prénom"
+              [(ngModel)]="utilisateur.prenom"
+              name="prenom"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="email">Email <span class="text-danger">*</span></label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              placeholder="email@example.com"
+              [(ngModel)]="utilisateur.email"
+              name="email"
+              required
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="telephone">Téléphone</label>
+            <input
+              type="tel"
+              class="form-control"
+              id="telephone"
+              placeholder="+33 6 12 34 56 78"
+              [(ngModel)]="utilisateur.telephone"
+              name="telephone"
+            />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="adresse">Adresse</label>
+          <input
+            type="text"
+            class="form-control"
+            id="adresse"
+            placeholder="Adresse"
+            [(ngModel)]="utilisateur.adresse"
+            name="adresse"
+          />
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="ville">Ville</label>
+            <input
+              type="text"
+              class="form-control"
+              id="ville"
+              placeholder="Ville"
+              [(ngModel)]="utilisateur.ville"
+              name="ville"
+            />
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label" for="codePostal">Code postal</label>
+            <input
+              type="text"
+              class="form-control"
+              id="codePostal"
+              placeholder="75001"
+              [(ngModel)]="utilisateur.codePostal"
+              name="codePostal"
+            />
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label" for="pays">Pays</label>
+            <input
+              type="text"
+              class="form-control"
+              id="pays"
+              placeholder="France"
+              [(ngModel)]="utilisateur.pays"
+              name="pays"
+            />
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="submitProfile()"
+            [disabled]="loading || profileForm.invalid || !canSubmitProfile"
+          >
+            <i class="ti ti-device-floppy me-2"></i>
+            {{ loading ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+          </button>
+        </div>
+      </form>
+    </app-card>
+
+    <!-- Password Change Card -->
+    <app-card cardTitle="Changer le mot de passe">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-muted mb-0">Mettez à jour votre mot de passe pour sécuriser votre compte.</p>
+        <button
+          type="button"
+          class="btn btn-outline-primary btn-sm"
+          (click)="togglePasswordSection()"
+        >
+          <i class="ti" [ngClass]="showPasswordSection ? 'ti-eye-off' : 'ti-edit'"></i>
+          {{ showPasswordSection ? 'Annuler' : 'Modifier' }}
+        </button>
+      </div>
+
+      <form *ngIf="showPasswordSection" #passwordForm="ngForm">
+        <div class="mb-3">
+          <label class="form-label" for="currentPassword">Mot de passe actuel</label>
+          <input
+            type="password"
+            class="form-control"
+            id="currentPassword"
+            placeholder="Mot de passe actuel"
+            [(ngModel)]="passwordData.currentPassword"
+            name="currentPassword"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="newPassword">Nouveau mot de passe</label>
+          <input
+            type="password"
+            class="form-control"
+            id="newPassword"
+            placeholder="Nouveau mot de passe"
+            [(ngModel)]="passwordData.newPassword"
+            name="newPassword"
+            required
+          />
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label" for="confirmPassword">Confirmer le mot de passe</label>
+          <input
+            type="password"
+            class="form-control"
+            id="confirmPassword"
+            placeholder="Confirmer le mot de passe"
+            [(ngModel)]="passwordData.confirmPassword"
+            name="confirmPassword"
+            required
+          />
+          <div *ngIf="passwordData.newPassword && passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword" class="text-danger small mt-1">
+            Les mots de passe ne correspondent pas
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="submitPassword()"
+            [disabled]="loading || passwordForm.invalid || !canSubmitPassword"
+          >
+            <i class="ti ti-key me-2"></i>
+            {{ loading ? 'Modification...' : 'Modifier le mot de passe' }}
+          </button>
+        </div>
+      </form>
+    </app-card>
+  </div>
+</div>

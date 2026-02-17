@@ -22,11 +22,11 @@ const login = async ({ email, password }) => {
         { expiresIn: tokenConfig.JWT_EXPIRES_IN }
     );
 
-    return { token, user: {id: user._id, username: user.username, email: user.email, role: user.role} };
+    return { token, user: user };
 }
 
-const register = async ({ username, email, password, captchaToken }) => {
-    if (!username || !email || !password) {
+const register = async ({ username, nom, prenom, email, password, captchaToken }) => {
+    if (!username || !nom || !prenom || !email || !password) {
         throw new Error('Tous les champs sont requis');
     }
 
@@ -38,6 +38,8 @@ const register = async ({ username, email, password, captchaToken }) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     await userService.createUser({
         username,
+        nom,
+        prenom,
         email,
         password: hashedPassword,
         role: 'CLIENT',

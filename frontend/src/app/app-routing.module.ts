@@ -27,6 +27,12 @@ const routes: Routes = [
             .then((c) => c.DefaultComponent)
       },
       {
+        path: 'profil',
+        loadComponent: () =>
+          import('./demo/pages/profil/gestion-profil.component')
+            .then((c) => c.GestionProfilComponent)
+      },
+      {
         path: 'typography',
         loadComponent: () =>
           import('./demo/component/basic-component/typography/typography.component')

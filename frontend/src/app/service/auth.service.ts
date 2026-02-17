@@ -21,6 +21,7 @@ export class AuthService {
 
     deconnexion() {
         localStorage.removeItem(this.TOKEN_KEY);
+        localStorage.removeItem('user');
         this.router.navigate(['/login']);
     }
 
@@ -29,12 +30,13 @@ export class AuthService {
             tap(response => {
                 if (response?.token) {
                     localStorage.setItem(this.TOKEN_KEY, response.token);
+                    localStorage.setItem('user', JSON.stringify(response.user));
                 }
             })
         );
     }
 
-    inscription(data: { username: string, email: string, password: string, captchaToken?: string }) {
+    inscription(data) {
         return this.http.post(`${this.API_URI}/register`, data);
     }
 }
