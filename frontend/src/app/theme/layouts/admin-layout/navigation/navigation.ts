@@ -16,8 +16,7 @@ export interface NavigationItem {
   children?: NavigationItem[];
   link?: string;
   description?: string;
-  path?: string;
-  roles?: string[];
+  path?: string
 }
 
 export const NavigationItems: NavigationItem[] = [
