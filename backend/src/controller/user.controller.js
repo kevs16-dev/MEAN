@@ -60,3 +60,16 @@ exports.updateProfile = async (req, res) => {
         });
     }
 };
+
+exports.getAllUsers = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, role } = req.query;
+        const result = await userService.getAllUsers({ page, limit, role });
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error('getAllUsers error:', error);
+        return res.status(error.status || 500).json({
+            message: error.message || 'Erreur lors de la récupération des utilisateurs'
+        });
+    }
+};

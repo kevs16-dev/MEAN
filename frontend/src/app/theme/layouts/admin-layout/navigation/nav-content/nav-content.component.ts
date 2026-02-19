@@ -127,7 +127,8 @@ export class NavContentComponent implements OnInit {
   }
 
   navMob() {
-    if (this.windowWidth < 1025 && document.querySelector('app-navigation.coded-navbar').classList.contains('mob-open')) {
+    const nav = document.querySelector('app-navigation.coded-navbar');
+    if (this.windowWidth < 1025 && nav && nav.classList.contains('mob-open')) {
       this.NavCollapsedMob.emit();
     }
   }

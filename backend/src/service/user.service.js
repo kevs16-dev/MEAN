@@ -56,9 +56,26 @@ const getUserByEmail = async (email) => {
     return await User.findOne({ email });
 };
 
+const getAllUsers = async ({ page = 1, limit = 10, role }) => {
+    const query = {};
+    if (role && ['ADMIN', 'BOUTIQUE', 'CLIENT'].includes(role)) {
+        query.role = role;
+    }
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const [users, total] = await Promise.all([
+        User.find(query)
+            .select('-password')
+            .skip(skip)
+            .limit(parseInt(limit)),
+        User.countDocuments(query)
+    ]);
+    return { users, total, page: parseInt(page), limit: parseInt(limit) };
+};
+
 module.exports = {
     createUser,
     getUserByEmail,
+    getAllUsers,
     updateProfile,
     updatePassword
 };

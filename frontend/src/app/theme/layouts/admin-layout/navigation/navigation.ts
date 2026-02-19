@@ -17,9 +17,28 @@ export interface NavigationItem {
   link?: string;
   description?: string;
   path?: string;
+  roles?: string[];
 }
 
 export const NavigationItems: NavigationItem[] = [
+  {
+    id: 'user',
+    title: 'User',
+    type: 'group',
+    icon: 'icon-navigation',
+    roles: ['ADMIN'],
+    children: [
+      {
+        id: 'users-list',
+        title: 'Utilisateurs',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/admin/users',
+        icon: 'user',
+        breadcrumbs: false
+      }
+    ]
+  },
   {
     id: 'dashboard',
     title: 'Dashboard',

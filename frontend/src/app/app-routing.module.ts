@@ -8,6 +8,7 @@ import { GuestLayoutComponent } from './theme/layouts/guest-layout/guest-layout.
 import { ClientLayoutComponent } from './theme/layouts/client-layout/client-layout.component';
 
 import { AuthGuard } from './guard/auth.guard';
+import { RoleGuard } from './guard/role.guard';
 import { CategoryFormComponent } from './admin/category-form/category-form.component';
 import { ShopFormComponent } from './admin/shop-form/shop-form.component';
 import { CategoryListComponent } from './admin/category-list/category-list.component';
@@ -38,6 +39,12 @@ const routes: Routes = [
             .then((c) => c.AdminHomeComponent)
       },
       {
+        path: 'admin/users',
+        loadComponent: () =>
+          import('./demo/dashboard/admin/users/users-list.component')
+            .then((c) => c.UsersListComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['ADMIN'] }
         path: 'admin/categories',
         component: CategoryListComponent
       },

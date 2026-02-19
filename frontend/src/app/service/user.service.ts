@@ -27,4 +27,16 @@ export class UserService {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   }
+
+  getAllUsers(params?: { page?: number; limit?: number; role?: string }) {
+    let query = '';
+    if (params) {
+      const q = [];
+      if (params.page) q.push(`page=${params.page}`);
+      if (params.limit) q.push(`limit=${params.limit}`);
+      if (params.role && params.role !== 'ALL') q.push(`role=${params.role}`);
+      if (q.length) query = '?' + q.join('&');
+    }
+    return this.http.get<{ users: any[]; total: number; page: number; limit: number }>(`${this.API_URI}${query}`);
+  }
 }
