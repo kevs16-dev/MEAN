@@ -19,6 +19,20 @@ export class AuthService {
         return localStorage.getItem(this.TOKEN_KEY);
     }
 
+    getUser(): any | null {
+        const raw = localStorage.getItem('user');
+        if (!raw) return null;
+        try {
+            return JSON.parse(raw);
+        } catch {
+            return null;
+        }
+    }
+
+    getUserRole(): string | null {
+        return this.getUser()?.role || null;
+    }
+
     deconnexion() {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem('user');

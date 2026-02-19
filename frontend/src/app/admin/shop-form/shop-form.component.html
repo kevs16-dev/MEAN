@@ -1,0 +1,165 @@
+<div class="row">
+  <div class="col-sm-12">
+    <app-card cardTitle="Créer une boutique">
+      <form [formGroup]="shopForm" (ngSubmit)="onSubmit()" class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Nom *</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="name"
+            placeholder="Nom de la boutique"
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Slug *</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="slug"
+            placeholder="slug-de-la-boutique"
+          />
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Description</label>
+          <textarea
+            class="form-control"
+            rows="3"
+            formControlName="description"
+            placeholder="Description de la boutique"
+          ></textarea>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Catégorie *</label>
+          <select
+            class="form-select"
+            formControlName="category"
+          >
+            <option value="" disabled>Choisir une catégorie</option>
+            <option *ngFor="let c of categories" [value]="c._id">
+              {{ c.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Logo (URL)</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="logo"
+            placeholder="URL du logo"
+          />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Image de couverture (URL)</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="coverImage"
+            placeholder="URL de l'image de couverture"
+          />
+        </div>
+
+        <div class="col-12" formGroupName="contact">
+          <div class="row">
+            <div class="col-md-4">
+              <label class="form-label">Téléphone</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="phone"
+                placeholder="Téléphone de contact"
+              />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                formControlName="email"
+                placeholder="Email de contact"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12" formGroupName="location">
+          <div class="row">
+            <div class="col-md-2">
+              <label class="form-label">Étage</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="floor"
+                placeholder="Ex: 1er"
+              />
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Bloc</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="block"
+                placeholder="Ex: B"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12" formGroupName="openingHours">
+          <h6>Horaires d'ouverture</h6>
+          <div class="row">
+            <div class="col-md-3" *ngFor="let day of ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']">
+              <label class="form-label text-capitalize">{{ day }}</label>
+              <input
+                type="text"
+                class="form-control"
+                [formControlName]="day"
+                placeholder="Ex: 09:00 - 18:00"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Statut *</label>
+          <select class="form-select" formControlName="status">
+            <option value="ACTIVE">Active</option>
+            <option value="SUSPENDED">Suspendue</option>
+            <option value="CLOSED">Fermée</option>
+          </select>
+        </div>
+
+        <div class="col-12" *ngIf="serverError">
+          <span class="text-danger">{{ serverError }}</span>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end gap-2">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            [disabled]="isSubmitting"
+            (click)="router.navigate(['/boutique/home'])"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isSubmitting"
+          >
+            {{ isSubmitting ? 'Enregistrement...' : 'Créer la boutique' }}
+          </button>
+        </div>
+      </form>
+    </app-card>
+  </div>
+</div>
+
