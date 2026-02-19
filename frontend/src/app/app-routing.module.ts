@@ -8,6 +8,10 @@ import { GuestLayoutComponent } from './theme/layouts/guest-layout/guest-layout.
 import { ClientLayoutComponent } from './theme/layouts/client-layout/client-layout.component';
 
 import { AuthGuard } from './guard/auth.guard';
+import { CategoryFormComponent } from './admin/category-form/category-form.component';
+import { ShopFormComponent } from './admin/shop-form/shop-form.component';
+import { CategoryListComponent } from './admin/category-list/category-list.component';
+import { ShopListComponent } from './admin/shop-list/shop-list.component';
 
 const routes: Routes = [
   // ZONE PROTEGÉE (AUTHENTIFIÉS) - ADMIN / BOUTIQUE
@@ -32,6 +36,22 @@ const routes: Routes = [
         loadComponent: () =>
           import('./demo/dashboard/admin/admin-home.component')
             .then((c) => c.AdminHomeComponent)
+      },
+      {
+        path: 'admin/categories',
+        component: CategoryListComponent
+      },
+      {
+        path: 'admin/categories/new',
+        component: CategoryFormComponent
+      },
+      {
+        path: 'admin/shops',
+        component: ShopListComponent
+      },
+      {
+        path: 'admin/shops/new',
+        component: ShopFormComponent
       },
       {
         path: 'boutique/home',
@@ -82,6 +102,12 @@ const routes: Routes = [
         loadComponent: () =>
           import('./demo/dashboard/client/client-home.component')
             .then((c) => c.ClientHomeComponent)
+      },
+      {
+        path: 'shops',
+        loadComponent: () =>
+          import('./demo/pages/client/shops-browse/shops-browse.component')
+            .then((c) => c.ShopsBrowseComponent)
       }
     ]
   },

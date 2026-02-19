@@ -1,0 +1,125 @@
+<div class="shops-browse-container">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="container-fluid px-4">
+      <h1 class="hero-title">Découvrez nos boutiques</h1>
+      <p class="hero-subtitle">Explorez notre centre commercial et trouvez vos magasins préférés</p>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="container-fluid px-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Rechercher une boutique</label>
+          <div class="input-group">
+            <span class="input-group-text">
+              <i antIcon type="search" theme="outline"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control form-control-lg"
+              placeholder="Nom, catégorie, étage..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+            />
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Catégorie</label>
+          <select
+            class="form-select form-select-lg"
+            [(ngModel)]="selectedCategory"
+            (change)="onCategoryChange()"
+          >
+            <option value="all">Toutes les catégories</option>
+            <option *ngFor="let cat of categories" [value]="cat._id">
+              {{ cat.name }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <div class="results-count">
+            <span class="count-number">{{ filteredShops.length }}</span>
+            <span class="count-label">boutique{{ filteredShops.length > 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="container-fluid px-4 py-5">
+    <div class="text-center">
+      <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+      <p class="mt-3 text-muted">Chargement des boutiques...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && error" class="container-fluid px-4 py-5">
+    <div class="alert alert-danger" role="alert">
+      <i antIcon type="exclamation-circle" theme="outline" class="me-2"></i>
+      {{ error }}
+    </div>
+  </div>
+
+  <!-- Shops Grid -->
+  <div *ngIf="!isLoading && !error" class="shops-grid-section">
+    <div class="container-fluid px-4">
+      <div *ngIf="filteredShops.length === 0" class="empty-state">
+        <div class="empty-state-icon">
+          <i antIcon type="shop" theme="outline"></i>
+        </div>
+        <h3>Aucune boutique trouvée</h3>
+        <p class="text-muted">Essayez de modifier vos critères de recherche</p>
+      </div>
+
+      <div *ngIf="filteredShops.length > 0" class="row g-4">
+        <div class="col-xl-3 col-lg-4 col-md-6" *ngFor="let shop of filteredShops">
+          <div class="shop-card">
+            <div class="shop-card-image">
+              <img
+                [src]="getShopImage(shop)"
+                [alt]="shop.name"
+                (error)="$event.target.src='assets/images/shop-placeholder.jpg'"
+              />
+              <div class="shop-card-badge" *ngIf="shop.category">
+                {{ getCategoryName(shop) }}
+              </div>
+            </div>
+            <div class="shop-card-body">
+              <h3 class="shop-card-title">{{ shop.name }}</h3>
+              <p class="shop-card-description" *ngIf="shop.description">
+                {{ shop.description.length > 100 ? (shop.description | slice:0:100) + '...' : shop.description }}
+              </p>
+              <div class="shop-card-info">
+                <div class="info-item">
+                  <i antIcon type="environment" theme="outline"></i>
+                  <span>{{ getLocationString(shop) }}</span>
+                </div>
+                <div class="info-item" *ngIf="shop.contact?.phone">
+                  <i antIcon type="phone" theme="outline"></i>
+                  <span>{{ shop.contact.phone }}</span>
+                </div>
+                <div class="info-item" *ngIf="shop.openingHours?.monday">
+                  <i antIcon type="clock-circle" theme="outline"></i>
+                  <span>{{ shop.openingHours.monday }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="shop-card-footer">
+              <button class="btn btn-primary btn-sm w-100">
+                <i antIcon type="eye" theme="outline" class="me-1"></i>
+                Voir les détails
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
