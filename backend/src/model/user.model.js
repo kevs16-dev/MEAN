@@ -17,4 +17,5 @@ const userSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 
+userSchema.index({ role: 1 });
 module.exports = mongoose.model('User', userSchema);

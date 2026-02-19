@@ -8,6 +8,7 @@ import { GuestLayoutComponent } from './theme/layouts/guest-layout/guest-layout.
 import { ClientLayoutComponent } from './theme/layouts/client-layout/client-layout.component';
 
 import { AuthGuard } from './guard/auth.guard';
+import { RoleGuard } from './guard/role.guard';
 
 const routes: Routes = [
   // ZONE PROTEGÉE (AUTHENTIFIÉS) - ADMIN / BOUTIQUE
@@ -32,6 +33,14 @@ const routes: Routes = [
         loadComponent: () =>
           import('./demo/dashboard/admin/admin-home.component')
             .then((c) => c.AdminHomeComponent)
+      },
+      {
+        path: 'admin/users',
+        loadComponent: () =>
+          import('./demo/dashboard/admin/users/users-list.component')
+            .then((c) => c.UsersListComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['ADMIN'] }
       },
       {
         path: 'boutique/home',

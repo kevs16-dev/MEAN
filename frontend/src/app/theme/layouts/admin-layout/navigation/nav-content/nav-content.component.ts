@@ -62,7 +62,28 @@ export class NavContentComponent implements OnInit {
         QuestionOutline
       ]
     );
-    this.navigations = NavigationItems;
+    // Filter navigation items based on roles defined in navigation.ts and current user
+    const raw = NavigationItems;
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+
+    this.navigations = raw
+      .map((group) => {
+        // If the whole group has roles and user doesn't match, skip group
+        if (group.roles && (!user || !group.roles.includes(user.role))) {
+          return null as any;
+        }
+
+        if (!group.children) return group;
+
+        const children = group.children.filter((child) => {
+          if (!child.roles) return true;
+          return user && child.roles.includes(user.role);
+        });
+
+        return { ...group, children } as any;
+      })
+      .filter((g) => g && (!g.children || g.children.length > 0));
   }
 
   // Life cycle events
@@ -98,7 +119,8 @@ export class NavContentComponent implements OnInit {
   }
 
   navMob() {
-    if (this.windowWidth < 1025 && document.querySelector('app-navigation.coded-navbar').classList.contains('mob-open')) {
+    const nav = document.querySelector('app-navigation.coded-navbar');
+    if (this.windowWidth < 1025 && nav && nav.classList.contains('mob-open')) {
       this.NavCollapsedMob.emit();
     }
   }
