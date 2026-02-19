@@ -5,6 +5,7 @@ export interface NavigationItem {
   translate?: string;
   icon?: string;
   hidden?: boolean;
+  roles?: string[];
   url?: string;
   classes?: string;
   groupClasses?: string;
@@ -51,6 +52,34 @@ export const NavigationItems: NavigationItem[] = [
         classes: 'nav-item',
         url: '/dashboard/default',
         icon: 'dashboard',
+        breadcrumbs: false
+      }
+    ]
+  },
+  {
+    id: 'administration',
+    title: 'Administration',
+    type: 'group',
+    icon: 'icon-navigation',
+    children: [
+      {
+        id: 'admin-categories-new',
+        title: 'Catégories',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/admin/categories',
+        icon: 'profile',
+        roles: ['ADMIN'],
+        breadcrumbs: false
+      },
+      {
+        id: 'admin-shops-new',
+        title: 'Boutiques',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/admin/shops',
+        icon: 'chrome',
+        roles: ['ADMIN'],
         breadcrumbs: false
       }
     ]

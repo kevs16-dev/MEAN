@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 // project import
 import { NavigationItem, NavigationItems } from '../navigation';
 import { environment } from 'src/environments/environment';
+import { AuthService } from 'src/app/service/auth.service';
 
 import { NavGroupComponent } from './nav-group/nav-group.component';
 
@@ -34,6 +35,7 @@ export class NavContentComponent implements OnInit {
   private location = inject(Location);
   private locationStrategy = inject(LocationStrategy);
   private iconService = inject(IconService);
+  private authService = inject(AuthService);
 
   // public props
   NavCollapsedMob = output();
@@ -62,28 +64,7 @@ export class NavContentComponent implements OnInit {
         QuestionOutline
       ]
     );
-    // Filter navigation items based on roles defined in navigation.ts and current user
-    const raw = NavigationItems;
-    const userStr = localStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
-
-    this.navigations = raw
-      .map((group) => {
-        // If the whole group has roles and user doesn't match, skip group
-        if (group.roles && (!user || !group.roles.includes(user.role))) {
-          return null as any;
-        }
-
-        if (!group.children) return group;
-
-        const children = group.children.filter((child) => {
-          if (!child.roles) return true;
-          return user && child.roles.includes(user.role);
-        });
-
-        return { ...group, children } as any;
-      })
-      .filter((g) => g && (!g.children || g.children.length > 0));
+    this.navigations = this.filterNavigationsByRole(NavigationItems, this.authService.getUserRole());
   }
 
   // Life cycle events
@@ -91,6 +72,33 @@ export class NavContentComponent implements OnInit {
     if (this.windowWidth < 1025) {
       (document.querySelector('.coded-navbar') as HTMLDivElement)?.classList.add('menupos-static');
     }
+  }
+
+  private filterNavigationsByRole(items: NavigationItem[], role: string | null): NavigationItem[] {
+    const canSee = (item: NavigationItem): boolean => {
+      if (item.hidden) return false;
+      if (!item.roles || item.roles.length === 0) return true;
+      if (!role) return false;
+      return item.roles.includes(role);
+    };
+
+    const recurse = (list: NavigationItem[]): NavigationItem[] => {
+      const out: NavigationItem[] = [];
+      for (const item of list) {
+        if (!canSee(item)) continue;
+
+        if (item.children && item.children.length > 0) {
+          const children = recurse(item.children);
+          if (children.length === 0) continue;
+          out.push({ ...item, children });
+        } else {
+          out.push({ ...item });
+        }
+      }
+      return out;
+    };
+
+    return recurse(items);
   }
 
   fireOutClick() {
