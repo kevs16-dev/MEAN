@@ -45,6 +45,8 @@ const routes: Routes = [
             .then((c) => c.UsersListComponent),
         canActivate: [RoleGuard],
         data: { roles: ['ADMIN'] }
+      },
+      {
         path: 'admin/categories',
         component: CategoryListComponent
       },
