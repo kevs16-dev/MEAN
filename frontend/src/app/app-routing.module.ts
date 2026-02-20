@@ -47,6 +47,22 @@ const routes: Routes = [
         data: { roles: ['ADMIN'] }
       },
       {
+        path: 'admin/users/new',
+        loadComponent: () =>
+          import('./admin/user-form/user-form.component')
+            .then((m) => m.UserFormComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['ADMIN'] }
+      },
+      {
+        path: 'admin/users/edit/:id',
+        loadComponent: () =>
+          import('./admin/user-form/user-form.component')
+            .then((m) => m.UserFormComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['ADMIN'] }
+      },
+      {
         path: 'admin/categories',
         component: CategoryListComponent
       },

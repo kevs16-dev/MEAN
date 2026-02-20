@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { Subject, debounceTime } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -32,11 +33,19 @@ export class UsersListComponent {
 
   private filterChanged$ = new Subject<void>();
 
-  constructor(private userService: UserService, private cdr: ChangeDetectorRef) {
+  constructor(private userService: UserService, private cdr: ChangeDetectorRef, private router: Router) {
     this.filterChanged$.pipe(debounceTime(300)).subscribe(() => {
       this.loadUsers();
     });
     this.loadUsers();
+  }
+
+  onCreateUser() {
+    this.router.navigate(['/admin/users/new']);
+  }
+
+  onEditUser(user: any) {
+    this.router.navigate(['/admin/users/edit', user._id || user.id]);
   }
 
   loadUsers() {
