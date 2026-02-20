@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { Subject, debounceTime } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -17,6 +18,11 @@ export class UsersListComponent {
   users: any[] = [];
   loading = false;
   error: string | null = null;
+
+  showDeleteModal = false;
+  userToDelete: any = null;
+  deleteLoading = false;
+  
   // Pagination et filtre
   page = 1;
   limit = 10;
@@ -32,12 +38,69 @@ export class UsersListComponent {
 
   private filterChanged$ = new Subject<void>();
 
-  constructor(private userService: UserService, private cdr: ChangeDetectorRef) {
+  constructor(private userService: UserService, private cdr: ChangeDetectorRef, private router: Router) {
     this.filterChanged$.pipe(debounceTime(300)).subscribe(() => {
       this.loadUsers();
     });
     this.loadUsers();
   }
+
+  onCreateUser() {
+    this.router.navigate(['/admin/users/new']);
+  }
+
+  onEditUser(user: any) {
+    this.router.navigate(['/admin/users/edit', user._id || user.id]);
+  }
+
+  // NOUVELLE MÉTHODE - Ouvrir le modal de confirmation
+  onDeleteUser(user: any) {
+    this.userToDelete = user;
+    this.showDeleteModal = true;
+    this.cdr.detectChanges();
+  }
+
+  // NOUVELLE MÉTHODE - Fermer le modal sans supprimer
+  cancelDelete() {
+    this.showDeleteModal = false;
+    this.userToDelete = null;
+    this.deleteLoading = false;
+    this.cdr.detectChanges();
+  }
+
+  // NOUVELLE MÉTHODE - Confirmer la suppression
+  confirmDelete() {
+    if (!this.userToDelete) return;
+    
+    this.deleteLoading = true;
+    const userId = this.userToDelete._id || this.userToDelete.id;
+    
+    this.userService.deleteUser(userId).subscribe({
+      next: () => {
+        // Recharger la liste
+        this.loadUsers();
+        // Fermer le modal
+        this.showDeleteModal = false;
+        this.userToDelete = null;
+        this.deleteLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Erreur lors de la suppression';
+        this.deleteLoading = false;
+        // Optionnel : garder le modal ouvert pour montrer l'erreur
+        this.cdr.detectChanges();
+        
+        // Fermer le modal après 3 secondes en cas d'erreur
+        setTimeout(() => {
+          this.showDeleteModal = false;
+          this.userToDelete = null;
+          this.cdr.detectChanges();
+        }, 3000);
+      }
+    });
+  }
+
 
   loadUsers() {
     this.loading = true;

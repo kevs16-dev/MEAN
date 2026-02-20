@@ -1,0 +1,147 @@
+<div class="auth-main">
+  <div class="auth-wrapper v3">
+    <div class="auth-form">
+      <div class="auth-header">
+        <span><b>{{ editMode ? 'Modifier un utilisateur' : 'Créer un utilisateur' }}</b></span>
+      </div>
+      <div class="card my-5">
+        <div class="card-body">
+          <form #form="ngForm">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+              <h3 class="mb-0"><b>{{ editMode ? 'Modification' : 'Nouvel utilisateur' }}</b></h3>
+            </div>
+            <div *ngIf="message" class="custom-alert" [ngClass]="alertType">
+              <i class="ti ti-info-circle me-2"></i>
+              {{ message }}
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="username">Nom d'utilisateur</label>
+              <input type="text" class="form-control" id="username" placeholder="Nom d'utilisateur"
+                     [(ngModel)]="username" name="username" required />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="nom">Nom</label>
+              <input type="text" class="form-control" id="nom" placeholder="Nom"
+                     [(ngModel)]="nom" name="nom" required />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="prenom">Prénom</label>
+              <input type="text" class="form-control" id="prenom" placeholder="Prénom"
+                     [(ngModel)]="prenom" name="prenom" required />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="emailAddress">Adresse email *</label>
+              <input type="email" class="form-control" id="emailAddress" placeholder="Adresse email"
+                     [(ngModel)]="email" name="email" required />
+            </div>
+            
+            <!-- Section mot de passe - TOUJOURS visible -->
+            <div class="form-group mb-2">
+              <label class="form-label" for="password">
+                {{ editMode ? 'Nouveau mot de passe' : 'Mot de passe' }}
+                <span *ngIf="editMode" class="text-muted fw-normal">(optionnel)</span>
+              </label>
+              <input type="password" class="form-control" id="password" 
+                     [placeholder]="editMode ? 'Laisser vide pour ne pas modifier' : 'Mot de passe'"
+                     [(ngModel)]="password" name="password" [required]="!editMode" />
+              
+              <!-- Indication en mode édition -->
+              <small class="text-muted d-block mt-1" *ngIf="editMode && !password">
+                <i class="ti ti-info-circle"></i> Laissez vide pour conserver le mot de passe actuel
+              </small>
+              
+              <!-- Barre de force du mot de passe (seulement si un mot de passe est saisi) -->
+              <div class="password-strength mt-2" *ngIf="password">
+                <div class="strength-bar">
+                  <span class="strength-fill" [style.width.%]="(passwordStrength / 4) * 100"
+                        [class]="'level-' + passwordStrength"></span>
+                </div>
+                <span class="strength-label" [class.text-success]="passwordStrength >= 3"
+                      [class.text-warning]="passwordStrength === 2" [class.text-danger]="passwordStrength <= 1">
+                  {{ passwordStrengthLabel }}
+                </span>
+              </div>
+              
+              <!-- Règles de mot de passe (seulement si un mot de passe est saisi) -->
+              <ul class="password-rules list-unstyled mt-2 mb-0 small text-muted" *ngIf="password">
+                <li *ngFor="let rule of passwordRules" [class.rule-ok]="rule.ok">
+                  <i class="ti me-1" [class.ti-circle-check]="rule.ok" [class.ti-circle-x]="!rule.ok"></i>
+                  {{ rule.label }}
+                </li>
+              </ul>
+            </div>
+            
+            <!-- Champ de confirmation - TOUJOURS visible -->
+            <div class="form-group mb-3">
+              <label class="form-label" for="passwordConfirm">
+                Confirmer le mot de passe
+                <span *ngIf="editMode && !password" class="text-muted fw-normal">(optionnel)</span>
+              </label>
+              <input type="password" class="form-control" id="passwordConfirm" 
+                     [placeholder]="editMode && !password ? 'Non requis si pas de changement' : 'Confirmer le mot de passe'"
+                     [(ngModel)]="passwordConfirm" name="passwordConfirm" 
+                     [required]="!editMode || (editMode && password)" />
+              
+              <!-- Message de validation - différent selon le contexte -->
+              <div class="small mt-1" *ngIf="password || !editMode">
+                <!-- Si les deux champs sont remplis et ne correspondent pas -->
+                <div *ngIf="passwordConfirm && !passwordsMatch" class="text-danger">
+                  <i class="ti ti-alert-circle me-1"></i>Les mots de passe ne correspondent pas
+                </div>
+                <!-- Si les deux champs sont remplis et correspondent -->
+                <div *ngIf="passwordConfirm && passwordsMatch" class="text-success">
+                  <i class="ti ti-circle-check me-1"></i>Correspondance parfaite
+                </div>
+                <!-- Si le champ de confirmation est vide mais qu'un mot de passe est saisi -->
+                <div *ngIf="password && !passwordConfirm" class="text-warning">
+                  <i class="ti ti-alert-triangle me-1"></i>Veuillez confirmer le mot de passe
+                </div>
+              </div>
+              
+              <!-- Message spécial pour le mode édition sans nouveau mot de passe -->
+              <div class="small mt-1 text-muted" *ngIf="editMode && !password">
+                <i class="ti ti-info-circle me-1"></i>Laissez vide pour conserver l'ancien mot de passe
+              </div>
+            </div>
+            
+            <div class="form-group mb-3">
+              <label class="form-label" for="role">Rôle</label>
+              <select class="form-control" id="role" [(ngModel)]="role" name="role" required>
+                <option value="">Sélectionner un rôle</option>
+                <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+              </select>
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="telephone">Téléphone</label>
+              <input type="text" class="form-control" id="telephone" placeholder="Téléphone"
+                     [(ngModel)]="telephone" name="telephone" />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="adresse">Adresse</label>
+              <input type="text" class="form-control" id="adresse" placeholder="Adresse"
+                     [(ngModel)]="adresse" name="adresse" />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="ville">Ville</label>
+              <input type="text" class="form-control" id="ville" placeholder="Ville"
+                     [(ngModel)]="ville" name="ville" />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="codePostal">Code Postal</label>
+              <input type="text" class="form-control" id="codePostal" placeholder="Code Postal"
+                     [(ngModel)]="codePostal" name="codePostal" />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label" for="pays">Pays</label>
+              <input type="text" class="form-control" id="pays" placeholder="Pays"
+                     [(ngModel)]="pays" name="pays" />
+            </div>
+            <button type="button" class="btn btn-primary w-100" [disabled]="!canSubmit || loading" (click)="submit(form)">
+              {{ loading ? (editMode ? 'Modification...' : 'Création...') : (editMode ? 'Modifier l\'utilisateur' : 'Créer l\'utilisateur') }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

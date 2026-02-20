@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -38,5 +38,21 @@ export class UserService {
       if (q.length) query = '?' + q.join('&');
     }
     return this.http.get<{ users: any[]; total: number; page: number; limit: number }>(`${this.API_URI}${query}`);
+  }
+
+  getUserById(id: string) {
+    return this.http.get<any>(`${this.API_URI}/${id}`);
+  }
+
+  createUser(userData: any) {
+    return this.http.post<any>(`${this.API_URI}`, userData);
+  }
+
+  updateUser(id: string, userData: any) {
+    return this.http.put<any>(`${this.API_URI}/${id}`, userData);
+  }
+
+  deleteUser(id: string) {
+    return this.http.delete<any>(`${this.API_URI}/${id}`);
   }
 }
