@@ -10,6 +10,7 @@ router.get('/', authMiddleware, roleMiddleware('ADMIN'), userController.getAllUs
 router.post('/', authMiddleware, roleMiddleware('ADMIN'), userController.createUserByAdmin);
 router.put('/:id', authMiddleware, roleMiddleware('ADMIN'), userController.updateUserByAdmin);
 router.get('/:id', authMiddleware, roleMiddleware('ADMIN'), userController.getUserById);
+router.delete('/:id', authMiddleware, roleMiddleware('ADMIN'), userController.deleteUser);
 
 router.put('/update-profile', authMiddleware, userController.updateProfile);
 router.put('/update-password', authMiddleware, userController.updatePassword);

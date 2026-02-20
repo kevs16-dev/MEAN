@@ -43,12 +43,16 @@ export class UserService {
   getUserById(id: string) {
     return this.http.get<any>(`${this.API_URI}/${id}`);
   }
-  
+
   createUser(userData: any) {
     return this.http.post<any>(`${this.API_URI}`, userData);
   }
 
   updateUser(id: string, userData: any) {
     return this.http.put<any>(`${this.API_URI}/${id}`, userData);
+  }
+
+  deleteUser(id: string) {
+    return this.http.delete<any>(`${this.API_URI}/${id}`);
   }
 }

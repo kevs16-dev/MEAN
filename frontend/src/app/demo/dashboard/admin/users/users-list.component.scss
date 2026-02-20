@@ -1,3 +1,30 @@
 .table {
   margin-top: 1rem;
 }
+
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  border-radius: 8px;
+}
+
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem;
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  padding: 1rem;
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+.spinner-border {
+  width: 1rem;
+  height: 1rem;
+}

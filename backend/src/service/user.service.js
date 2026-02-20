@@ -127,6 +127,16 @@ const updateUserByAdmin = async (userId, updateData) => {
     return updatedUser;
 };
 
+const deleteUser = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new AppError('USER_NOT_FOUND', 404);
+    }
+    
+    await User.findByIdAndDelete(userId);
+    return true;
+};
+
 module.exports = {
     createUser,
     getUserByEmail,
@@ -134,5 +144,6 @@ module.exports = {
     updateProfile,
     updatePassword,
     updateUserByAdmin,
-    getUserById
+    getUserById,
+    deleteUser
 };

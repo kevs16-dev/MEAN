@@ -44,7 +44,7 @@
                 <button class="btn btn-sm btn-icon btn-link" title="Modifier" (click)="onEditUser(u)">
                   <span class="text-primary">✏️</span>
                 </button>
-                <button class="btn btn-sm btn-icon btn-link text-danger" title="Supprimer" >
+                <button class="btn btn-sm btn-icon btn-link text-danger" title="Supprimer" (click)="onDeleteUser(u)">
                   <span class="text-danger">🗑️</span>
                 </button>
               </div>
@@ -69,3 +69,37 @@
     </app-card>
   </div>
 </div>
+
+<!-- MODAL DE CONFIRMATION DE SUPPRESSION -->
+<div class="modal fade show" [class.show]="showDeleteModal" [style.display]="showDeleteModal ? 'block' : 'none'" tabindex="-1" *ngIf="showDeleteModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmer la suppression</h5>
+        <button type="button" class="btn-close" (click)="cancelDelete()"></button>
+      </div>
+      <div class="modal-body">
+        <p *ngIf="userToDelete">
+          Êtes-vous sûr de vouloir supprimer l'utilisateur 
+          <strong>{{ userToDelete.prenom }} {{ userToDelete.nom }}</strong> 
+          ({{ userToDelete.email }}) ?
+        </p>
+        <p class="text-danger mb-0">
+          <i class="ti ti-alert-triangle"></i>
+          Cette action est irréversible.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelDelete()" [disabled]="deleteLoading">
+          Annuler
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleteLoading">
+          <span *ngIf="deleteLoading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ deleteLoading ? 'Suppression...' : 'Supprimer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show" [style.display]="showDeleteModal ? 'block' : 'none'" *ngIf="showDeleteModal"></div>

@@ -1,5 +1,5 @@
+const bcrypt = require('bcrypt');
 const userService = require('../service/user.service');
-
 
 exports.createUserByAdmin = async (req, res) => {
     try {
@@ -16,18 +16,22 @@ exports.createUserByAdmin = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ message: 'Un utilisateur existe déjà avec cet email' });
         }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         const user = await userService.createUser({
             username,
             nom,
             prenom,
             email,
-            password,
+            password: hashedPassword,
             telephone,
             adresse,
             ville,
             codePostal,
             pays,
-            role
+            role,
+            isVerified: true
         });
         return res.status(201).json({ message: 'Utilisateur créé avec succès', user });
     } catch (error) {
@@ -142,6 +146,31 @@ exports.updateUserByAdmin = async (req, res) => {
         console.error('updateUserByAdmin error:', error);
         return res.status(error.status || 500).json({
             message: error.message || 'Erreur lors de la mise à jour de l\'utilisateur'
+        });
+    }
+};
+
+exports.deleteUser = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const currentUserId = req.user.id;
+        
+        // Empecher un admin de se supprimer lui même
+        if (userId === currentUserId) {
+            return res.status(400).json({ 
+                message: 'Vous ne pouvez pas supprimer votre propre compte' 
+            });
+        }
+        
+        await userService.deleteUser(userId);
+        
+        return res.status(200).json({ 
+            message: 'Utilisateur supprimé avec succès' 
+        });
+    } catch (error) {
+        console.error('deleteUser error:', error);
+        return res.status(error.status || 500).json({ 
+            message: error.message || 'Erreur lors de la suppression de l\'utilisateur' 
         });
     }
 };
