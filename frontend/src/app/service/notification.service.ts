@@ -29,4 +29,8 @@ export class NotificationService {
     create(notificationData: any) {
         return this.http.post<any>(this.API_URI, notificationData);
     }
+
+    createForRole(notificationData: any) {
+        return this.http.post<any>(`${this.API_URI}/role`, notificationData);
+    }
 }

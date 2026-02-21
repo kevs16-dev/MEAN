@@ -67,6 +67,14 @@ const routes: Routes = [
         component: CategoryListComponent
       },
       {
+        path: 'admin/notifications',
+        loadComponent: () =>
+          import('./demo/notification-form/notification-form.component')
+            .then((c) => c.NotificationFormComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['ADMIN', 'BOUTIQUE'] }
+      },
+      {
         path: 'admin/categories/new',
         component: CategoryFormComponent
       },
