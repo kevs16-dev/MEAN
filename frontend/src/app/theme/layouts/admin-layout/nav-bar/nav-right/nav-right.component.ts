@@ -30,6 +30,8 @@ import {
 } from '@ant-design/icons-angular/icons';
 import { title } from 'process';
 import { UserService } from 'src/app/service/user.service';
+import { NotificationService } from 'src/app/service/notification.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-nav-right',
@@ -40,6 +42,9 @@ import { UserService } from 'src/app/service/user.service';
 export class NavRightComponent {
   private iconService = inject(IconService);
   utilisateur : any;
+  notifications: any[] = [];
+  unreadCount$!: Observable<number>;
+  loadingNotifications: boolean = false;
 
   // public props
   styleSelectorToggle = input<boolean>();
@@ -49,7 +54,7 @@ export class NavRightComponent {
   direction: string = 'ltr';
 
   // constructor
-  constructor(private authService: AuthService, private userService: UserService, private router: Router) {
+  constructor(private authService: AuthService, private userService: UserService, private notificationService: NotificationService, private router: Router) {
     this.windowWidth = window.innerWidth;
     this.iconService.addIcon(
       ...[
@@ -77,6 +82,44 @@ export class NavRightComponent {
 
   ngOnInit() {
     this.utilisateur = this.userService.getUtilisateur();
+    if (this.utilisateur._id) {
+      this.loadNotifications();
+    }
+  }
+
+  loadNotifications() {
+    this.loadingNotifications = true;
+    this.notificationService
+      .getUserNotifications()
+      .subscribe({
+        next: (data) => {
+          this.notifications = data;
+          this.loadingNotifications = false;
+        },
+        error: () => (this.loadingNotifications = false)
+      });
+  }
+
+  markAsRead(notification: any) {
+    if (notification.isRead) return;
+
+    this.notificationService.markAsRead(notification._id).subscribe(() => {
+      notification.isRead = true;
+    });
+  }
+
+  markAllAsRead() {
+    const unread = this.notifications.filter(n => !n.isRead);
+
+    unread.forEach(notification => {
+      this.notificationService.markAsRead(notification._id).subscribe(() => {
+        notification.isRead = true;
+      });
+    });
+  }
+
+  get unreadCount() {
+    return this.notifications.filter(notification => !notification.isRead).length;
   }
 
   deconnexion() {
