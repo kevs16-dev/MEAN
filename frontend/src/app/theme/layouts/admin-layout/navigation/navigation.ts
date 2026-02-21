@@ -62,6 +62,16 @@ export const NavigationItems: NavigationItem[] = [
     icon: 'icon-navigation',
     children: [
       {
+        id: 'notifications-new',
+        title: 'Notifications',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/admin/notifications',
+        icon: 'bell',
+        roles: ['ADMIN', 'BOUTIQUE'],
+        breadcrumbs: false
+      },
+      {
         id: 'admin-categories-new',
         title: 'Catégories',
         type: 'item',

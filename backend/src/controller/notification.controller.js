@@ -1,4 +1,4 @@
-const Notification = require('../model/notification.model');
+const notificationService = require('../service/notification.service');
 
 exports.create = async (req, res) => {
   try {
@@ -12,14 +12,9 @@ exports.create = async (req, res) => {
     }
 
     const allowedTypes = ['INFO', 'SUCCESS', 'WARNING', 'ALERT', 'ERROR'];
-    const notificationType = allowedTypes.includes(type) ? type : ' INFO';
+    const notificationType = allowedTypes.includes(type) ? type : 'INFO';
 
-    const notification = await Notification.create({
-      userId,
-      title: title?.trim(),
-      message: message.trim(),
-      type: notificationType
-    });
+    const notification = await notificationService.createNotification({ userId, title, message, type: notificationType});
 
     res.status(201).json({ success: true, data: notification });
 
@@ -28,12 +23,29 @@ exports.create = async (req, res) => {
   }
 };
 
+exports.createForRole = async (req, res) => {
+  try {
+    const { role, title, message, type } = req.body;
+    if (!role || !message) {
+      return res.status(400).json({
+        message: 'Les champs "role" et "message" sont obligatoires'
+      });
+    }
+    const allowedTypes = ['INFO', 'SUCCESS', 'WARNING', 'ALERT', 'ERROR'];
+    const notificationType = allowedTypes.includes(type) ? type : 'INFO';
+    const notifications = await notificationService.createNotificationForRole(role, { title, message, type: notificationType });
+    res.status(201).json({ success: true, data: notifications });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 exports.getByUser = async (req, res) => {
-  const notifications = await Notification.find({ userId: req.user.id }).sort({ createdAt: -1 });
+  const notifications = await notificationService.getNotificationsByUser(req.user.id);
   res.json(notifications);
 };
 
 exports.patch = async (req, res) => {
-    const notification = await Notification.findByIdAndUpdate(req.params.id, { isRead: true}, { new: true});
+    const notification = await notificationService.markAsRead(req.params.id);
     res.json(notification);
 };
