@@ -1,16 +1,16 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EventService } from '../../service/event.service';
-import { FullCalendarModule } from '@fullcalendar/angular';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CalendarModule } from 'src/app/modules/calendar.module';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
 @Component({
   selector: 'app-event-view',
   standalone: true,
-  imports: [CommonModule, FullCalendarModule, FormsModule],
+  imports: [CommonModule, CalendarModule, FormsModule],
   templateUrl: './event-view.component.html',
   styleUrls: ['./event-view.component.scss']
 })
