@@ -15,11 +15,11 @@
         <a class="bg-transparent"><i class="text-success d-flex f-20" antIcon theme="outline" type="check-circle"></i></a>
       </div>
       <div class="dropdown-divider mb-0"></div>
-      <ng-scrollbar style="min-height: 280px" visibility="hover">
+      <ng-scrollbar style="max-height: 280px" visibility="hover">
         <div class="dropdown-header p-0 text-wrap header-notification-scroll">
           <div class="list-group list-group-flush w-100">
             <a class="list-group-item list-group-item-action"
-              *ngFor="let n of notifications"
+              *ngFor="let n of (showAllNotifications ? notifications : (notifications | slice:0:3))"
               (click)="markAsRead(n)"
               [class.bg-light]="!n.isRead">
 
@@ -55,7 +55,11 @@
       </ng-scrollbar>
       <div class="dropdown-divider mt-0"></div>
       <div class="text-center py-2">
-        <a href="javascript:" class="link-primary">Voir toutes les notifications</a>
+        <a href="javascript:"
+           class="link-primary"
+           (click)="toggleShowAll()">
+          {{ showAllNotifications ? 'Réduire' : 'Voir toutes les notifications' }}
+        </a>
       </div>
     </div>
   </li>
