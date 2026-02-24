@@ -1,0 +1,117 @@
+<div class="row">
+  <div class="col-sm-12">
+    <app-card cardTitle="Créer un évènement">
+      <form
+        [formGroup]="eventForm"
+        (ngSubmit)="onSubmit()"
+        class="row g-3"
+      >
+
+        <!-- Titre -->
+        <div class="col-12">
+          <label class="form-label">Titre *</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="title"
+            placeholder="Titre de l’évènement"
+          />
+        </div>
+
+        <!-- Description -->
+        <div class="col-12">
+          <label class="form-label">Description *</label>
+          <textarea
+            class="form-control"
+            rows="4"
+            formControlName="description"
+            placeholder="Description de l’évènement"
+          ></textarea>
+        </div>
+
+        <!-- Dates -->
+        <div class="col-md-6">
+          <label class="form-label">Date de début *</label>
+          <input
+            type="datetime-local"
+            class="form-control"
+            formControlName="startDate"
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Date de fin *</label>
+          <input
+            type="datetime-local"
+            class="form-control"
+            formControlName="endDate"
+          />
+        </div>
+
+        <!-- Lieu -->
+        <div class="col-12">
+          <label class="form-label">Lieu</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="location"
+            placeholder="Lieu de l’évènement"
+          />
+        </div>
+
+        <!-- Rôles -->
+        <div class="col-md-6">
+          <label class="form-label">Rôles ciblés *</label>
+          <select
+            class="form-select"
+            formControlName="targetRoles"
+            multiple
+          >
+            <option *ngFor="let r of roles" [value]="r.value">
+              {{ r.label }}
+            </option>
+          </select>
+          <small class="text-muted">
+            Ctrl (ou Cmd) pour sélection multiple
+          </small>
+        </div>
+
+        <!-- Statut -->
+        <div class="col-md-6">
+          <label class="form-label">Statut *</label>
+          <select class="form-select" formControlName="status">
+            <option *ngFor="let s of statuses" [value]="s.value">
+              {{ s.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Erreur serveur -->
+        <div class="col-12 text-danger" *ngIf="serverError">
+          {{ serverError }}
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12 d-flex justify-content-end gap-2">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            [disabled]="isSubmitting"
+            (click)="router.navigate(['/admin/events'])"
+          >
+            Annuler
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isSubmitting"
+          >
+            {{ isSubmitting ? 'Enregistrement...' : 'Créer l’évènement' }}
+          </button>
+        </div>
+
+      </form>
+    </app-card>
+  </div>
+</div>
