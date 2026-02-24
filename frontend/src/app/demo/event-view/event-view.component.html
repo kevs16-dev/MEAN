@@ -62,10 +62,16 @@
 
       <p class="mb-1">{{ e.description }}</p>
 
-      <small>
-        📅 {{ e.startDate | date:'dd/MM/yyyy' }} – {{ e.endDate | date:'dd/MM/yyyy' }}
+      <small class="text-muted">
+        <span class="me-2">
+          <i class="ti ti-calendar-event me-1"></i>
+          {{ e.startDate | date:'dd/MM/yyyy' }} – {{ e.endDate | date:'dd/MM/yyyy' }}
+        </span>
         <br />
-        📍 {{ e.location || '—' }}
+        <span>
+          <i class="ti ti-map-pin me-1"></i>
+          {{ e.location || '—' }}
+        </span>
       </small>
     </div>
 
