@@ -72,6 +72,16 @@ export const NavigationItems: NavigationItem[] = [
         breadcrumbs: false
       },
       {
+        id: 'event-new',
+        title: 'Evénements',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/admin/events',
+        icon: 'calendar-event',
+        roles: ['ADMIN', 'BOUTIQUE'],
+        breadcrumbs: false
+      },
+      {
         id: 'admin-categories-new',
         title: 'Catégories',
         type: 'item',

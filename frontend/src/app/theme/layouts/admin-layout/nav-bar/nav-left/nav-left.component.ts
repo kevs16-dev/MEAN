@@ -2,7 +2,7 @@
 import { Component, input, output, inject } from '@angular/core';
 
 // project import
-import { SharedModule } from 'src/app/theme/shared/shared.module';
+import { SharedModule } from '../../../../../theme/shared/shared.module';
 
 // icons
 import { IconService } from '@ant-design/icons-angular';

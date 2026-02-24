@@ -4,8 +4,8 @@ import { Subject, debounceTime } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { UserService } from 'src/app/service/user.service';
-import { CardComponent } from 'src/app/theme/shared/components/card/card.component';
+import { UserService } from '../../../../service/user.service';
+import { CardComponent } from '../../../../theme/shared/components/card/card.component';
 
 @Component({
   selector: 'app-users-list',

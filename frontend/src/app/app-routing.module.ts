@@ -13,6 +13,8 @@ import { CategoryFormComponent } from './admin/category-form/category-form.compo
 import { ShopFormComponent } from './admin/shop-form/shop-form.component';
 import { CategoryListComponent } from './admin/category-list/category-list.component';
 import { ShopListComponent } from './admin/shop-list/shop-list.component';
+import { EventViewComponent } from './demo/event-view/event-view.component';
+import { EventFormComponent } from './demo/event-form/event-form.component';
 
 const routes: Routes = [
   // ZONE PROTEGÉE (AUTHENTIFIÉS) - ADMIN / BOUTIQUE
@@ -85,6 +87,22 @@ const routes: Routes = [
       {
         path: 'admin/shops/new',
         component: ShopFormComponent
+      },
+      {
+        path: 'admin/events',
+        loadComponent: () =>
+          import('./demo/event-view/event-view.component')
+            .then((c) => c.EventViewComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['ADMIN', 'BOUTIQUE'] }
+      },
+      {
+        path: 'admin/events/new',
+        loadComponent: () =>
+          import('./demo/event-form/event-form.component')
+            .then((c) => c.EventFormComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['ADMIN', 'BOUTIQUE'] }
       },
       {
         path: 'boutique/home',

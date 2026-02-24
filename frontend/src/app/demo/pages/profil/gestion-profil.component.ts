@@ -4,8 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 // project import
-import { CardComponent } from 'src/app/theme/shared/components/card/card.component';
-import { UserService } from 'src/app/service/user.service';
+import { CardComponent } from '../../../theme/shared/components/card/card.component';
+import { UserService } from '../../../service/user.service';
 
 @Component({
   selector: 'app-gestion-profil',

@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 
 // project import
 
-import { CardComponent } from 'src/app/theme/shared/components/card/card.component';
+import { CardComponent } from '../../../../theme/shared/components/card/card.component';
 
 @Component({
   selector: 'app-typography',

@@ -6,7 +6,7 @@ import { RouterModule } from '@angular/router';
 // project import
 import { NavigationItem, NavigationItems } from '../navigation';
 import { environment } from 'src/environments/environment';
-import { AuthService } from 'src/app/service/auth.service';
+import { AuthService } from '../../../../../service/auth.service';
 
 import { NavGroupComponent } from './nav-group/nav-group.component';
 

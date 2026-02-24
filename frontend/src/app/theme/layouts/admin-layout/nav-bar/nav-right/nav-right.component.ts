@@ -4,8 +4,8 @@ import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 
 // project import
-import { SharedModule } from 'src/app/theme/shared/shared.module';
-import { AuthService } from 'src/app/service/auth.service';
+import { SharedModule } from '../../../../../theme/shared/shared.module';
+import { AuthService } from '../../../../../service/auth.service';
 
 // icon
 import { IconService } from '@ant-design/icons-angular';
@@ -29,8 +29,8 @@ import {
   GithubOutline
 } from '@ant-design/icons-angular/icons';
 import { title } from 'process';
-import { UserService } from 'src/app/service/user.service';
-import { NotificationService } from 'src/app/service/notification.service';
+import { UserService } from '../../../../../service/user.service';
+import { NotificationService } from '../../../../../service/notification.service';
 import { Observable } from 'rxjs';
 
 @Component({

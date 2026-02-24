@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 // Project import
-import { CardComponent } from 'src/app/theme/shared/components/card/card.component';
+import { CardComponent } from '../../../theme/shared/components/card/card.component';
 
 @Component({
   selector: 'app-client-home',
