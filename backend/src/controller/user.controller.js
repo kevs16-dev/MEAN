@@ -3,7 +3,7 @@ const userService = require('../service/user.service');
 
 exports.createUserByAdmin = async (req, res) => {
     try {
-        const { username, nom, prenom, email, password, telephone, adresse, ville, codePostal, pays, role } = req.body;
+        const { username, nom, prenom, email, password, telephone, adresse, ville, codePostal, pays, role, shopId } = req.body;
         if (!username || !nom || !prenom || !email || !password || !role) {
             return res.status(400).json({ message: 'Champs obligatoires manquants' });
         }
@@ -20,18 +20,20 @@ exports.createUserByAdmin = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await userService.createUser({
-            username,
-            nom,
-            prenom,
-            email,
-            password: hashedPassword,
-            telephone,
-            adresse,
-            ville,
-            codePostal,
-            pays,
-            role,
-            isVerified: true
+          username,
+          nom,
+          prenom,
+          email,
+          password: hashedPassword,
+          telephone,
+          adresse,
+          ville,
+          codePostal,
+          pays,
+          role,
+          isVerified: true,
+          // Pour un user BOUTIQUE, on peut associer directement une boutique existante
+          shopId: role === 'BOUTIQUE' ? shopId || null : null
         });
         return res.status(201).json({ message: 'Utilisateur créé avec succès', user });
     } catch (error) {

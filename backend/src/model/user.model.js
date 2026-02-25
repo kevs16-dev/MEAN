@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+  {
     username: { type: String, required: true },
     nom: { type: String, required: true },
     prenom: { type: String, required: true },
@@ -10,12 +11,28 @@ const userSchema = new mongoose.Schema({
     adresse: { type: String, required: false },
     ville: { type: String, required: false },
     codePostal: { type: String, required: false },
-    pays: { type: String, required: false},
-    role: { type: String, enum: ['CLIENT', 'ADMIN', 'BOUTIQUE'], default: 'CLIENT' },
+    pays: { type: String, required: false },
+
+    role: {
+      type: String,
+      enum: ['CLIENT', 'ADMIN', 'BOUTIQUE'],
+      default: 'CLIENT'
+    },
+
+    shopId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Shop',
+      default: null
+    },
+
     isVerified: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
-}, { timestamps: true });
+    updatedAt: { type: Date, default: Date.now }
+  },
+  { timestamps: true }
+);
 
 userSchema.index({ role: 1 });
+userSchema.index({ shopId: 1 });
+
 module.exports = mongoose.model('User', userSchema);
