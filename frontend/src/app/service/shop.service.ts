@@ -16,6 +16,11 @@ export class ShopService {
         return this.http.get<any[]>(this.API_URI);
     }
 
+    getShopsAvailableForBoutique(editingUserId?: string | null) {
+        const params = editingUserId ? { editingUserId } : {};
+        return this.http.get<any[]>(`${this.API_URI}/available-for-boutique`, { params });
+    }
+
     createShop(shopData: any) {
         return this.http.post<any>(this.API_URI, shopData);
     }

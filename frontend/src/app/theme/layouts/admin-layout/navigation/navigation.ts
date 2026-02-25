@@ -100,6 +100,16 @@ export const NavigationItems: NavigationItem[] = [
         icon: 'chrome',
         roles: ['ADMIN'],
         breadcrumbs: false
+      },
+      {
+        id: 'boutique-products',
+        title: 'Mes produits',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/boutique/products',
+        icon: 'profile',
+        roles: ['BOUTIQUE'],
+        breadcrumbs: false
       }
     ]
   },

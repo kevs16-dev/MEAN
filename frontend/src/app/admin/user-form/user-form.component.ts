@@ -4,6 +4,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../service/user.service';
+import { ShopService } from '../../service/shop.service';
 
 @Component({
   selector: 'app-user-form',
@@ -25,6 +26,15 @@ export class UserFormComponent implements AfterViewInit {
   codePostal = '';
   pays = '';
   role = '';
+  /** Boutique associée (uniquement pour rôle BOUTIQUE) */
+  shopId: string | null = null;
+  /** Saisie de recherche / affichage du nom de la boutique sélectionnée (autocomplete) */
+  shopSearch = '';
+  /** Afficher la liste déroulante des boutiques (autocomplete) */
+  showShopDropdown = false;
+  availableShops: any[] = [];
+  loadingShops = false;
+
   message = '';
   loading = false;
   alertType: string = 'alert-success';
@@ -34,12 +44,12 @@ export class UserFormComponent implements AfterViewInit {
     { label: 'Boutique', value: 'BOUTIQUE' }
   ];
 
-
   editMode = false;
   userId: string | null = null;
 
   constructor(
     private userService: UserService,
+    private shopService: ShopService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router
@@ -74,6 +84,11 @@ loadUser(id: string) {
                 this.codePostal = user.codePostal || '';
                 this.pays = user.pays || '';
                 this.role = user.role || '';
+                this.shopId = user.shopId?._id || user.shopId || null;
+                this.shopSearch = user.shopId?.name || '';
+                if (this.role === 'BOUTIQUE') {
+                    this.loadAvailableShops();
+                }
                 // NE PAS charger le mot de passe (garder vide)
             }
             this.loading = false;
@@ -88,6 +103,67 @@ loadUser(id: string) {
     });
 }
   ngAfterViewInit(): void {}
+
+  /** Liste des boutiques filtrée par le champ de recherche (nom) */
+  get filteredShops(): any[] {
+    const term = (this.shopSearch || '').trim().toLowerCase();
+    if (!term) return this.availableShops;
+    return this.availableShops.filter((s) => (s.name || '').toLowerCase().includes(term));
+  }
+
+  loadAvailableShops(): void {
+    this.loadingShops = true;
+    this.availableShops = [];
+    const editingId = this.editMode && this.userId ? this.userId : undefined;
+    this.shopService.getShopsAvailableForBoutique(editingId).subscribe({
+      next: (list) => {
+        this.availableShops = Array.isArray(list) ? list : [];
+        if (this.shopId && !this.shopSearch) {
+          const found = this.availableShops.find((s) => s._id === this.shopId);
+          if (found) this.shopSearch = found.name || '';
+        }
+        this.loadingShops = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.availableShops = [];
+        this.loadingShops = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /** Sélection d’une boutique dans la liste (autocomplete) */
+  selectShop(shop: { _id: string; name?: string }): void {
+    this.shopId = shop._id;
+    this.shopSearch = shop.name || '';
+    this.showShopDropdown = false;
+    this.cdr.detectChanges();
+  }
+
+  /** Fermer la liste après un court délai (pour laisser le clic sur un item s’exécuter) */
+  onShopDropdownBlur(): void {
+    setTimeout(() => {
+      this.showShopDropdown = false;
+      this.cdr.detectChanges();
+    }, 200);
+  }
+
+  /** Si l'utilisateur vide le champ, on désélectionne la boutique */
+  onShopSearchChange(value: string): void {
+    if (!value || !value.trim()) this.shopId = null;
+  }
+
+  onRoleChange(): void {
+    if (this.role !== 'BOUTIQUE') {
+      this.shopId = null;
+      this.shopSearch = '';
+      this.availableShops = [];
+    } else {
+      this.loadAvailableShops();
+    }
+    this.cdr.detectChanges();
+  }
 
   get passwordStrength(): number {
     const p = this.password || '';
@@ -164,7 +240,8 @@ get canSubmit(): boolean {
             ville: this.ville,
             codePostal: this.codePostal,
             pays: this.pays,
-            role: this.role
+            role: this.role,
+            shopId: this.role === 'BOUTIQUE' ? this.shopId || null : null
         };
         
         // Si un mot de passe est fourni, l'ajouter aux données de mise à jour
@@ -237,7 +314,8 @@ get canSubmit(): boolean {
       ville: this.ville,
       codePostal: this.codePostal,
       pays: this.pays,
-      role: this.role
+      role: this.role,
+      shopId: this.role === 'BOUTIQUE' ? this.shopId || null : null
     }).subscribe({
       next: () => {
         this.message = 'Utilisateur créé avec succès.';

@@ -31,3 +31,13 @@ exports.createShop = async (req, res) => {
         res.status(500).json({ message: error.message || 'Erreur lors de la création de la boutique' });
     }
 };
+
+exports.getShopsAvailableForBoutique = async (req, res) => {
+    try {
+        const editingUserId = req.query.editingUserId || null;
+        const shops = await shopService.getShopsAvailableForBoutique(editingUserId);
+        res.status(200).json(shops);
+    } catch (error) {
+        res.status(500).json({ message: error.message || 'Erreur lors de la récupération des boutiques disponibles' });
+    }
+};

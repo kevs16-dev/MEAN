@@ -111,6 +111,30 @@ const routes: Routes = [
             .then((c) => c.BoutiqueHomeComponent)
       },
       {
+        path: 'boutique/products',
+        loadComponent: () =>
+          import('./boutique/products/products-list.component')
+            .then((c) => c.ProductsListComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['BOUTIQUE'] }
+      },
+      {
+        path: 'boutique/products/new',
+        loadComponent: () =>
+          import('./boutique/products/product-form.component')
+            .then((c) => c.ProductFormComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['BOUTIQUE'] }
+      },
+      {
+        path: 'boutique/products/edit/:id',
+        loadComponent: () =>
+          import('./boutique/products/product-form.component')
+            .then((c) => c.ProductFormComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['BOUTIQUE'] }
+      },
+      {
         path: 'profil',
         loadComponent: () =>
           import('./demo/pages/profil/gestion-profil.component')

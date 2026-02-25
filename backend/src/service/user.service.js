@@ -57,27 +57,30 @@ const getUserByEmail = async (email) => {
 };
 
 const getAllUsers = async ({ page = 1, limit = 10, role }) => {
-    const query = {};
-    if (role && ['ADMIN', 'BOUTIQUE', 'CLIENT'].includes(role)) {
-        query.role = role;
-    }
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const [users, total] = await Promise.all([
-        User.find(query)
-            .select('-password')
-            .skip(skip)
-            .limit(parseInt(limit)),
-        User.countDocuments(query)
-    ]);
-    return { users, total, page: parseInt(page), limit: parseInt(limit) };
+  const query = {};
+  if (role && ['ADMIN', 'BOUTIQUE', 'CLIENT'].includes(role)) {
+    query.role = role;
+  }
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+  const [users, total] = await Promise.all([
+    User.find(query)
+      .select('-password')
+      .populate('shopId', 'name slug')
+      .skip(skip)
+      .limit(parseInt(limit)),
+    User.countDocuments(query)
+  ]);
+  return { users, total, page: parseInt(page), limit: parseInt(limit) };
 };
 
 const getUserById = async (userId) => {
-    const user = await User.findById(userId).select('-password');
-    if (!user) {
-        throw new AppError('USER_NOT_FOUND', 404);
-    }
-    return user;
+  const user = await User.findById(userId)
+    .select('-password')
+    .populate('shopId', 'name slug');
+  if (!user) {
+    throw new AppError('USER_NOT_FOUND', 404);
+  }
+  return user;
 };
 
 const updateUserByAdmin = async (userId, updateData) => {
@@ -86,7 +89,6 @@ const updateUserByAdmin = async (userId, updateData) => {
         throw new AppError('USER_NOT_FOUND', 404);
     }
 
-    // Champs autorisés pour la modification par admin
     const allowedFields = [
         'username',
         'nom',
@@ -99,7 +101,8 @@ const updateUserByAdmin = async (userId, updateData) => {
         'pays',
         'role',
         'isVerified',
-        'password' // AJOUTER cette ligne
+        'password',  
+        'shopId'    
     ];
 
     const filteredData = Object.fromEntries(
@@ -108,12 +111,10 @@ const updateUserByAdmin = async (userId, updateData) => {
         )
     );
 
-    // Si le rôle est modifié, vérifier qu'il est valide
     if (filteredData.role && !['ADMIN', 'BOUTIQUE', 'CLIENT'].includes(filteredData.role)) {
         throw new AppError('INVALID_ROLE', 400);
     }
 
-    // Si un mot de passe est fourni, le hasher
     if (filteredData.password) {
         filteredData.password = await bcrypt.hash(filteredData.password, 10);
     }

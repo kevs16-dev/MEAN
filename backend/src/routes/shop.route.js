@@ -1,11 +1,13 @@
 const router = require('express').Router();
 const authorize = require('../middleware/authorize.middleware');
+const roleMiddleware = require('../middleware/role.middleware');
 
 const shopController = require('../controller/boutique.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 
 router.post('/', authMiddleware, authorize('ADMIN'), shopController.createShop);
 router.get('/', shopController.getAllShops);
+router.get('/available-for-boutique', authMiddleware, roleMiddleware('ADMIN'), shopController.getShopsAvailableForBoutique);
 router.get('/:id', shopController.getShopById);
 
 module.exports = router;

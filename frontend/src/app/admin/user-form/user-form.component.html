@@ -106,11 +106,38 @@
             
             <div class="form-group mb-3">
               <label class="form-label" for="role">Rôle</label>
-              <select class="form-control" id="role" [(ngModel)]="role" name="role" required>
+              <select class="form-control" id="role" [(ngModel)]="role" name="role" required (ngModelChange)="onRoleChange()">
                 <option value="">Sélectionner un rôle</option>
                 <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
               </select>
             </div>
+
+            <!-- Boutique associée (autocomplete : taper pour rechercher, cliquer pour sélectionner) -->
+            <div class="form-group mb-3 position-relative" *ngIf="role === 'BOUTIQUE'">
+              <label class="form-label" for="shopSearch">Boutique associée</label>
+              <input type="text" class="form-control" id="shopSearch" autocomplete="off"
+                     placeholder="Taper pour rechercher une boutique..."
+                     [(ngModel)]="shopSearch" name="shopSearch"
+                     (ngModelChange)="onShopSearchChange($event)"
+                     [disabled]="loadingShops"
+                     (focus)="showShopDropdown = true"
+                     (blur)="onShopDropdownBlur()"
+                     (input)="showShopDropdown = true" />
+              <div *ngIf="loadingShops" class="small text-muted mt-1">Chargement des boutiques...</div>
+              <div *ngIf="showShopDropdown && !loadingShops && availableShops.length > 0"
+                   class="shop-autocomplete-list">
+                <button type="button" class="shop-autocomplete-item"
+                        *ngFor="let s of filteredShops"
+                        (mousedown)="selectShop(s); $event.preventDefault()">
+                  {{ s.name }}
+                </button>
+                <div *ngIf="filteredShops.length === 0" class="shop-autocomplete-item text-muted">
+                  Aucune boutique ne correspond.
+                </div>
+              </div>
+              <small class="text-muted d-block mt-1">Boutiques actives non encore assignées.</small>
+            </div>
+
             <div class="form-group mb-3">
               <label class="form-label" for="telephone">Téléphone</label>
               <input type="text" class="form-control" id="telephone" placeholder="Téléphone"

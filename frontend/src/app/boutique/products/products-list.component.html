@@ -1,0 +1,60 @@
+<app-card cardTitle="Mes produits">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Produits de ma boutique</h5>
+    <button class="btn btn-primary" (click)="goToCreate()">
+      Nouveau produit
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-4">
+    <span>Chargement des produits...</span>
+  </div>
+
+  <div *ngIf="!isLoading && error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!isLoading && !error && products.length === 0" class="alert alert-info">
+    Aucun produit pour le moment. Cliquez sur "Nouveau produit" pour commencer.
+  </div>
+
+  <div *ngIf="!isLoading && !error && products.length > 0" class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Nom</th>
+          <th>Statut</th>
+          <th>Date de création</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of products">
+          <td>
+            <img *ngIf="getProductImageUrl(p)" [src]="getProductImageUrl(p)" alt="" class="product-list-thumb" />
+            <span *ngIf="!getProductImageUrl(p)" class="product-list-thumb product-list-thumb-placeholder">—</span>
+          </td>
+          <td>{{ p.name }}</td>
+          <td>
+            <span class="badge"
+                  [ngClass]="{
+                    'bg-success': p.status === 'ACTIVE',
+                    'bg-secondary': p.status === 'INACTIVE',
+                    'bg-danger': p.status === 'OUT_OF_STOCK'
+                  }">
+              {{ p.status }}
+            </span>
+          </td>
+          <td>{{ p.createdAt | date: 'short' }}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-primary me-2" (click)="goToEdit(p._id)">
+              Éditer
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</app-card>
+
