@@ -46,10 +46,10 @@ export const NavigationItems: NavigationItem[] = [
     children: [
       {
         id: 'default',
-        title: 'Default',
+        title: 'Dashboard',
         type: 'item',
         classes: 'nav-item',
-        url: '/dashboard/default',
+        url: '/admin/home',
         icon: 'dashboard',
         breadcrumbs: false
       }
@@ -68,6 +68,16 @@ export const NavigationItems: NavigationItem[] = [
         classes: 'nav-item',
         url: '/admin/notifications',
         icon: 'bell',
+        roles: ['ADMIN', 'BOUTIQUE'],
+        breadcrumbs: false
+      },
+      {
+        id: 'event-new',
+        title: 'Evénements',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/admin/events',
+        icon: 'calendar',
         roles: ['ADMIN', 'BOUTIQUE'],
         breadcrumbs: false
       },

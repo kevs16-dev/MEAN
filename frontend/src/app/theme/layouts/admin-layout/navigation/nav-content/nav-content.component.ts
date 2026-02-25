@@ -6,7 +6,7 @@ import { RouterModule } from '@angular/router';
 // project import
 import { NavigationItem, NavigationItems } from '../navigation';
 import { environment } from 'src/environments/environment';
-import { AuthService } from 'src/app/service/auth.service';
+import { AuthService } from '../../../../../service/auth.service';
 
 import { NavGroupComponent } from './nav-group/nav-group.component';
 
@@ -21,7 +21,8 @@ import {
   FontSizeOutline,
   ProfileOutline,
   BgColorsOutline,
-  AntDesignOutline
+  AntDesignOutline,
+  CalendarOutline
 } from '@ant-design/icons-angular/icons';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 
@@ -61,7 +62,8 @@ export class NavContentComponent implements OnInit {
         BgColorsOutline,
         AntDesignOutline,
         ChromeOutline,
-        QuestionOutline
+        QuestionOutline,
+        CalendarOutline
       ]
     );
     this.navigations = this.filterNavigationsByRole(NavigationItems, this.authService.getUserRole());

@@ -1,11 +1,21 @@
 // angular import
-import { Component, output, inject, input } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  input,
+  output
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 
 // project import
-import { SharedModule } from 'src/app/theme/shared/shared.module';
-import { AuthService } from 'src/app/service/auth.service';
+import { SharedModule } from '../../../../../theme/shared/shared.module';
+import { AuthService } from '../../../../../service/auth.service';
 
 // icon
 import { IconService } from '@ant-design/icons-angular';
@@ -29,22 +39,27 @@ import {
   GithubOutline
 } from '@ant-design/icons-angular/icons';
 import { title } from 'process';
-import { UserService } from 'src/app/service/user.service';
-import { NotificationService } from 'src/app/service/notification.service';
-import { Observable } from 'rxjs';
+import { UserService } from '../../../../../service/user.service';
+import { NotificationService } from '../../../../../service/notification.service';
+import { Observable, Subscription, timer } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-nav-right',
   imports: [SharedModule, RouterModule],
   templateUrl: './nav-right.component.html',
-  styleUrls: ['./nav-right.component.scss']
+  styleUrls: ['./nav-right.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NavRightComponent {
+export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
   private iconService = inject(IconService);
   utilisateur : any;
   notifications: any[] = [];
-  unreadCount$!: Observable<number>;
+  unreadCount = 0;
   loadingNotifications: boolean = false;
+  showAllNotifications = false;
+
+  private notificationsSub?: Subscription;
 
   // public props
   styleSelectorToggle = input<boolean>();
@@ -54,7 +69,13 @@ export class NavRightComponent {
   direction: string = 'ltr';
 
   // constructor
-  constructor(private authService: AuthService, private userService: UserService, private notificationService: NotificationService, private router: Router) {
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+    private notificationService: NotificationService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {
     this.windowWidth = window.innerWidth;
     this.iconService.addIcon(
       ...[
@@ -82,22 +103,39 @@ export class NavRightComponent {
 
   ngOnInit() {
     this.utilisateur = this.userService.getUtilisateur();
-    if (this.utilisateur._id) {
-      this.loadNotifications();
+  }
+
+  ngAfterViewInit() {
+    if (this.utilisateur?._id) {
+      // lancer le polling après le premier cycle de détection
+      setTimeout(() => this.startNotificationsPolling());
     }
   }
 
-  loadNotifications() {
-    this.loadingNotifications = true;
-    this.notificationService
-      .getUserNotifications()
+  private startNotificationsPolling() {
+    this.notificationsSub = timer(300, 10000)
+      .pipe(switchMap(() => this.notificationService.getUserNotifications()))
       .subscribe({
         next: (data) => {
-          this.notifications = data;
-          this.loadingNotifications = false;
+          // repousser la mise à jour au prochain cycle pour éviter NG0100
+          setTimeout(() => {
+            this.notifications = [...data].sort((a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            this.unreadCount = this.notifications.filter(notification => !notification.isRead).length;
+            this.loadingNotifications = false;
+            this.cdr.markForCheck();
+          });
         },
-        error: () => (this.loadingNotifications = false)
+        error: () => {
+          this.loadingNotifications = false;
+          this.cdr.markForCheck();
+        }
       });
+  }
+
+  ngOnDestroy() {
+    this.notificationsSub?.unsubscribe();
   }
 
   markAsRead(notification: any) {
@@ -105,6 +143,7 @@ export class NavRightComponent {
 
     this.notificationService.markAsRead(notification._id).subscribe(() => {
       notification.isRead = true;
+      this.unreadCount = this.notifications.filter(n => !n.isRead).length;
     });
   }
 
@@ -114,12 +153,13 @@ export class NavRightComponent {
     unread.forEach(notification => {
       this.notificationService.markAsRead(notification._id).subscribe(() => {
         notification.isRead = true;
+        this.unreadCount = this.notifications.filter(n => !n.isRead).length;
       });
     });
   }
 
-  get unreadCount() {
-    return this.notifications.filter(notification => !notification.isRead).length;
+  toggleShowAll() {
+    this.showAllNotifications = !this.showAllNotifications;
   }
 
   deconnexion() {
