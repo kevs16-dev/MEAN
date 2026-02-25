@@ -1,2 +1,210 @@
-// Styles spécifiques au dashboard administrateur (optionnels)
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  label {
+    margin: 0;
+    font-weight: 600;
+    color: #495057;
+  }
+}
+
+.period-select {
+  min-width: 210px;
+  border-radius: 10px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  &:focus {
+    border-color: #1677ff;
+    box-shadow: 0 0 0 0.2rem rgba(22, 119, 255, 0.15);
+  }
+}
+
+.card {
+  .card-body.dashboard-card {
+    padding: 18px;
+    padding-bottom: 20px;
+  }
+}
+
+.period-label {
+  color: #495057;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.chart-wrap {
+  min-height: 320px;
+}
+
+.top-pages-sort {
+  width: 190px;
+}
+
+.state-message {
+  margin: 0;
+  color: #6c757d;
+}
+
+.state-message.error {
+  color: #dc3545;
+}
+
+.line-strong {
+  font-weight: 600;
+}
+
+.line-muted {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.simple-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f1f1;
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+}
+
+.geo-card {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef5ff 100%);
+  border: 1px solid #e2ecff;
+}
+
+.geo-map {
+  position: relative;
+  height: 170px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f6fbff 0%, #edf5ff 100%);
+  border: 1px solid #e0ecff;
+  overflow: hidden;
+}
+
+.geo-continent {
+  position: absolute;
+  background: #bcd7ff;
+  border-radius: 30px;
+  opacity: 0.95;
+}
+
+.geo-america {
+  width: 95px;
+  height: 70px;
+  left: 34px;
+  top: 42px;
+  transform: rotate(-8deg);
+}
+
+.geo-europe-africa {
+  width: 85px;
+  height: 82px;
+  left: 160px;
+  top: 36px;
+}
+
+.geo-asia {
+  width: 115px;
+  height: 74px;
+  left: 248px;
+  top: 42px;
+  transform: rotate(6deg);
+}
+
+.geo-australia {
+  width: 56px;
+  height: 34px;
+  left: 330px;
+  top: 118px;
+}
+
+.geo-marker {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 58%;
+  top: 47%;
+  border-radius: 50%;
+  background: #1677ff;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 0 rgba(22, 119, 255, 0.55);
+  animation: geoPulse 1.8s infinite;
+}
+
+@keyframes geoPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(22, 119, 255, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(22, 119, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(22, 119, 255, 0);
+  }
+}
+
+.geo-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 210px;
+}
+
+.bottom-kpi-label {
+  color: #6c757d;
+  font-weight: 600;
+}
+
+.bottom-kpi-value {
+  font-size: 2rem;
+  line-height: 1;
+  color: #1677ff;
+}
+
+.geo-caption {
+  color: #8c8c8c;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 991.98px) {
+  .geo-card {
+    grid-template-columns: 1fr;
+  }
+
+  .geo-metric {
+    min-width: auto;
+  }
+}
 

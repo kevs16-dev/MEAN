@@ -1,11 +1,212 @@
 <div class="row">
   <div class="col-sm-12">
-    <app-card cardTitle="Espace administrateur">
-      <p>
-        Bienvenue dans l'espace administrateur. Cette page est la page par défaut après connexion en tant
-        qu'administrateur.
-      </p>
+    <app-card cardTitle="Comportement des utilisateurs (Google Analytics)">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <label for="period">Période</label>
+          <select id="period" class="period-select" [(ngModel)]="selectedDays" (ngModelChange)="onPeriodChange($event)">
+            <option [ngValue]="7">7 derniers jours</option>
+            <option [ngValue]="30">30 derniers jours</option>
+            <option [ngValue]="90">90 derniers jours</option>
+          </select>
+        </div>
+
+        @if (analyticsData) {
+          <p class="period-label mb-0">
+            Données du {{ formatDisplayDate(analyticsData.period.startDate) }} au
+            {{ formatDisplayDate(analyticsData.period.endDate) }}
+          </p>
+        }
+      </div>
+
+      @if (isLoading) {
+        <p class="state-message">Chargement des données analytics...</p>
+      } @else if (errorMessage) {
+        <p class="state-message error">{{ errorMessage }}</p>
+      }
     </app-card>
   </div>
+
+  @if (analyticsData && !isLoading && !errorMessage) {
+    @for (analytic of analyticCards; track analytic.title) {
+      <div class="col-md-6 col-xl-3">
+        <app-card [showHeader]="false" blockClass="dashboard-card">
+          <h6 class="mb-2 f-w-400 text-muted">{{ analytic.title }}</h6>
+          <h4 class="mb-3">
+            {{ analytic.amount }}
+            <span class="badge {{ analytic.background }} border {{ analytic.border }}">
+              <i antIcon type="{{ analytic.icon }}" theme="outline"></i>
+              {{ analytic.trend }}
+            </span>
+          </h4>
+          <p class="mb-0 text-muted text-sm">
+            <span class="{{ analytic.color }}">{{ analytic.subtitle }}</span>
+          </p>
+        </app-card>
+      </div>
+    }
+  }
+
+  <div class="col-md-12 col-xl-8">
+    <app-card cardTitle="Utilisateurs nouveaux vs connus">
+      @if (isLoading) {
+        <p class="state-message">Chargement du graphe...</p>
+      } @else if (!analyticsData || !analyticsData.dailyTrend.length) {
+        <p class="state-message">Aucune donnee.</p>
+      } @else {
+        <div class="chart-wrap">
+          <apx-chart
+            [series]="userTypeChartOptions.series"
+            [chart]="userTypeChartOptions.chart"
+            [colors]="userTypeChartOptions.colors"
+            [dataLabels]="userTypeChartOptions.dataLabels"
+            [stroke]="userTypeChartOptions.stroke"
+            [fill]="userTypeChartOptions.fill"
+            [grid]="userTypeChartOptions.grid"
+            [legend]="userTypeChartOptions.legend"
+            [xaxis]="userTypeChartOptions.xaxis"
+            [yaxis]="userTypeChartOptions.yaxis"
+            [tooltip]="userTypeChartOptions.tooltip"
+          ></apx-chart>
+        </div>
+      }
+    </app-card>
+
+    <app-card cardTitle="Sources de trafic (source / medium)">
+      @if (trafficSources.length === 0) {
+        <p class="state-message">Aucune donnee.</p>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <thead>
+              <tr>
+                <th>Source / Medium</th>
+                <th class="text-end">Sessions</th>
+                <th class="text-end">Utilisateurs</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (source of trafficSources; track $index) {
+                <tr>
+                  <td>{{ source.sourceMedium }}</td>
+                  <td class="text-end">{{ source.sessions }}</td>
+                  <td class="text-end">{{ source.activeUsers }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-card>
+  </div>
+
+  <div class="col-md-12 col-xl-4">
+    <app-card cardTitle="Repartition des appareils">
+      @if (deviceBreakdown.length === 0) {
+        <p class="state-message">Aucune donnee.</p>
+      } @else {
+        <ul class="simple-list">
+          @for (device of deviceBreakdown; track $index) {
+            <li>
+              <span>{{ device.deviceCategory }}</span>
+              <strong>{{ device.activeUsers }}</strong>
+            </li>
+          }
+        </ul>
+      }
+    </app-card>
+
+    <app-card cardTitle="Top pages">
+      @if (topPages.length === 0) {
+        <p class="state-message">Aucune donnee.</p>
+      } @else {
+        <div class="d-flex justify-content-end mb-2">
+          <select class="form-select form-select-sm top-pages-sort" [(ngModel)]="topPagesSort" (ngModelChange)="onTopPagesSortChange($event)">
+            <option [ngValue]="'most'">Les plus visités</option>
+            <option [ngValue]="'least'">Les moins visités</option>
+          </select>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <thead>
+              <tr>
+                <th>Page</th>
+                <th class="text-end">Vues</th>
+                <th class="text-end">Utilisateurs</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (page of paginatedTopPages; track $index) {
+                <tr>
+                  <td>
+                    <div class="line-strong">{{ page.pageTitle }}</div>
+                    <div class="line-muted">{{ page.pagePath }}</div>
+                  </td>
+                  <td class="text-end">{{ page.screenPageViews }}</td>
+                  <td class="text-end">{{ page.activeUsers }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (topPages.length > topPagesPageSize) {
+          <div class="d-flex align-items-center justify-content-between mt-2">
+            <small class="text-muted">
+              {{ topPagesRangeStart }}-{{ topPagesRangeEnd }} sur {{ topPages.length }}
+            </small>
+            <div class="btn-group btn-group-sm">
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="goToPreviousTopPagesPage()"
+                [disabled]="topPagesCurrentPage === 1"
+              >
+                Precedent
+              </button>
+              <button type="button" class="btn btn-outline-secondary" disabled>
+                {{ topPagesCurrentPage }}/{{ topPagesTotalPages }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="goToNextTopPagesPage()"
+                [disabled]="topPagesCurrentPage === topPagesTotalPages"
+              >
+                Suivant
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </app-card>
+  </div>
+
+  <div class="col-12">
+    <app-card cardTitle="Indicateur clé">
+      @if (isLoading) {
+        <p class="state-message">Chargement...</p>
+      } @else if (!analyticsData) {
+        <p class="state-message">Aucune donnee.</p>
+      } @else {
+        <div class="geo-card">
+          <div class="geo-map">
+            <div class="geo-continent geo-america"></div>
+            <div class="geo-continent geo-europe-africa"></div>
+            <div class="geo-continent geo-asia"></div>
+            <div class="geo-continent geo-australia"></div>
+            <span class="geo-marker"></span>
+          </div>
+          <div class="geo-metric">
+            <span class="bottom-kpi-label">Utilisateurs actifs</span>
+            <strong class="bottom-kpi-value">{{ formatNumber(analyticsData.overview.activeUsers) }}</strong>
+            <span class="geo-caption">Vue globale des utilisateurs</span>
+          </div>
+        </div>
+      }
+    </app-card>
+  </div>
+
 </div>
 

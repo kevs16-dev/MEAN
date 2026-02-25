@@ -46,10 +46,10 @@ export const NavigationItems: NavigationItem[] = [
     children: [
       {
         id: 'default',
-        title: 'Default',
+        title: 'Dashboard',
         type: 'item',
         classes: 'nav-item',
-        url: '/dashboard/default',
+        url: '/admin/home',
         icon: 'dashboard',
         breadcrumbs: false
       }

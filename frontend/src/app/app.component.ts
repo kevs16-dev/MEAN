@@ -4,6 +4,7 @@ import { RouterOutlet } from '@angular/router';
 
 // project import
 import { SpinnerComponent } from './theme/shared/components/spinner/spinner.component';
+import { GaTrackerService } from './service/ga-tracker.service';
 
 @Component({
   selector: 'app-root',
@@ -14,4 +15,8 @@ import { SpinnerComponent } from './theme/shared/components/spinner/spinner.comp
 export class AppComponent {
   // public props
   title = 'mantis-free-version';
+
+  constructor(private gaTrackerService: GaTrackerService) {
+    this.gaTrackerService.startTracking();
+  }
 }
