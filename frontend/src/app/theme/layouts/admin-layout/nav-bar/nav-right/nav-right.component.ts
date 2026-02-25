@@ -1,5 +1,15 @@
 // angular import
-import { Component, output, inject, input, OnDestroy, OnInit, AfterViewInit } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  input,
+  output
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 
@@ -38,7 +48,8 @@ import { switchMap } from 'rxjs/operators';
   selector: 'app-nav-right',
   imports: [SharedModule, RouterModule],
   templateUrl: './nav-right.component.html',
-  styleUrls: ['./nav-right.component.scss']
+  styleUrls: ['./nav-right.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
   private iconService = inject(IconService);
@@ -58,7 +69,13 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
   direction: string = 'ltr';
 
   // constructor
-  constructor(private authService: AuthService, private userService: UserService, private notificationService: NotificationService, private router: Router) {
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+    private notificationService: NotificationService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {
     this.windowWidth = window.innerWidth;
     this.iconService.addIcon(
       ...[
@@ -96,7 +113,7 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private startNotificationsPolling() {
-    this.notificationsSub = timer(0, 10000)
+    this.notificationsSub = timer(300, 10000)
       .pipe(switchMap(() => this.notificationService.getUserNotifications()))
       .subscribe({
         next: (data) => {
@@ -107,9 +124,13 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
             );
             this.unreadCount = this.notifications.filter(notification => !notification.isRead).length;
             this.loadingNotifications = false;
+            this.cdr.markForCheck();
           });
         },
-        error: () => (this.loadingNotifications = false)
+        error: () => {
+          this.loadingNotifications = false;
+          this.cdr.markForCheck();
+        }
       });
   }
 

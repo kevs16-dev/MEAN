@@ -7,5 +7,6 @@ router.use('/categories', require('./category.route'));
 router.use('/shops', require('./shop.route'));
 router.use('/notifications', require('./notification.route'));
 router.use('/events', require('./event.route'));
+router.use('/admin', require('./admin.route'));
 
 module.exports = router;
