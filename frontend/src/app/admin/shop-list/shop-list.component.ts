@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { CardComponent } from '../../theme/shared/components/card/card.component';
 import { ShopService } from '../../service/shop.service';
+import { SharedModule } from '../../theme/shared/shared.module';
 
 @Component({
   selector: 'app-shop-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, CardComponent],
+  imports: [CommonModule, RouterModule, CardComponent, SharedModule],
   templateUrl: './shop-list.component.html',
   styleUrls: ['./shop-list.component.scss']
 })
@@ -17,7 +18,9 @@ export class ShopListComponent implements OnInit, AfterViewInit {
 
   shops: any[] = [];
   filteredShops: any[] = [];
+  selectedShop: any | null = null;
   isLoading = true;
+  isDeleting = false;
   error: string | null = null;
 
   page = 1;
@@ -78,6 +81,13 @@ export class ShopListComponent implements OnInit, AfterViewInit {
       });
     }
     this.page = 1;
+
+    if (this.selectedShop) {
+      const stillVisible = this.filteredShops.some((s) => s?._id === this.selectedShop?._id);
+      if (!stillVisible) {
+        this.selectedShop = null;
+      }
+    }
   }
 
   get totalPages(): number {
@@ -99,6 +109,43 @@ export class ShopListComponent implements OnInit, AfterViewInit {
     const start = (this.page - 1) * this.pageSize;
     const end = start + this.pageSize;
     return this.filteredShops.slice(start, end);
+  }
+
+  toggleDetails(shop: any): void {
+    this.selectedShop = shop;
+  }
+
+  closeDetails(): void {
+    this.selectedShop = null;
+  }
+
+  deleteShop(shop: any): void {
+    if (!shop?._id || this.isDeleting) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Supprimer la boutique "${shop.name}" ?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.isDeleting = true;
+    this.error = null;
+
+    this.shopService.deleteShop(shop._id).subscribe({
+      next: () => {
+        this.isDeleting = false;
+        this.shops = this.shops.filter((s) => s?._id !== shop._id);
+        this.applyFilter(this.searchTerm);
+        if (this.selectedShop?._id === shop._id) {
+          this.selectedShop = null;
+        }
+      },
+      error: (err) => {
+        this.isDeleting = false;
+        this.error = err?.error?.message || 'Impossible de supprimer la boutique.';
+      }
+    });
   }
 }
 

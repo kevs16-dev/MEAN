@@ -41,6 +41,7 @@
                 <th>Slug</th>
                 <th>Catégorie</th>
                 <th>Statut</th>
+                <th class="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -59,6 +60,31 @@
                   >
                     {{ shop.status }}
                   </span>
+                </td>
+                <td class="text-center">
+                  <div class="d-inline-flex gap-2 flex-wrap justify-content-center">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary details-btn"
+                      (click)="toggleDetails(shop)"
+                      [attr.aria-label]="'Voir plus ' + shop.name"
+                      title="Voir plus"
+                    >
+                      <i class="bi bi-eye me-1"></i>
+                      Voir plus
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger details-btn"
+                      (click)="deleteShop(shop)"
+                      [disabled]="isDeleting"
+                      [attr.aria-label]="'Supprimer ' + shop.name"
+                      title="Supprimer"
+                    >
+                      <i class="bi bi-trash me-1"></i>
+                      Supprimer
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -94,6 +120,55 @@
         </nav>
       </div>
     </app-card>
+  </div>
+</div>
+
+<div *ngIf="selectedShop" class="shop-modal-backdrop" (click)="closeDetails()"></div>
+<div *ngIf="selectedShop" class="shop-modal">
+  <div class="shop-modal-dialog">
+    <div class="shop-modal-header">
+      <h5 class="mb-0">{{ selectedShop.name }}</h5>
+      <button type="button" class="btn-close" aria-label="Fermer" (click)="closeDetails()"></button>
+    </div>
+
+    <div class="shop-modal-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div><strong>Description:</strong> {{ selectedShop.description || '-' }}</div>
+          <div><strong>Téléphone:</strong> {{ selectedShop?.contact?.phone || '-' }}</div>
+          <div><strong>Email:</strong> {{ selectedShop?.contact?.email || '-' }}</div>
+        </div>
+        <div class="col-md-6">
+          <div><strong>Emplacement:</strong> Étage {{ selectedShop?.location?.floor || '-' }}, Bloc {{ selectedShop?.location?.block || '-' }}</div>
+          <div><strong>Créée le:</strong> {{ selectedShop?.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+          <div><strong>Slug:</strong> {{ selectedShop.slug || '-' }}</div>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <strong>Horaires:</strong>
+        <div class="row g-2 mt-1">
+          <div class="col-md-3 col-6"><small>Lundi: {{ selectedShop?.openingHours?.monday || '-' }}</small></div>
+          <div class="col-md-3 col-6"><small>Mardi: {{ selectedShop?.openingHours?.tuesday || '-' }}</small></div>
+          <div class="col-md-3 col-6"><small>Mercredi: {{ selectedShop?.openingHours?.wednesday || '-' }}</small></div>
+          <div class="col-md-3 col-6"><small>Jeudi: {{ selectedShop?.openingHours?.thursday || '-' }}</small></div>
+          <div class="col-md-3 col-6"><small>Vendredi: {{ selectedShop?.openingHours?.friday || '-' }}</small></div>
+          <div class="col-md-3 col-6"><small>Samedi: {{ selectedShop?.openingHours?.saturday || '-' }}</small></div>
+          <div class="col-md-3 col-6"><small>Dimanche: {{ selectedShop?.openingHours?.sunday || '-' }}</small></div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-1" *ngIf="selectedShop.logo || selectedShop.coverImage">
+        <div class="col-md-3" *ngIf="selectedShop.logo">
+          <div class="image-label">Logo</div>
+          <img [src]="selectedShop.logo" alt="Logo boutique" class="img-fluid rounded border detail-image" />
+        </div>
+        <div class="col-md-6" *ngIf="selectedShop.coverImage">
+          <div class="image-label">Image de couverture</div>
+          <img [src]="selectedShop.coverImage" alt="Couverture boutique" class="img-fluid rounded border detail-image" />
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
