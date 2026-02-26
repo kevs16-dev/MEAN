@@ -1,12 +1,16 @@
 @if (item().url && !item().external) {
   <li [ngClass]="item().classes!" [routerLinkActive]="['active']">
     <a class="nav-link" [target]="item().target ? '_blank' : '_self'" [routerLink]="[item().url]" (click)="closeOtherMenu($event)">
-      @if (item().icon) {
+      @if (item().icon || item().bootstrapIcon) {
         <span class="coded-micon">
-          <i antIcon type="{{ item().icon }}" theme="outline"></i>
+          @if (item().bootstrapIcon) {
+            <i [class]="item().bootstrapIcon"></i>
+          } @else {
+            <i antIcon type="{{ item().icon }}" theme="outline"></i>
+          }
         </span>
       }
-      @if (item().icon) {
+      @if (item().icon || item().bootstrapIcon) {
         <span class="coded-mtext">{{ item().title }}</span>
       } @else {
         {{ item().title }}
@@ -17,12 +21,16 @@
 @if (item().url && item().external) {
   <li [ngClass]="item().classes!">
     <a [target]="item().target ? '_blank' : '_self'" [href]="item().url">
-      @if (item().icon) {
+      @if (item().icon || item().bootstrapIcon) {
         <span class="coded-micon">
-          <i antIcon type="{{ item().icon }}" theme="outline"></i>
+          @if (item().bootstrapIcon) {
+            <i [class]="item().bootstrapIcon"></i>
+          } @else {
+            <i antIcon type="{{ item().icon }}" theme="outline"></i>
+          }
         </span>
       }
-      @if (item().icon) {
+      @if (item().icon || item().bootstrapIcon) {
         <span class="coded-mtext">{{ item().title }}</span>
       } @else {
         {{ item().title }}

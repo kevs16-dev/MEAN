@@ -4,6 +4,7 @@ export interface NavigationItem {
   type: 'item' | 'collapse' | 'group';
   translate?: string;
   icon?: string;
+  bootstrapIcon?: string;
   hidden?: boolean;
   roles?: string[];
   url?: string;
@@ -20,24 +21,6 @@ export interface NavigationItem {
 }
 
 export const NavigationItems: NavigationItem[] = [
-  {
-    id: 'user',
-    title: 'User',
-    type: 'group',
-    icon: 'icon-navigation',
-    roles: ['ADMIN'],
-    children: [
-      {
-        id: 'users-list',
-        title: 'Utilisateurs',
-        type: 'item',
-        classes: 'nav-item',
-        url: '/admin/users',
-        icon: 'user',
-        breadcrumbs: false
-      }
-    ]
-  },
   {
     id: 'dashboard',
     title: 'Dashboard',
@@ -97,7 +80,7 @@ export const NavigationItems: NavigationItem[] = [
         type: 'item',
         classes: 'nav-item',
         url: '/admin/shops',
-        icon: 'chrome',
+        bootstrapIcon: 'bi bi-shop',
         roles: ['ADMIN'],
         breadcrumbs: false
       },
@@ -119,6 +102,24 @@ export const NavigationItems: NavigationItem[] = [
         url: '/boutique/products',
         icon: 'profile',
         roles: ['BOUTIQUE'],
+        breadcrumbs: false
+      }
+    ]
+  },
+  {
+    id: 'user',
+    title: 'User',
+    type: 'group',
+    icon: 'icon-navigation',
+    roles: ['ADMIN'],
+    children: [
+      {
+        id: 'users-list',
+        title: 'Utilisateurs',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/admin/users',
+        icon: 'user',
         breadcrumbs: false
       }
     ]

@@ -45,23 +45,41 @@
           </select>
         </div>
 
-        <div class="col-md-3">
-          <label class="form-label">Logo (URL)</label>
+        <div class="col-md-6">
+          <label class="form-label">Logo</label>
           <input
-            type="text"
-            class="form-control"
-            formControlName="logo"
-            placeholder="URL du logo"
+            type="file"
+            class="form-control mb-2"
+            accept="image/*"
+            (change)="onLogoSelected($event)"
+          />
+          <input type="hidden" formControlName="logo" />
+          <small class="text-muted" *ngIf="isUploadingLogo">Upload du logo en cours...</small>
+          <small class="text-danger d-block" *ngIf="logoUploadError">{{ logoUploadError }}</small>
+          <img
+            *ngIf="shopForm.value.logo"
+            [src]="shopForm.value.logo"
+            alt="Aperçu du logo"
+            class="image-preview logo-preview mt-2"
           />
         </div>
 
-        <div class="col-md-3">
-          <label class="form-label">Image de couverture (URL)</label>
+        <div class="col-md-6">
+          <label class="form-label">Image de couverture</label>
           <input
-            type="text"
-            class="form-control"
-            formControlName="coverImage"
-            placeholder="URL de l'image de couverture"
+            type="file"
+            class="form-control mb-2"
+            accept="image/*"
+            (change)="onCoverSelected($event)"
+          />
+          <input type="hidden" formControlName="coverImage" />
+          <small class="text-muted" *ngIf="isUploadingCover">Upload de l'image de couverture en cours...</small>
+          <small class="text-danger d-block" *ngIf="coverUploadError">{{ coverUploadError }}</small>
+          <img
+            *ngIf="shopForm.value.coverImage"
+            [src]="shopForm.value.coverImage"
+            alt="Aperçu de la couverture"
+            class="image-preview cover-preview mt-2"
           />
         </div>
 
