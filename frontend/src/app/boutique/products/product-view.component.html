@@ -1,0 +1,85 @@
+<app-card cardTitle="Détail du produit">
+  <div class="mb-3 d-flex flex-wrap gap-2">
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="goBack()">
+      ← Retour à la liste
+    </button>
+    <button type="button" class="btn btn-primary btn-sm" (click)="goToEdit()" *ngIf="product">
+      Éditer le produit
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-4">Chargement...</div>
+  <div *ngIf="!isLoading && error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="!isLoading && !error && product">
+    <section class="product-header mb-4">
+      <div class="row align-items-start">
+        <div class="col-auto" *ngIf="getProductImageUrl(product)">
+          <img [src]="getProductImageUrl(product)" alt="" class="product-view-main-img" />
+        </div>
+        <div class="col">
+          <h4 class="mb-2">{{ product.name }}</h4>
+          <p class="text-muted small mb-1" *ngIf="product.slug">Slug : {{ product.slug }}</p>
+          <span class="badge mb-2"
+                [ngClass]="{
+                  'bg-success': product.status === 'ACTIVE',
+                  'bg-secondary': product.status === 'INACTIVE',
+                  'bg-danger': product.status === 'OUT_OF_STOCK'
+                }">
+            {{ product.status }}
+          </span>
+          <p class="mb-0" *ngIf="product.description">{{ product.description }}</p>
+        </div>
+      </div>
+    </section>
+
+    <h5 class="mb-3">Variantes ({{ variants.length }})</h5>
+
+    <div *ngIf="variants.length === 0" class="alert alert-info">
+      Aucune variante pour ce produit.
+    </div>
+
+    <div *ngIf="variants.length > 0" class="table-responsive">
+      <table class="table table-sm table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Attributs</th>
+            <th>SKU</th>
+            <th>Prix</th>
+            <th>Stock</th>
+            <th>Seuil alerte</th>
+            <th>Actif</th>
+            <th>Dernière modif.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let v of variants">
+            <td>
+              <img *ngIf="v.imageUrl" [src]="v.imageUrl" alt="" class="variant-thumb" (error)="$any($event.target).style.display='none'" />
+              <span *ngIf="!v.imageUrl" class="variant-thumb variant-thumb-placeholder">—</span>
+            </td>
+            <td class="attributes-cell">
+              <ng-container *ngIf="v.attributes?.length; else noAttrs">
+                <div *ngFor="let a of v.attributes" class="attribute-line">{{ a?.name }}: {{ a?.value }}</div>
+              </ng-container>
+              <ng-template #noAttrs>—</ng-template>
+            </td>
+            <td class="text-nowrap">{{ v.sku || '—' }}</td>
+            <td>{{ v.currentPrice != null ? (v.currentPrice | number: '1.2-2') + ' €' : '—' }}</td>
+            <td>{{ v.stock != null ? v.stock : '—' }}</td>
+            <td>{{ v.lowStockAlertThreshold != null ? v.lowStockAlertThreshold : '—' }}</td>
+            <td>
+              <span class="badge" [ngClass]="v.isActive ? 'bg-success' : 'bg-secondary'">
+                {{ v.isActive ? 'Oui' : 'Non' }}
+              </span>
+            </td>
+            <td class="text-nowrap text-muted small">
+              {{ (v.updatedAt || v.createdAt) | date: 'short' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</app-card>

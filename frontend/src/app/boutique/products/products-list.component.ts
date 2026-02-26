@@ -1,46 +1,97 @@
-import { Component, OnInit, AfterViewInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 import { CardComponent } from '../../theme/shared/components/card/card.component';
 import { ProductService } from '../../service/product.service';
 
 @Component({
   selector: 'app-boutique-products-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, CardComponent],
+  imports: [CommonModule, FormsModule, RouterModule, CardComponent],
   templateUrl: './products-list.component.html',
   styleUrls: ['./products-list.component.scss']
 })
-export class ProductsListComponent implements OnInit, AfterViewInit {
+export class ProductsListComponent implements OnInit, OnDestroy {
   private productService = inject(ProductService);
-  readonly router = inject(Router);
+  private router = inject(Router);
 
   products: any[] = [];
   isLoading = true;
   error: string | null = null;
 
-  ngOnInit(): void {}
+  page = 1;
+  limit = 10;
+  limits = [5, 10, 20];
+  total = 0;
+  searchTerm = '';
 
-  ngAfterViewInit(): void {
-    setTimeout(() => this.loadProducts(), 0);
+  private filterChanged$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
+
+  ngOnInit(): void {
+    this.filterChanged$.pipe(debounceTime(300), takeUntil(this.destroy$)).subscribe(() => {
+      this.loadProducts();
+    });
+    this.loadProducts();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadProducts(): void {
-    this.productService.getMyProducts().subscribe({
-      next: (data) => {
-        const list = Array.isArray(data) ? data : [];
-        setTimeout(() => {
-          this.products = list;
+    this.isLoading = true;
+    this.error = null;
+    this.productService
+      .getMyProducts({
+        page: this.page,
+        limit: this.limit,
+        search: this.searchTerm || undefined
+      })
+      .subscribe({
+        next: (res) => {
+          this.products = Array.isArray(res.products) ? res.products : [];
+          this.total = typeof res.total === 'number' ? res.total : 0;
+          if (res.page != null) this.page = res.page;
           this.isLoading = false;
-        }, 0);
-      },
-      error: () => {
-        setTimeout(() => {
-          this.error = 'Impossible de charger les produits.';
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Impossible de charger les produits.';
+          this.products = [];
+          this.total = 0;
           this.isLoading = false;
-        }, 0);
-      }
-    });
+        }
+      });
+  }
+
+  onSearch(): void {
+    this.page = 1;
+    this.filterChanged$.next();
+  }
+
+  goToPage(p: number): void {
+    if (p < 1 || p > this.totalPages) return;
+    this.page = p;
+    this.loadProducts();
+  }
+
+  onLimitChange(newLimit: number | string): void {
+    const n = typeof newLimit === 'number' ? newLimit : parseInt(String(newLimit), 10);
+    if (Number.isFinite(n) && this.limits.includes(n)) {
+      this.limit = n;
+      this.page = 1;
+      this.filterChanged$.next();
+    }
+  }
+
+  get totalPages(): number {
+    const lim = this.limit || 1;
+    const tot = this.total || 0;
+    const pages = Math.ceil(tot / lim);
+    return pages > 0 ? pages : 1;
   }
 
   goToCreate(): void {
@@ -59,4 +110,3 @@ export class ProductsListComponent implements OnInit, AfterViewInit {
     return images[0]?.url || null;
   }
 }
-

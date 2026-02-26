@@ -92,6 +92,7 @@
         <thead>
           <tr>
             <th>Attributs</th>
+            <th>Image (URL)</th>
             <th>SKU</th>
             <th>Prix actuel</th>
             <th>Stock</th>
@@ -134,13 +135,25 @@
                 + Attribut
               </button>
             </td>
-            <td>
+            <td class="variant-image-cell">
               <input
-                type="text"
-                class="form-control form-control-sm"
-                [(ngModel)]="v.sku"
-                [name]="'variant-sku-' + i"
+                type="url"
+                class="form-control form-control-sm mb-1"
+                placeholder="Lien image (Google Drive, etc.)"
+                [(ngModel)]="v.imageUrl"
+                [name]="'variant-imageUrl-' + i"
               />
+              <img
+                *ngIf="v.imageUrl"
+                [src]="v.imageUrl"
+                alt="Aperçu variante"
+                class="variant-image-preview"
+                (error)="$any($event.target).style.display='none'"
+              />
+            </td>
+            <td class="text-nowrap">
+              <span *ngIf="v.sku" class="fw-medium">{{ v.sku }}</span>
+              <span *ngIf="!v.sku" class="text-muted small">— auto à l'enregistrement</span>
             </td>
             <td>
               <input
@@ -148,6 +161,7 @@
                 min="0"
                 step="0.01"
                 class="form-control form-control-sm"
+                [class.is-invalid]="invalidVariantIndices.includes(i)"
                 [(ngModel)]="v.currentPrice"
                 [name]="'variant-price-' + i"
               />
@@ -157,6 +171,7 @@
                 type="number"
                 min="0"
                 class="form-control form-control-sm"
+                [class.is-invalid]="invalidVariantIndices.includes(i)"
                 [(ngModel)]="v.stock"
                 [name]="'variant-stock-' + i"
               />
@@ -166,6 +181,7 @@
                 type="number"
                 min="0"
                 class="form-control form-control-sm"
+                [class.is-invalid]="invalidVariantIndices.includes(i)"
                 [(ngModel)]="v.lowStockAlertThreshold"
                 [name]="'variant-threshold-' + i"
               />
@@ -200,7 +216,15 @@
       Ajouter une variante
     </button>
 
-    <div *ngIf="message" class="mt-3" [ngClass]="['alert', alertType]">
+    <div *ngIf="validationErrors.length > 0" class="mt-3 alert alert-danger">
+      <p class="mb-2" *ngIf="message">{{ message }}</p>
+      <strong>Erreurs dans les variantes :</strong>
+      <ul class="mb-0 mt-1">
+        <li *ngFor="let err of validationErrors">{{ err }}</li>
+      </ul>
+    </div>
+
+    <div *ngIf="message && validationErrors.length === 0" class="mt-3" [ngClass]="['alert', alertType]">
       {{ message }}
     </div>
 

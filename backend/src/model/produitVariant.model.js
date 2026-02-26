@@ -39,8 +39,19 @@ const productVariantSchema = new mongoose.Schema({
 
   lowStockAlertThreshold: { type: Number, default: 5 },
 
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+
+  /** Image facultative : simple URL (Google Drive, Imgur, ou tout lien direct vers l'image) */
+  imageUrl: { type: String }
 
 }, { timestamps: true });
+
+/** SKU généré automatiquement à la création (unique par variante) */
+productVariantSchema.pre('save', async function () {
+  if (this.isNew && (!this.sku || !String(this.sku).trim())) {
+    const idStr = this._id.toString();
+    this.sku = 'SKU-' + idStr.slice(-12);
+  }
+});
 
 module.exports = mongoose.model('ProductVariant', productVariantSchema);

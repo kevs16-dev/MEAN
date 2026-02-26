@@ -3,8 +3,11 @@ const AppError = require('../utils/AppError');
 
 exports.getMyProducts = async (req, res) => {
   try {
-    const products = await productService.getMyProducts(req.user.id);
-    res.status(200).json(products);
+    const page = req.query.page;
+    const limit = req.query.limit;
+    const search = req.query.search;
+    const result = await productService.getMyProducts(req.user.id, { page, limit, search });
+    res.status(200).json(result);
   } catch (error) {
     if (error instanceof AppError) {
       return res.status(error.status).json({ message: error.code });
@@ -35,6 +38,18 @@ exports.getMyProductById = async (req, res) => {
   try {
     const product = await productService.getMyProductById(req.user.id, req.params.id);
     res.status(200).json(product);
+  } catch (error) {
+    if (error instanceof AppError) {
+      return res.status(error.status).json({ message: error.code });
+    }
+    res.status(500).json({ message: error.message || 'Erreur lors de la récupération du produit' });
+  }
+};
+
+exports.getMyProductWithVariants = async (req, res) => {
+  try {
+    const result = await productService.getMyProductWithVariants(req.user.id, req.params.id);
+    res.status(200).json(result);
   } catch (error) {
     if (error instanceof AppError) {
       return res.status(error.status).json({ message: error.code });
@@ -94,7 +109,10 @@ exports.createVariantForMyProduct = async (req, res) => {
     });
   } catch (error) {
     if (error instanceof AppError) {
-      return res.status(error.status).json({ message: error.code });
+      const msg = error.code === 'VARIANT_ATTRIBUTES_REQUIRED'
+        ? 'Chaque variante doit avoir au moins un attribut (nom et valeur).'
+        : error.code;
+      return res.status(error.status).json({ message: msg });
     }
     res.status(500).json({ message: error.message || 'Erreur lors de la création de la variante' });
   }
@@ -114,7 +132,10 @@ exports.updateVariantForMyProduct = async (req, res) => {
     });
   } catch (error) {
     if (error instanceof AppError) {
-      return res.status(error.status).json({ message: error.code });
+      const msg = error.code === 'VARIANT_ATTRIBUTES_REQUIRED'
+        ? 'Chaque variante doit avoir au moins un attribut (nom et valeur).'
+        : error.code;
+      return res.status(error.status).json({ message: msg });
     }
     res.status(500).json({ message: error.message || 'Erreur lors de la mise à jour de la variante' });
   }

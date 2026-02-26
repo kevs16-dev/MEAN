@@ -32,6 +32,7 @@ export class ProductFormComponent implements OnInit, AfterViewInit {
   variants: {
     _id?: string;
     attributes: { name: string; value: string }[];
+    imageUrl?: string;
     sku?: string;
     currentPrice: number;
     stock: number;
@@ -42,6 +43,10 @@ export class ProductFormComponent implements OnInit, AfterViewInit {
   loading = false;
   message = '';
   alertType: 'alert-success' | 'alert-error' = 'alert-success';
+  /** Erreurs de validation des variantes (affichées avant envoi) */
+  validationErrors: string[] = [];
+  /** Index des variantes en erreur pour surligner les champs */
+  invalidVariantIndices: number[] = [];
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -96,6 +101,7 @@ export class ProductFormComponent implements OnInit, AfterViewInit {
                     value: a?.value || ''
                   }))
                 : [],
+              imageUrl: v.imageUrl || '',
               sku: v.sku || '',
               currentPrice: v.currentPrice ?? 0,
               stock: v.stock ?? 0,
@@ -133,7 +139,7 @@ export class ProductFormComponent implements OnInit, AfterViewInit {
   addVariant(): void {
     this.variants.push({
       attributes: [],
-      sku: '',
+      imageUrl: '',
       currentPrice: 0,
       stock: 0,
       lowStockAlertThreshold: 5,
@@ -164,11 +170,58 @@ export class ProductFormComponent implements OnInit, AfterViewInit {
     return !!this.name && !this.loading;
   }
 
+  /**
+   * Valide toutes les variantes et retourne la liste des erreurs.
+   * Remplit aussi invalidVariantIndices pour surligner les lignes en erreur.
+   */
+  getVariantValidationErrors(): string[] {
+    const errors: string[] = [];
+    const invalidIndices: number[] = [];
+    const num = (n: unknown): number => (typeof n === 'number' && !Number.isNaN(n) ? n : Number(n));
+    this.variants.forEach((v, index) => {
+      const numVariant = index + 1;
+      const hasValidAttribute =
+        Array.isArray(v.attributes) &&
+        v.attributes.some((a) => a && String(a.name || '').trim() && String(a.value || '').trim());
+      if (!hasValidAttribute) {
+        errors.push(`Variante ${numVariant} : ajouter au moins un attribut (nom et valeur).`);
+        invalidIndices.push(index);
+      }
+      const price = num(v.currentPrice);
+      if (v.currentPrice === undefined || v.currentPrice === null || Number.isNaN(price) || price < 0) {
+        errors.push(`Variante ${numVariant} : le prix est obligatoire et doit être ≥ 0.`);
+        invalidIndices.push(index);
+      }
+      const stock = num(v.stock);
+      if (v.stock !== undefined && v.stock !== null && (Number.isNaN(stock) || stock < 0)) {
+        errors.push(`Variante ${numVariant} : le stock doit être ≥ 0.`);
+        if (!invalidIndices.includes(index)) invalidIndices.push(index);
+      }
+      const threshold = num(v.lowStockAlertThreshold);
+      if (v.lowStockAlertThreshold !== undefined && v.lowStockAlertThreshold !== null && (Number.isNaN(threshold) || threshold < 0)) {
+        errors.push(`Variante ${numVariant} : le seuil d'alerte doit être ≥ 0.`);
+        if (!invalidIndices.includes(index)) invalidIndices.push(index);
+      }
+    });
+    this.invalidVariantIndices = invalidIndices;
+    return errors;
+  }
+
   submit(): void {
     if (!this.canSubmit()) return;
 
+    this.validationErrors = this.getVariantValidationErrors();
+    if (this.validationErrors.length > 0) {
+      this.alertType = 'alert-error';
+      this.message = 'Veuillez corriger les erreurs dans les variantes avant d\'enregistrer.';
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.loading = true;
     this.message = '';
+    this.validationErrors = [];
+    this.invalidVariantIndices = [];
 
     const payload: any = {
       name: this.name,
@@ -224,7 +277,7 @@ export class ProductFormComponent implements OnInit, AfterViewInit {
                 value: a.value || ''
               }))
           : [],
-        sku: v.sku || '',
+        imageUrl: v.imageUrl?.trim() || undefined,
         currentPrice: v.currentPrice ?? 0,
         stock: v.stock ?? 0,
         lowStockAlertThreshold: v.lowStockAlertThreshold ?? 5,

@@ -25,6 +25,12 @@ const getShopForUserBoutique = async (userId) => {
   return fallbackShop;
 };
 
+/** Au moins un attribut avec nom et valeur renseignés */
+const hasAtLeastOneAttribute = (attributes) => {
+  if (!Array.isArray(attributes) || attributes.length === 0) return false;
+  return attributes.some((a) => a && String(a.name || '').trim() && String(a.value || '').trim());
+};
+
 const buildAttributesKey = (attributes) => {
   if (!Array.isArray(attributes) || attributes.length === 0) {
     return '';
@@ -47,10 +53,46 @@ const buildAttributesKey = (attributes) => {
     .join('|');
 };
 
-const getMyProducts = async (userId) => {
+/**
+ * Liste paginée et recherchable des produits de ma boutique.
+ * @param {string} userId
+ * @param {{ page?: number, limit?: number, search?: string }} options - page (défaut 1), limit (défaut 10), search (optionnel)
+ * @returns {{ products, total, page, limit, totalPages }}
+ */
+const getMyProducts = async (userId, options = {}) => {
   const shop = await getShopForUserBoutique(userId);
-  return Product.find({ shopId: shop._id });
+  const page = Math.max(1, parseInt(options.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(options.limit, 10) || 10));
+  const search = typeof options.search === 'string' ? options.search.trim() : '';
+
+  const query = { shopId: shop._id };
+  if (search) {
+    const regex = new RegExp(escapeRegex(search), 'i');
+    query.$or = [
+      { name: regex },
+      { slug: regex },
+      { description: regex }
+    ];
+  }
+
+  const skip = (page - 1) * limit;
+  const [products, total] = await Promise.all([
+    Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    Product.countDocuments(query)
+  ]);
+
+  return {
+    products,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit) || 1
+  };
 };
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 const createProductForMyShop = async (userId, productData) => {
   const shop = await getShopForUserBoutique(userId);
@@ -75,6 +117,13 @@ const getMyProductById = async (userId, productId) => {
     throw new AppError('PRODUCT_NOT_FOUND', 404);
   }
   return product;
+};
+
+/** Produit + toutes ses variantes pour la page détail */
+const getMyProductWithVariants = async (userId, productId) => {
+  const product = await getMyProductById(userId, productId);
+  const variants = await ProductVariant.find({ productId: product._id }).lean();
+  return { product, variants };
 };
 
 const updateMyProduct = async (userId, productId, updateData) => {
@@ -124,6 +173,11 @@ const createVariantForMyProduct = async (userId, productId, variantData) => {
     ...variantData,
     productId: product._id
   };
+  delete data.sku; /* SKU généré automatiquement par le modèle */
+
+  if (!hasAtLeastOneAttribute(data.attributes)) {
+    throw new AppError('VARIANT_ATTRIBUTES_REQUIRED', 400);
+  }
 
   const newKey = buildAttributesKey(data.attributes);
   if (newKey) {
@@ -190,11 +244,26 @@ const updateVariantForMyProduct = async (userId, productId, variantId, updateDat
   }
 
   if (Array.isArray(updateData.attributes)) {
+    if (!hasAtLeastOneAttribute(updateData.attributes)) {
+      throw new AppError('VARIANT_ATTRIBUTES_REQUIRED', 400);
+    }
     variant.attributes = updateData.attributes;
     delete updateData.attributes;
   }
 
-  Object.assign(variant, updateData);
+  /* Image facultative : simple URL (lien Google Drive ou autre) */
+  if (updateData.imageUrl !== undefined) {
+    variant.imageUrl = updateData.imageUrl && String(updateData.imageUrl).trim() ? updateData.imageUrl.trim() : undefined;
+    delete updateData.imageUrl;
+  }
+
+  delete updateData.sku; /* SKU non modifiable (géré automatiquement à la création) */
+
+  /* Ne copier que les champs autorisés pour éviter de polluer le document (ex. "next" depuis req.body) */
+  if (updateData.currentPrice !== undefined) variant.currentPrice = updateData.currentPrice;
+  if (updateData.stock !== undefined) variant.stock = updateData.stock;
+  if (updateData.lowStockAlertThreshold !== undefined) variant.lowStockAlertThreshold = updateData.lowStockAlertThreshold;
+  if (updateData.isActive !== undefined) variant.isActive = updateData.isActive;
 
   await variant.save();
 
@@ -220,6 +289,7 @@ module.exports = {
   getMyProducts,
   createProductForMyShop,
   getMyProductById,
+  getMyProductWithVariants,
   updateMyProduct,
   deleteMyProduct,
   getVariantsForMyProduct,
