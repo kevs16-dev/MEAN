@@ -18,6 +18,7 @@ export class UsersListComponent {
   users: any[] = [];
   loading = false;
   error: string | null = null;
+  statusUpdateUserId: string | null = null;
 
   showDeleteModal = false;
   userToDelete: any = null;
@@ -51,6 +52,27 @@ export class UsersListComponent {
 
   onEditUser(user: any) {
     this.router.navigate(['/admin/users/edit', user._id || user.id]);
+  }
+
+  onToggleUserStatus(user: any) {
+    const userId = user?._id || user?.id;
+    if (!userId || this.statusUpdateUserId) return;
+
+    this.statusUpdateUserId = userId;
+    const nextStatus = user.isActive === false;
+
+    this.userService.updateUser(userId, { isActive: nextStatus }).subscribe({
+      next: (res) => {
+        user.isActive = res?.user?.isActive ?? nextStatus;
+        this.statusUpdateUserId = null;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Erreur lors de la mise à jour du statut utilisateur';
+        this.statusUpdateUserId = null;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   // NOUVELLE MÉTHODE - Ouvrir le modal de confirmation
