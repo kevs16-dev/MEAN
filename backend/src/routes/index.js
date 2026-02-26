@@ -9,5 +9,6 @@ router.use('/notifications', require('./notification.route'));
 router.use('/products', require('./product.route'));
 router.use('/events', require('./event.route'));
 router.use('/admin', require('./admin.route'));
+router.use('/upload', require('./upload.route'));
 
 module.exports = router;
