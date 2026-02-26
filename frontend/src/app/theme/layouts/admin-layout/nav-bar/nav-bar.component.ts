@@ -1,5 +1,5 @@
 // angular import
-import { Component, HostListener, output } from '@angular/core';
+import { Component, HostListener, input, output } from '@angular/core';
 
 // project import
 import { SharedModule } from '../../../../theme/shared/shared.module';
@@ -16,6 +16,7 @@ export class NavBarComponent {
   // public props
   readonly NavCollapse = output();
   readonly NavCollapsedMob = output<void>();
+  readonly showNavLeft = input<boolean>(true);
 
   navCollapsed;
   windowWidth: number;

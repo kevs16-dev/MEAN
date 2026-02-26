@@ -1,0 +1,56 @@
+<div class="row g-3">
+  <div class="col-12">
+    <app-card cardTitle="Uploader une bannière">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Titre (optionnel)</label>
+          <input type="text" class="form-control" [(ngModel)]="title" placeholder="Titre de la bannière" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Ordre d'affichage</label>
+          <input type="number" class="form-control" [(ngModel)]="displayOrder" min="0" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Image *</label>
+          <input type="file" class="form-control" accept="image/*" (change)="onFileSelected($event)" />
+        </div>
+        <div class="col-md-2 d-grid">
+          <button type="button" class="btn btn-primary" [disabled]="isSubmitting" (click)="uploadBanner()">
+            {{ isSubmitting ? 'Upload...' : 'Uploader' }}
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="message" class="alert alert-success mt-3 mb-0">{{ message }}</div>
+      <div *ngIf="error" class="alert alert-danger mt-3 mb-0">{{ error }}</div>
+    </app-card>
+  </div>
+
+  <div class="col-12">
+    <app-card cardTitle="Bannières existantes">
+      <div *ngIf="isLoading" class="text-center py-4">Chargement des bannières...</div>
+
+      <div *ngIf="!isLoading && banners.length === 0" class="text-muted">
+        Aucune bannière disponible.
+      </div>
+
+      <div class="row g-3" *ngIf="!isLoading && banners.length > 0">
+        <div class="col-md-4" *ngFor="let banner of banners">
+          <div class="banner-item border rounded p-2 h-100 d-flex flex-column">
+            <img [src]="banner.imageUrl" [alt]="banner.title || 'Bannière'" class="img-fluid rounded mb-2 banner-preview" />
+            <h6 class="mb-1">{{ banner.title || 'Sans titre' }}</h6>
+            <small class="text-muted mb-2">Ordre: {{ banner.displayOrder || 0 }}</small>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-danger mt-auto"
+              [disabled]="isSubmitting"
+              (click)="deleteBanner(banner._id)"
+            >
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    </app-card>
+  </div>
+</div>

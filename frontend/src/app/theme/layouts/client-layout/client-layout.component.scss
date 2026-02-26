@@ -1,9 +1,27 @@
-// Layout spécifique client : même structure que l'admin, mais sans aside
+// Layout spécifique client : header pleine largeur, sans nav-left
+
+:host {
+  display: block;
+}
 
 .client-layout {
-  // On annule la marge réservée à la sidebar pour le client
   .pc-container {
     margin-left: 0;
   }
+}
+
+:host ::ng-deep .pc-header {
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #eef1fb;
+  box-shadow: 0 2px 10px rgba(26, 34, 68, 0.04);
+}
+
+:host ::ng-deep .pc-header .header-wrapper.client-header {
+  width: 100%;
+  padding: 0 18px !important;
+  background: #ffffff;
 }
 

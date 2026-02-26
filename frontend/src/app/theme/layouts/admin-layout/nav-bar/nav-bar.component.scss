@@ -1,1 +1,17 @@
-// This file is intentionally left empty to allow customers to add custom CSS if needed.
+.header-wrapper.client-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.client-logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.client-logo {
+  height: 30px;
+  width: auto;
+  display: block;
+}

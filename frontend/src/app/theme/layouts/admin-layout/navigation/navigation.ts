@@ -102,6 +102,16 @@ export const NavigationItems: NavigationItem[] = [
         breadcrumbs: false
       },
       {
+        id: 'admin-banners',
+        title: 'Bannières',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/admin/banners',
+        icon: 'profile',
+        roles: ['ADMIN'],
+        breadcrumbs: false
+      },
+      {
         id: 'boutique-products',
         title: 'Mes produits',
         type: 'item',

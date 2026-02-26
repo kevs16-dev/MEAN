@@ -1,8 +1,16 @@
 <header class="pc-header">
-  <div class="header-wrapper">
-    <div class="pc-mob-drp">
-      <app-nav-left [navCollapsed]="navCollapsed" (NavCollapse)="navCollapse()" (NavCollapsedMob)="navCollapseMob()" />
-    </div>
+  <div class="header-wrapper" [class.client-header]="!showNavLeft()">
+    @if (showNavLeft()) {
+      <div class="pc-mob-drp">
+        <app-nav-left [navCollapsed]="navCollapsed" (NavCollapse)="navCollapse()" (NavCollapsedMob)="navCollapseMob()" />
+      </div>
+    } @else {
+      <div class="client-brand">
+        <a routerLink="/client/home" class="client-logo-link" aria-label="Accueil client">
+          <img src="assets/images/logo-dark.svg" alt="Logo centre commercial" class="client-logo" />
+        </a>
+      </div>
+    }
     <div>
       <app-nav-right />
     </div>
