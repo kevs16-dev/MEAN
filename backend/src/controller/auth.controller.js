@@ -22,6 +22,10 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: 'Mot de passe incorrect' });
         }
 
+        if (error.code === 'ACCOUNT_DISABLED') {
+            return res.status(403).json({ message: 'Connexion impossible, veuillez contactez un administrateur' });
+        }
+
         res.status(500).json({ message: error.message || 'Erreur lors de la connexion' });
     }
 };

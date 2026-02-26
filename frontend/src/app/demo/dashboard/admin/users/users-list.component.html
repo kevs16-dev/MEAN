@@ -28,6 +28,7 @@
             <th>Prénom</th>
             <th>Email</th>
             <th>Rôle</th>
+            <th>Statut</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -39,13 +40,31 @@
             <td>{{ u.prenom }}</td>
             <td>{{ u.email }}</td>
             <td>{{ u.role }}</td>
+            <td>
+              <span class="badge" [ngClass]="u.isActive === false ? 'bg-danger' : 'bg-success'">
+                {{ u.isActive === false ? 'Désactivé' : 'Actif' }}
+              </span>
+            </td>
             <td class="text-center">
               <div class="action-icons">
                 <button class="btn btn-sm btn-icon btn-link" title="Modifier" (click)="onEditUser(u)">
-                  <span class="text-primary">✏️</span>
+                  <i class="bi bi-pencil-square text-primary"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-icon btn-link"
+                  [title]="u.isActive === false ? 'Activer' : 'Désactiver'"
+                  (click)="onToggleUserStatus(u)"
+                  [disabled]="statusUpdateUserId === (u._id || u.id)"
+                >
+                  <span *ngIf="statusUpdateUserId === (u._id || u.id)" class="spinner-border spinner-border-sm"></span>
+                  <i
+                    *ngIf="statusUpdateUserId !== (u._id || u.id)"
+                    class="bi"
+                    [ngClass]="u.isActive === false ? 'bi-person-check-fill text-success' : 'bi-person-x-fill text-warning'"
+                  ></i>
                 </button>
                 <button class="btn btn-sm btn-icon btn-link text-danger" title="Supprimer" (click)="onDeleteUser(u)">
-                  <span class="text-danger">🗑️</span>
+                  <i class="bi bi-trash-fill text-danger"></i>
                 </button>
               </div>
             </td>
