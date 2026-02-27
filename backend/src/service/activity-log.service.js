@@ -56,6 +56,48 @@ const getUserActivityForAdmin = async (userId, options = {}) => {
   };
 };
 
+const getUserIdentityForAdmin = async (userId) => {
+  const user = await User.findById(userId).select('_id username nom prenom email role');
+  if (!user) {
+    throw new AppError('USER_NOT_FOUND', 404);
+  }
+  return user;
+};
+
+const getAllUserActivitiesForAdmin = async (userId, options = {}) => {
+  await getUserIdentityForAdmin(userId);
+
+  const query = { userId };
+  if (options.actionType && ALLOWED_ACTION_TYPES.includes(options.actionType)) {
+    query.actionType = options.actionType;
+  }
+
+  return ActivityLog.find(query).sort({ createdAt: -1 }).lean();
+};
+
+const deleteUserActivitiesForAdmin = async (userId) => {
+  await getUserIdentityForAdmin(userId);
+  const result = await ActivityLog.deleteMany({ userId });
+  return result.deletedCount || 0;
+};
+
+const getAllActivitiesForAdmin = async (options = {}) => {
+  const query = {};
+  if (options.actionType && ALLOWED_ACTION_TYPES.includes(options.actionType)) {
+    query.actionType = options.actionType;
+  }
+
+  return ActivityLog.find(query)
+    .sort({ createdAt: -1 })
+    .populate('userId', '_id username nom prenom email role')
+    .lean();
+};
+
+const deleteAllActivitiesForAdmin = async () => {
+  const result = await ActivityLog.deleteMany({});
+  return result.deletedCount || 0;
+};
+
 const getMyActivity = async (userId, options = {}) => {
   const page = Math.max(1, parseInt(options.page, 10) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(options.limit, 10) || 10));
@@ -83,5 +125,10 @@ const getMyActivity = async (userId, options = {}) => {
 module.exports = {
   logActivity,
   getUserActivityForAdmin,
-  getMyActivity
+  getMyActivity,
+  getUserIdentityForAdmin,
+  getAllUserActivitiesForAdmin,
+  deleteUserActivitiesForAdmin,
+  getAllActivitiesForAdmin,
+  deleteAllActivitiesForAdmin
 };
