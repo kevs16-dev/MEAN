@@ -13,9 +13,14 @@
           </select>
           <span class="ms-1">par page</span>
         </div>
-        <button class="btn btn-primary" (click)="onCreateUser()">
-          <i class="ti ti-user-plus"></i> Créer un utilisateur
-        </button>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-primary" (click)="openGlobalExportModal()">
+            <i class="ti ti-download"></i> Exporter
+          </button>
+          <button class="btn btn-primary" (click)="onCreateUser()">
+            <i class="ti ti-user-plus"></i> Créer un utilisateur
+          </button>
+        </div>
       </div>
       <div *ngIf="loading">Chargement...</div>
       <div *ngIf="error" class="text-danger">{{ error }}</div>
@@ -158,6 +163,25 @@
         <div *ngIf="activityLoading">Chargement...</div>
         <div *ngIf="activityError" class="text-danger">{{ activityError }}</div>
 
+        <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
+          <label for="exportFormat" class="mb-0">Format:</label>
+          <select
+            id="exportFormat"
+            class="form-select form-select-sm w-auto"
+            [(ngModel)]="activityExportFormat"
+            [disabled]="exportLoading"
+          >
+            <option value="json">JSON</option>
+            <option value="pdf">PDF</option>
+          </select>
+          <button class="btn btn-sm btn-outline-primary" (click)="exportActivity(false)" [disabled]="exportLoading">
+            {{ exportLoading ? 'Export...' : 'Exporter' }}
+          </button>
+          <button class="btn btn-sm btn-outline-danger" (click)="exportActivity(true)" [disabled]="exportLoading">
+            {{ exportLoading ? 'Export...' : 'Exporter et supprimer' }}
+          </button>
+        </div>
+
         <table *ngIf="!activityLoading && userActivities.length" class="table table-sm table-striped">
           <thead>
             <tr>
@@ -212,3 +236,54 @@
 </div>
 
 <div class="modal-backdrop fade show" [style.display]="showActivityModal ? 'block' : 'none'" *ngIf="showActivityModal"></div>
+
+<!-- MODAL EXPORT GLOBAL HISTORIQUE -->
+<div
+  class="modal fade show"
+  [class.show]="showGlobalExportModal"
+  [style.display]="showGlobalExportModal ? 'block' : 'none'"
+  tabindex="-1"
+  *ngIf="showGlobalExportModal"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Exporter l'historique global</h5>
+        <button type="button" class="btn-close" (click)="closeGlobalExportModal()"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">
+          Exporter l'historique d'activité de tous les utilisateurs.
+        </p>
+
+        <div *ngIf="globalExportError" class="text-danger mb-2">{{ globalExportError }}</div>
+
+        <div class="d-flex align-items-center gap-2">
+          <label for="globalExportFormat" class="mb-0">Format:</label>
+          <select
+            id="globalExportFormat"
+            class="form-select w-auto"
+            [(ngModel)]="globalExportFormat"
+            [disabled]="globalExportLoading"
+          >
+            <option value="json">JSON</option>
+            <option value="pdf">PDF</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeGlobalExportModal()" [disabled]="globalExportLoading">
+          Annuler
+        </button>
+        <button class="btn btn-outline-primary" (click)="exportAllActivities(false)" [disabled]="globalExportLoading">
+          {{ globalExportLoading ? 'Export...' : 'Exporter' }}
+        </button>
+        <button class="btn btn-outline-danger" (click)="exportAllActivities(true)" [disabled]="globalExportLoading">
+          {{ globalExportLoading ? 'Export...' : 'Exporter et supprimer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show" [style.display]="showGlobalExportModal ? 'block' : 'none'" *ngIf="showGlobalExportModal"></div>
