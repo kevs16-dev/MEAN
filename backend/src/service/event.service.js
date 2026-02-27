@@ -4,10 +4,11 @@ const User = require('../model/user.model');
 const { logActivity } = require('./activity-log.service');
 
 const createEvent = async (eventData, userId) => {
-    const event = await Event.create({ ...eventData, createdBy: userId });
+    const { createNotification = true, ...eventPayload } = eventData || {};
+    const event = await Event.create({ ...eventPayload, createdBy: userId });
     const user = await User.findById(userId).select('role');
 
-    if(event.status === 'PUBLISHED') {
+    if(event.status === 'PUBLISHED' && createNotification) {
         await createNotificationForRole(event.targetRoles, {
             title: event.title,
             message: event.description,
