@@ -4,8 +4,9 @@ const jwt = require('jsonwebtoken');
 const AppError = require('../utils/AppError');
 const userService = require('./user.service');
 const tokenConfig = require('../config/token.config');
+const { logActivity } = require('./activity-log.service');
 
-const login = async ({ email, password }) => {
+const login = async ({ email, password }, context = {}) => {
     const user = await userService.getUserByEmail(email);
     if (!user) {
         throw new AppError('INVALID_CREDENTIALS');
@@ -25,6 +26,22 @@ const login = async ({ email, password }) => {
         tokenConfig.JWT_SECRET,
         { expiresIn: tokenConfig.JWT_EXPIRES_IN }
     );
+
+    try {
+        await logActivity({
+            userId: user._id,
+            actorRole: user.role,
+            actionType: 'LOGIN_SUCCESS',
+            entityType: 'USER',
+            entityId: user._id,
+            metadata: {
+                ip: context.ip || null,
+                userAgent: context.userAgent || null
+            }
+        });
+    } catch (error) {
+        console.error('log LOGIN_SUCCESS error:', error);
+    }
 
     return { token, user: user };
 }

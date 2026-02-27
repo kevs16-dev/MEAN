@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private API_URI = `${environment.apiUrl}/users`;
+  private ADMIN_API_URI = `${environment.apiUrl}/admin`;
 
   constructor(private http: HttpClient) {}
 
@@ -54,5 +55,62 @@ export class UserService {
 
   deleteUser(id: string) {
     return this.http.delete<any>(`${this.API_URI}/${id}`);
+  }
+
+  getUserActivity(
+    userId: string,
+    params?: { page?: number; limit?: number; actionType?: string }
+  ): Observable<{
+    user: any;
+    logs: any[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    let query = '';
+    if (params) {
+      const q = [];
+      if (params.page) q.push(`page=${params.page}`);
+      if (params.limit) q.push(`limit=${params.limit}`);
+      if (params.actionType) q.push(`actionType=${params.actionType}`);
+      if (q.length) query = '?' + q.join('&');
+    }
+
+    return this.http.get<{
+      user: any;
+      logs: any[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>(`${this.ADMIN_API_URI}/users/${userId}/activity${query}`);
+  }
+
+  getMyActivity(
+    params?: { page?: number; limit?: number; actionType?: string }
+  ): Observable<{
+    logs: any[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    let query = '';
+    if (params) {
+      const q = [];
+      if (params.page) q.push(`page=${params.page}`);
+      if (params.limit) q.push(`limit=${params.limit}`);
+      if (params.actionType) q.push(`actionType=${params.actionType}`);
+      if (q.length) query = '?' + q.join('&');
+    }
+
+    return this.http.get<{
+      logs: any[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>(`${this.API_URI}/me/activity${query}`);
   }
 }

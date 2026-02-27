@@ -3,6 +3,7 @@ const ProductVariant = require('../model/produitVariant.model');
 const Shop = require('../model/boutique.model');
 const User = require('../model/user.model');
 const AppError = require('../utils/AppError');
+const { logActivity } = require('./activity-log.service');
 
 const getShopForUserBoutique = async (userId) => {
   const user = await User.findById(userId).select('shopId role');
@@ -96,6 +97,7 @@ function escapeRegex(str) {
 
 const createProductForMyShop = async (userId, productData) => {
   const shop = await getShopForUserBoutique(userId);
+  const user = await User.findById(userId).select('role');
 
   const data = {
     ...productData,
@@ -107,7 +109,25 @@ const createProductForMyShop = async (userId, productData) => {
     data.slug = data.name.toLowerCase().replace(/\s+/g, '-');
   }
 
-  return Product.create(data);
+  const product = await Product.create(data);
+
+  try {
+    await logActivity({
+      userId,
+      actorRole: user?.role || 'BOUTIQUE',
+      actionType: 'PRODUCT_CREATED',
+      entityType: 'PRODUCT',
+      entityId: product._id,
+      metadata: {
+        productName: product.name,
+        shopId: String(shop._id)
+      }
+    });
+  } catch (error) {
+    console.error('log PRODUCT_CREATED error:', error);
+  }
+
+  return product;
 };
 
 const getMyProductById = async (userId, productId) => {
@@ -128,6 +148,7 @@ const getMyProductWithVariants = async (userId, productId) => {
 
 const updateMyProduct = async (userId, productId, updateData) => {
   const shop = await getShopForUserBoutique(userId);
+  const user = await User.findById(userId).select('role');
 
   delete updateData.category;
   if (updateData.name && !updateData.slug) {
@@ -142,6 +163,22 @@ const updateMyProduct = async (userId, productId, updateData) => {
 
   if (!product) {
     throw new AppError('PRODUCT_NOT_FOUND', 404);
+  }
+
+  try {
+    await logActivity({
+      userId,
+      actorRole: user?.role || 'BOUTIQUE',
+      actionType: 'PRODUCT_UPDATED',
+      entityType: 'PRODUCT',
+      entityId: product._id,
+      metadata: {
+        productName: product.name,
+        updatedFields: Object.keys(updateData || {})
+      }
+    });
+  } catch (error) {
+    console.error('log PRODUCT_UPDATED error:', error);
   }
 
   return product;
