@@ -8,12 +8,27 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  getMyProducts() {
-    return this.http.get<any[]>(`${this.API_URI}/my`);
+  getMyProducts(params?: { page?: number; limit?: number; search?: string }) {
+    let query = '';
+    if (params) {
+      const q: string[] = [];
+      if (params.page != null) q.push(`page=${params.page}`);
+      if (params.limit != null) q.push(`limit=${params.limit}`);
+      if (params.search != null && params.search !== '') q.push(`search=${encodeURIComponent(params.search)}`);
+      if (q.length) query = '?' + q.join('&');
+    }
+    return this.http.get<{ products: any[]; total: number; page: number; limit: number; totalPages: number }>(
+      `${this.API_URI}/my${query}`
+    );
   }
 
   getProductById(id: string) {
     return this.http.get<any>(`${this.API_URI}/${id}`);
+  }
+
+  /** Produit + toutes ses variantes (page détail) */
+  getMyProductWithVariants(id: string) {
+    return this.http.get<{ product: any; variants: any[] }>(`${this.API_URI}/${id}/detail`);
   }
 
   createProduct(productData: any) {

@@ -1,6 +1,27 @@
 <app-card cardTitle="Mes produits">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">Produits de ma boutique</h5>
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <label for="searchProducts" class="form-label mb-0">Rechercher :</label>
+      <input
+        id="searchProducts"
+        type="text"
+        class="form-control w-auto"
+        style="min-width: 180px;"
+        placeholder="Nom, description..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearch()"
+      />
+      <label for="limitSelect" class="form-label mb-0 ms-2">Afficher :</label>
+      <select
+        id="limitSelect"
+        class="form-select w-auto"
+        [ngModel]="limit"
+        (ngModelChange)="onLimitChange($event)"
+      >
+        <option *ngFor="let l of limits" [ngValue]="l">{{ l }}</option>
+      </select>
+      <span class="ms-1">par page</span>
+    </div>
     <button class="btn btn-primary" (click)="goToCreate()">
       Nouveau produit
     </button>
@@ -15,7 +36,7 @@
   </div>
 
   <div *ngIf="!isLoading && !error && products.length === 0" class="alert alert-info">
-    Aucun produit pour le moment. Cliquez sur "Nouveau produit" pour commencer.
+    Aucun produit trouvé. Modifiez la recherche ou cliquez sur "Nouveau produit" pour commencer.
   </div>
 
   <div *ngIf="!isLoading && !error && products.length > 0" class="table-responsive">
@@ -48,7 +69,10 @@
           </td>
           <td>{{ p.createdAt | date: 'short' }}</td>
           <td class="text-end">
-            <button class="btn btn-sm btn-outline-primary me-2" (click)="goToEdit(p._id)">
+            <a [routerLink]="['/boutique/products/view', p._id]" class="btn btn-sm btn-outline-secondary me-2">
+              Voir
+            </a>
+            <button class="btn btn-sm btn-outline-primary" (click)="goToEdit(p._id)">
               Éditer
             </button>
           </td>
@@ -56,5 +80,27 @@
       </tbody>
     </table>
   </div>
-</app-card>
 
+  <nav *ngIf="!isLoading && totalPages > 1" class="mt-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <span class="text-muted small">
+        {{ (page - 1) * limit + 1 }} – {{ (page - 1) * limit + products.length }} sur {{ total }}
+      </span>
+      <ul class="pagination mb-0">
+        <li class="page-item" [class.disabled]="page === 1">
+          <button type="button" class="page-link" (click)="goToPage(page - 1)">Précédent</button>
+        </li>
+        <li
+          class="page-item"
+          *ngFor="let p of [].constructor(totalPages); let idx = index"
+          [class.active]="page === idx + 1"
+        >
+          <button type="button" class="page-link" (click)="goToPage(idx + 1)">{{ idx + 1 }}</button>
+        </li>
+        <li class="page-item" [class.disabled]="page === totalPages">
+          <button type="button" class="page-link" (click)="goToPage(page + 1)">Suivant</button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</app-card>

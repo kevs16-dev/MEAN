@@ -143,6 +143,14 @@ const routes: Routes = [
         data: { roles: ['BOUTIQUE'] }
       },
       {
+        path: 'boutique/products/view/:id',
+        loadComponent: () =>
+          import('./boutique/products/product-view.component')
+            .then((c) => c.ProductViewComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['BOUTIQUE'] }
+      },
+      {
         path: 'profil',
         loadComponent: () =>
           import('./demo/pages/profil/gestion-profil.component')

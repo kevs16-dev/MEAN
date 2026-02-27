@@ -9,6 +9,7 @@ router.use(authMiddleware, roleMiddleware('BOUTIQUE'));
 router.get('/my', productController.getMyProducts);
 router.post('/', productController.createProductForMyShop);
 
+router.get('/:id/detail', productController.getMyProductWithVariants);
 router.get('/:id', productController.getMyProductById);
 router.put('/:id', productController.updateMyProduct);
 router.delete('/:id', productController.deleteMyProduct);
