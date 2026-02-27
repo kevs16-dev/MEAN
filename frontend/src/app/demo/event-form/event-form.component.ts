@@ -25,7 +25,8 @@ export class EventFormComponent {
     endDate: ['', Validators.required],
     location: [''],
     targetRoles: [[], Validators.required],
-    status: ['DRAFT', Validators.required]
+    status: ['DRAFT', Validators.required],
+    createNotification: [true]
   });
 
   roles = [
