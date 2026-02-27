@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private API_URI = `${environment.apiUrl}/products`;
+  private UPLOAD_URI = `${environment.apiUrl}/upload/image`;
 
   constructor(private http: HttpClient) {}
 
@@ -57,6 +58,12 @@ export class ProductService {
 
   deleteVariant(productId: string, variantId: string) {
     return this.http.delete<any>(`${this.API_URI}/${productId}/variants/${variantId}`);
+  }
+
+  uploadImage(file: File) {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post<{ imageUrl: string }>(this.UPLOAD_URI, formData);
   }
 }
 
