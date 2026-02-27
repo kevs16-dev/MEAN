@@ -1,0 +1,90 @@
+.shop-detail-container {
+  max-width: 800px;
+}
+
+.shop-detail-card {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.shop-detail-header {
+  position: relative;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  .shop-detail-cover {
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.85;
+    }
+  }
+
+  .shop-detail-header-content {
+    padding: 2rem;
+    color: white;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+    position: relative;
+  }
+
+  .shop-detail-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    background: white;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .shop-detail-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .shop-detail-location {
+    font-size: 0.95rem;
+    opacity: 0.95;
+  }
+
+  .badge {
+    background: rgba(255, 255, 255, 0.25) !important;
+  }
+}
+
+.shop-detail-body {
+  padding: 2rem;
+
+  h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.75rem;
+  }
+
+  section {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+  }
+
+  .shop-detail-actions {
+    margin-top: 1.5rem;
+  }
+}

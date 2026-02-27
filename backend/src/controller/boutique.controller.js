@@ -12,6 +12,22 @@ exports.getShopById = async (req, res) => {
     }
 };
 
+exports.getProductsByShop = async (req, res) => {
+    try {
+        const shopId = req.params.id;
+        const page = req.query.page;
+        const limit = req.query.limit;
+        const search = req.query.search;
+        const result = await shopService.getProductsByShopId(shopId, { page, limit, search });
+        res.status(200).json(result);
+    } catch (error) {
+        if (error.message === 'Boutique non trouvée' || error.message === 'Boutique non disponible') {
+            return res.status(404).json({ message: error.message });
+        }
+        res.status(500).json({ message: error.message || 'Erreur lors de la récupération des produits' });
+    }
+};
+
 exports.getAllShops = async (req, res) => {
     try {
         const shops = await shopService.getAllShops();

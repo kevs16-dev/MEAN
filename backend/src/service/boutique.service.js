@@ -1,5 +1,55 @@
 const Shop = require('../model/boutique.model');
 const User = require('../model/user.model');
+const Product = require('../model/produit.model');
+
+function escapeRegex(str) {
+  return String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Liste paginée et recherchable des produits d'une boutique (accès public client).
+ * @param {string} shopId - ID de la boutique
+ * @param {{ page?: number, limit?: number, search?: string }} options - page (défaut 1), limit (défaut 10), search (optionnel)
+ * @returns {{ shop, products, total, page, limit, totalPages }}
+ */
+const getProductsByShopId = async (shopId, options = {}) => {
+  const shop = await Shop.findById(shopId).populate('category', 'name');
+  if (!shop) {
+    throw new Error('Boutique non trouvée');
+  }
+  if (shop.status !== 'ACTIVE') {
+    throw new Error('Boutique non disponible');
+  }
+
+  const page = Math.max(1, parseInt(options.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(options.limit, 10) || 10));
+  const search = typeof options.search === 'string' ? options.search.trim() : '';
+
+  const query = { shopId: shop._id, status: 'ACTIVE' };
+  if (search) {
+    const regex = new RegExp(escapeRegex(search), 'i');
+    query.$or = [
+      { name: regex },
+      { slug: regex },
+      { description: regex }
+    ];
+  }
+
+  const skip = (page - 1) * limit;
+  const [products, total] = await Promise.all([
+    Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    Product.countDocuments(query)
+  ]);
+
+  return {
+    shop: { _id: shop._id, name: shop.name, slug: shop.slug, category: shop.category },
+    products,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit) || 1
+  };
+};
 
 const createShop = async (shopData) => {
     return await Shop.create(shopData);
@@ -50,5 +100,6 @@ module.exports = {
     getAllShops,
     getShopById,
     getShopsAvailableForBoutique,
+    getProductsByShopId,
     deleteShop
 };

@@ -199,6 +199,18 @@ const routes: Routes = [
         loadComponent: () =>
           import('./demo/pages/client/shops-browse/shops-browse.component')
             .then((c) => c.ShopsBrowseComponent)
+      },
+      {
+        path: 'shops/:id/products',
+        loadComponent: () =>
+          import('./demo/pages/client/shop-products/shop-products.component')
+            .then((c) => c.ShopProductsComponent)
+      },
+      {
+        path: 'shops/:id',
+        loadComponent: () =>
+          import('./demo/pages/client/shop-detail/shop-detail.component')
+            .then((c) => c.ShopDetailComponent)
       }
     ]
   },
