@@ -11,6 +11,10 @@ const login = async ({ email, password }) => {
         throw new AppError('INVALID_CREDENTIALS');
     }
 
+    if (user.isActive === false) {
+        throw new AppError('ACCOUNT_DISABLED', 403);
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
         throw new AppError('INVALID_PASSWORD');

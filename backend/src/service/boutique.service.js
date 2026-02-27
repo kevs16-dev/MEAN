@@ -31,9 +31,24 @@ const getShopsAvailableForBoutique = async (editingUserId = null) => {
         .sort({ name: 1 });
 };
 
+const deleteShop = async (shopId) => {
+    const shop = await Shop.findById(shopId);
+    if (!shop) {
+        throw new Error('Boutique non trouvée');
+    }
+
+    await User.deleteMany({
+        role: 'BOUTIQUE',
+        shopId: shopId
+    });
+
+    await Shop.findByIdAndDelete(shopId);
+};
+
 module.exports = {
     createShop,
     getAllShops,
     getShopById,
-    getShopsAvailableForBoutique
+    getShopsAvailableForBoutique,
+    deleteShop
 };

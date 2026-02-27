@@ -4,13 +4,12 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 // Project import
-import { CardComponent } from '../../../theme/shared/components/card/card.component';
 import { BannerService } from '../../../service/banner.service';
 
 @Component({
   selector: 'app-client-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, CardComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './client-home.component.html',
   styleUrls: ['./client-home.component.scss']
 })

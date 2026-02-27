@@ -101,6 +101,7 @@ const updateUserByAdmin = async (userId, updateData) => {
         'pays',
         'role',
         'isVerified',
+        'isActive',
         'password',  
         'shopId'    
     ];

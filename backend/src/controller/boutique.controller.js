@@ -41,3 +41,15 @@ exports.getShopsAvailableForBoutique = async (req, res) => {
         res.status(500).json({ message: error.message || 'Erreur lors de la récupération des boutiques disponibles' });
     }
 };
+
+exports.deleteShop = async (req, res) => {
+    try {
+        await shopService.deleteShop(req.params.id);
+        res.status(200).json({ message: 'Boutique supprimée avec succès' });
+    } catch (error) {
+        if (error.message === 'Boutique non trouvée') {
+            return res.status(404).json({ message: error.message });
+        }
+        res.status(500).json({ message: error.message || 'Erreur lors de la suppression de la boutique' });
+    }
+};

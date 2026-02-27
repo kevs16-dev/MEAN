@@ -49,6 +49,10 @@ export class ShopFormComponent implements OnInit {
   categories: any[] = [];
   isLoadingCategories = false;
   isSubmitting = false;
+  isUploadingLogo = false;
+  isUploadingCover = false;
+  logoUploadError: string | null = null;
+  coverUploadError: string | null = null;
   serverError: string | null = null;
 
   ngOnInit(): void {
@@ -58,12 +62,56 @@ export class ShopFormComponent implements OnInit {
   loadCategories(): void {
     this.isLoadingCategories = true;
     this.categoryService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories;
+      next: (resp) => {
+        this.categories = Array.isArray(resp)
+          ? resp
+          : Array.isArray((resp as any)?.categories)
+          ? (resp as any).categories
+          : [];
         this.isLoadingCategories = false;
       },
       error: () => {
         this.isLoadingCategories = false;
+      }
+    });
+  }
+
+  onLogoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.isUploadingLogo = true;
+    this.logoUploadError = null;
+
+    this.shopService.uploadImage(file).subscribe({
+      next: (resp) => {
+        this.shopForm.patchValue({ logo: resp?.imageUrl || '' });
+        this.isUploadingLogo = false;
+      },
+      error: (err) => {
+        this.isUploadingLogo = false;
+        this.logoUploadError = err?.error?.message || 'Échec de l’upload du logo.';
+      }
+    });
+  }
+
+  onCoverSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.isUploadingCover = true;
+    this.coverUploadError = null;
+
+    this.shopService.uploadImage(file).subscribe({
+      next: (resp) => {
+        this.shopForm.patchValue({ coverImage: resp?.imageUrl || '' });
+        this.isUploadingCover = false;
+      },
+      error: (err) => {
+        this.isUploadingCover = false;
+        this.coverUploadError = err?.error?.message || 'Échec de l’upload de l’image de couverture.';
       }
     });
   }
