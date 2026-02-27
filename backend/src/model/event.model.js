@@ -6,6 +6,7 @@ const eventSchema = new mongoose.Schema({
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     location: { type: String },
+    reminderDaysBefore: { type: Number, min: 0, default: 0 },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     targetRoles: { type: [String], enum: ['ADMIN', 'BOUTIQUE', 'CLIENT', 'ALL'], default: ['ALL'] },
     status: { type: String, enum: ['DRAFT', 'PUBLISHED', 'CANCELLED'], default: 'DRAFT' }
