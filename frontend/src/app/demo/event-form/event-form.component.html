@@ -86,6 +86,23 @@
           </select>
         </div>
 
+        <div class="col-12">
+          <div class="form-check">
+            <input
+              id="createNotification"
+              class="form-check-input"
+              type="checkbox"
+              formControlName="createNotification"
+            />
+            <label class="form-check-label" for="createNotification">
+              Créer une notification lors de la création de l'évènement
+            </label>
+          </div>
+          <small class="text-muted">
+            Si décoché, aucun envoi de notification ne sera fait.
+          </small>
+        </div>
+
         <!-- Erreur serveur -->
         <div class="col-12 text-danger" *ngIf="serverError">
           {{ serverError }}

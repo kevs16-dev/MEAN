@@ -45,6 +45,17 @@
 
         <div *ngFor="let img of images; let i = index" class="border rounded p-2 mb-2">
           <div class="mb-2">
+            <label class="form-label">Uploader depuis votre appareil</label>
+            <input
+              type="file"
+              class="form-control"
+              accept="image/*"
+              [disabled]="uploadingImageIndices.includes(i)"
+              (change)="onProductImageSelected(i, $event)"
+            />
+            <small class="text-muted" *ngIf="uploadingImageIndices.includes(i)">Upload en cours...</small>
+          </div>
+          <div class="mb-2">
             <label class="form-label">URL de l'image</label>
             <input
               type="text"
@@ -53,6 +64,14 @@
               [name]="'image-url-' + i"
             />
           </div>
+          <img
+            *ngIf="img.url"
+            [src]="img.url"
+            alt="Aperçu image produit"
+            class="img-fluid rounded mb-2"
+            style="max-height: 120px; object-fit: cover;"
+            (error)="$any($event.target).style.display='none'"
+          />
           <div class="d-flex justify-content-between align-items-center">
             <div class="form-check">
               <input
@@ -92,7 +111,7 @@
         <thead>
           <tr>
             <th>Attributs</th>
-            <th>Image (URL)</th>
+            <th>Image</th>
             <th>SKU</th>
             <th>Prix actuel</th>
             <th>Stock</th>
@@ -137,9 +156,19 @@
             </td>
             <td class="variant-image-cell">
               <input
+                type="file"
+                class="form-control form-control-sm mb-1"
+                accept="image/*"
+                [disabled]="uploadingVariantImageIndices.includes(i)"
+                (change)="onVariantImageSelected(i, $event)"
+              />
+              <small class="text-muted d-block mb-1" *ngIf="uploadingVariantImageIndices.includes(i)">
+                Upload en cours...
+              </small>
+              <input
                 type="url"
                 class="form-control form-control-sm mb-1"
-                placeholder="Lien image (Google Drive, etc.)"
+                placeholder="URL image (optionnel)"
                 [(ngModel)]="v.imageUrl"
                 [name]="'variant-imageUrl-' + i"
               />

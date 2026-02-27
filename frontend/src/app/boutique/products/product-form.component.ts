@@ -41,6 +41,8 @@ export class ProductFormComponent implements OnInit, AfterViewInit {
   }[] = [];
 
   loading = false;
+  uploadingImageIndices: number[] = [];
+  uploadingVariantImageIndices: number[] = [];
   message = '';
   alertType: 'alert-success' | 'alert-error' = 'alert-success';
   /** Erreurs de validation des variantes (affichées avant envoi) */
@@ -136,6 +138,32 @@ export class ProductFormComponent implements OnInit, AfterViewInit {
     }));
   }
 
+  onProductImageSelected(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.uploadingImageIndices = [...new Set([...this.uploadingImageIndices, index])];
+    this.productService.uploadImage(file).subscribe({
+      next: (resp) => {
+        if (!this.images[index]) {
+          this.images[index] = { url: '', isPrimary: this.images.length === 0 };
+        }
+        this.images[index].url = resp?.imageUrl || '';
+        this.uploadingImageIndices = this.uploadingImageIndices.filter((i) => i !== index);
+        input.value = '';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.message = err?.error?.message || "Erreur lors de l'upload de l'image produit.";
+        this.alertType = 'alert-error';
+        this.uploadingImageIndices = this.uploadingImageIndices.filter((i) => i !== index);
+        input.value = '';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   addVariant(): void {
     this.variants.push({
       attributes: [],
@@ -144,6 +172,29 @@ export class ProductFormComponent implements OnInit, AfterViewInit {
       stock: 0,
       lowStockAlertThreshold: 5,
       isActive: true
+    });
+  }
+
+  onVariantImageSelected(index: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file || !this.variants[index]) return;
+
+    this.uploadingVariantImageIndices = [...new Set([...this.uploadingVariantImageIndices, index])];
+    this.productService.uploadImage(file).subscribe({
+      next: (resp) => {
+        this.variants[index].imageUrl = resp?.imageUrl || '';
+        this.uploadingVariantImageIndices = this.uploadingVariantImageIndices.filter((i) => i !== index);
+        input.value = '';
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.message = err?.error?.message || "Erreur lors de l'upload de l'image de variante.";
+        this.alertType = 'alert-error';
+        this.uploadingVariantImageIndices = this.uploadingVariantImageIndices.filter((i) => i !== index);
+        input.value = '';
+        this.cdr.detectChanges();
+      }
     });
   }
 
