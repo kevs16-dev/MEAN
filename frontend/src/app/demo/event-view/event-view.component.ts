@@ -24,6 +24,8 @@ export class EventViewComponent implements OnInit {
   dateFilter: 'ALL' | 'UPCOMING' | 'PAST' = 'ALL';
   events: any[] = [];
   viewMode: 'list' | 'calendar' = 'calendar';
+  selectedEvent: any | null = null;
+  isEventModalOpen = false;
   calendarOptions: any = {
     plugins: [dayGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
@@ -32,7 +34,8 @@ export class EventViewComponent implements OnInit {
       center: 'title',
       right: 'dayGridMonth,dayGridWeek,dayGridDay'
     },
-    events: []
+    events: [],
+    eventClick: (arg: any) => this.handleCalendarEventClick(arg)
   };
 
   ngOnInit() {
@@ -55,7 +58,8 @@ export class EventViewComponent implements OnInit {
           end: e.endDate,
           extendedProps: {
             description: e.description,
-            location: e.location
+            location: e.location,
+            reminderDaysBefore: e.reminderDaysBefore ?? 0
           }
         }))
       };
@@ -98,5 +102,27 @@ export class EventViewComponent implements OnInit {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
     }
+  }
+
+  closeEventModal() {
+    this.isEventModalOpen = false;
+    this.selectedEvent = null;
+  }
+
+  private handleCalendarEventClick(arg: any): void {
+    const clickedEvent = arg?.event;
+    if (!clickedEvent) {
+      return;
+    }
+
+    this.selectedEvent = {
+      title: clickedEvent.title,
+      description: clickedEvent.extendedProps?.description,
+      location: clickedEvent.extendedProps?.location,
+      reminderDaysBefore: clickedEvent.extendedProps?.reminderDaysBefore ?? 0,
+      startDate: clickedEvent.start,
+      endDate: clickedEvent.end
+    };
+    this.isEventModalOpen = true;
   }
 }

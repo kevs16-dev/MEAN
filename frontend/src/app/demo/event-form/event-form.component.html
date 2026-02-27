@@ -36,6 +36,7 @@
             type="datetime-local"
             class="form-control"
             formControlName="startDate"
+            [attr.min]="minStartDate"
           />
         </div>
 
@@ -45,6 +46,7 @@
             type="datetime-local"
             class="form-control"
             formControlName="endDate"
+            [attr.min]="minEndDate"
           />
         </div>
 
@@ -101,6 +103,29 @@
           <small class="text-muted">
             Si décoché, aucun envoi de notification ne sera fait.
           </small>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Rappel (jours avant) *</label>
+          <input
+            type="number"
+            class="form-control"
+            formControlName="reminderDaysBefore"
+            min="0"
+            max="365"
+            step="1"
+            placeholder="Ex: 2"
+          />
+          <small class="text-muted">
+            Nombre de jours avant la date de début pour déclencher le rappel.
+          </small>
+        </div>
+
+        <div class="col-12 text-danger" *ngIf="eventForm.errors?.['startDateInPast']">
+          La date de début ne peut pas être antérieure à la date actuelle.
+        </div>
+        <div class="col-12 text-danger" *ngIf="eventForm.errors?.['endBeforeStart']">
+          La date de fin doit être postérieure à la date de début.
         </div>
 
         <!-- Erreur serveur -->
