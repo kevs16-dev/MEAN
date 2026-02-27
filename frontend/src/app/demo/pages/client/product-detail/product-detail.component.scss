@@ -50,6 +50,11 @@
   margin-bottom: 0;
 }
 
+.qty-input {
+  width: 80px;
+  min-width: 60px;
+}
+
 // Modal lightbox pour agrandir l'image
 .image-modal-overlay {
   position: fixed;

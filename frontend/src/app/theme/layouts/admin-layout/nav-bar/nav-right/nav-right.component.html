@@ -1,4 +1,12 @@
 <ul class="list-unstyled">
+  @if (isClient()) {
+    <li class="pc-h-item">
+      <a routerLink="/client/cart" class="pc-head-link me-0 bg-gray-200" aria-label="Panier">
+        <i antIcon type="shopping-cart" theme="outline"></i>
+        <span class="badge bg-primary pc-h-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+      </a>
+    </li>
+  }
   <li class="pc-h-item">
     <a href="https://github.com/codedthemes/mantis-free-angular-admin-template" target="_blank" class="pc-head-link me-0 bg-gray-200">
       <i antIcon type="github" theme="outline"></i>

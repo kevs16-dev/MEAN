@@ -124,4 +124,21 @@ export class ShopProductsComponent implements OnInit, OnDestroy {
     if (!this.shopId || !product?._id) return;
     this.router.navigate(['/client/shops', this.shopId, 'products', product._id]);
   }
+
+  /** Stock total disponible (toutes variantes) pour le CLIENT */
+  getTotalAvailableStock(p: any): number {
+    const v = p?.totalAvailableStock;
+    return typeof v === 'number' && v >= 0 ? v : 0;
+  }
+
+  /** Badge "En stock" ou "Rupture" */
+  getProductStockLabel(p: any): string {
+    const available = this.getTotalAvailableStock(p);
+    return available > 0 ? 'En stock (' + available + ')' : 'Rupture';
+  }
+
+  getProductStockBadgeClass(p: any): string {
+    const available = this.getTotalAvailableStock(p);
+    return available > 0 ? 'bg-success' : 'bg-secondary';
+  }
 }

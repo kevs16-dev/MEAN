@@ -51,6 +51,7 @@
             <th>Image</th>
             <th>Nom</th>
             <th>Description</th>
+            <th>Stock</th>
             <th>Explorer</th>
           </tr>
         </thead>
@@ -62,6 +63,15 @@
             </td>
             <td>{{ p.name }}</td>
             <td class="product-description-cell">{{ p.description || '—' }}</td>
+            <td>
+              <span
+                class="badge"
+                [ngClass]="getProductStockBadgeClass(p)"
+                [title]="'Stock disponible : ' + getTotalAvailableStock(p)"
+              >
+                {{ getProductStockLabel(p) }}
+              </span>
+            </td>
             <td>
               <button
                 type="button"

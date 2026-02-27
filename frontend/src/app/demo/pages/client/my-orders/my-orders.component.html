@@ -1,0 +1,45 @@
+<app-card cardTitle="Mes commandes">
+  <div class="mb-3">
+    <a routerLink="/client/shops" class="btn btn-outline-secondary btn-sm">← Voir les boutiques</a>
+    <a routerLink="/client/cart" class="btn btn-outline-primary btn-sm ms-2">Mon panier</a>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-4">Chargement...</div>
+  <div *ngIf="!isLoading && error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="!isLoading && !error && orders.length === 0" class="alert alert-info">
+    Aucune commande pour le moment.
+    <a routerLink="/client/shops" class="alert-link">Parcourir les boutiques</a>
+  </div>
+
+  <div *ngIf="!isLoading && !error && orders.length > 0" class="table-responsive">
+    <table class="table table-sm table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Boutique</th>
+          <th>Date</th>
+          <th>Statut</th>
+          <th class="text-end">Montant</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let o of orders" class="order-row" (click)="goToDetail(o._id)">
+          <td>{{ o.shopId?.name ?? '—' }}</td>
+          <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="badge" [ngClass]="getStatusBadgeClass(o.status)">
+              {{ getStatusLabel(o.status) }}
+            </span>
+          </td>
+          <td class="text-end">{{ (o.totalAmount | number:'1.2-2') + ' €' }}</td>
+          <td>
+            <a [routerLink]="['/client/orders', o._id]" class="btn btn-outline-primary btn-sm" (click)="$event.stopPropagation()">
+              Voir
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</app-card>

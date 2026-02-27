@@ -31,6 +31,19 @@
 
     <h5 class="mb-3">Variantes ({{ variants.length }})</h5>
 
+    <div *ngIf="messageSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+      {{ messageSuccess }}
+      <button type="button" class="btn-close" (click)="messageSuccess = null" aria-label="Fermer"></button>
+    </div>
+    <div *ngIf="messageError" class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ messageError }}
+      <button type="button" class="btn-close" (click)="messageError = null" aria-label="Fermer"></button>
+    </div>
+
+    <div *ngIf="isClient()" class="alert alert-info small mb-3">
+      En tant que client, vous pouvez ajouter des variantes à votre panier (quantité ≤ stock disponible).
+    </div>
+
     <div *ngIf="variants.length === 0" class="alert alert-info">
       Aucune variante disponible pour ce produit.
     </div>
@@ -43,7 +56,9 @@
             <th>Attributs</th>
             <th>SKU</th>
             <th>Prix</th>
-            <th>Stock</th>
+            <th>Stock dispo.</th>
+            <th *ngIf="isClient()">Quantité</th>
+            <th *ngIf="isClient()">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -67,7 +82,27 @@
             </td>
             <td class="text-nowrap">{{ v.sku || '—' }}</td>
             <td>{{ v.currentPrice != null ? (v.currentPrice | number: '1.2-2') + ' €' : '—' }}</td>
-            <td>{{ v.stock != null ? v.stock : '—' }}</td>
+            <td>{{ getAvailableStock(v) }}</td>
+            <td *ngIf="isClient()">
+              <input
+                type="number"
+                class="form-control form-control-sm qty-input"
+                [ngModel]="getQuantity(v)"
+                (ngModelChange)="setQuantity(v, $event)"
+                [min]="1"
+                [max]="getAvailableStock(v)"
+              />
+            </td>
+            <td *ngIf="isClient()">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                [disabled]="!canAddToCart(v)"
+                (click)="addToCart(v)"
+              >
+                Ajouter au panier
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>

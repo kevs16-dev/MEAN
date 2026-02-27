@@ -103,6 +103,16 @@ export const NavigationItems: NavigationItem[] = [
         icon: 'profile',
         roles: ['BOUTIQUE'],
         breadcrumbs: false
+      },
+      {
+        id: 'boutique-orders',
+        title: 'Mes commandes',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/boutique/orders',
+        icon: 'unordered-list',
+        roles: ['BOUTIQUE'],
+        breadcrumbs: false
       }
     ]
   },
