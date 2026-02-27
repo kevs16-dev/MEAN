@@ -119,4 +119,9 @@ export class ShopProductsComponent implements OnInit, OnDestroy {
     if (primary?.url) return primary.url;
     return images[0]?.url || null;
   }
+
+  viewVariants(product: any): void {
+    if (!this.shopId || !product?._id) return;
+    this.router.navigate(['/client/shops', this.shopId, 'products', product._id]);
+  }
 }

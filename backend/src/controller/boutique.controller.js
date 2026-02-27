@@ -28,6 +28,20 @@ exports.getProductsByShop = async (req, res) => {
     }
 };
 
+exports.getProductWithVariants = async (req, res) => {
+    try {
+        const shopId = req.params.id;
+        const productId = req.params.productId;
+        const result = await shopService.getProductWithVariantsByShop(shopId, productId);
+        res.status(200).json(result);
+    } catch (error) {
+        if (error.message === 'Boutique non trouvée' || error.message === 'Boutique non disponible' || error.message === 'Produit non trouvé' || error.message === 'Produit non disponible') {
+            return res.status(404).json({ message: error.message });
+        }
+        res.status(500).json({ message: error.message || 'Erreur lors de la récupération du produit' });
+    }
+};
+
 exports.getAllShops = async (req, res) => {
     try {
         const shops = await shopService.getAllShops();

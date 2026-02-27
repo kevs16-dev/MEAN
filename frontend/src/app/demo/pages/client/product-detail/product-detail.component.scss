@@ -1,0 +1,94 @@
+.product-view-main-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.variant-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.variant-thumb-clickable {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.variant-thumb-clickable:hover {
+  opacity: 0.8;
+}
+
+.variant-thumb-placeholder {
+  background: #e9ecef;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+.attributes-cell {
+  min-width: 120px;
+}
+
+.attribute-line {
+  display: block;
+  white-space: nowrap;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+}
+.attribute-line:last-child {
+  margin-bottom: 0;
+}
+
+// Modal lightbox pour agrandir l'image
+.image-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.image-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.image-modal-close {
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem;
+  opacity: 0.9;
+}
+.image-modal-close:hover {
+  opacity: 1;
+}
+
+.image-modal-img {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.4);
+}

@@ -207,6 +207,12 @@ const routes: Routes = [
             .then((c) => c.ShopProductsComponent)
       },
       {
+        path: 'shops/:shopId/products/:productId',
+        loadComponent: () =>
+          import('./demo/pages/client/product-detail/product-detail.component')
+            .then((c) => c.ProductDetailComponent)
+      },
+      {
         path: 'shops/:id',
         loadComponent: () =>
           import('./demo/pages/client/shop-detail/shop-detail.component')

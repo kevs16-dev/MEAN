@@ -63,7 +63,13 @@
             <td>{{ p.name }}</td>
             <td class="product-description-cell">{{ p.description || '—' }}</td>
             <td>
-              <span class="text-muted small">—</span>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm"
+                (click)="viewVariants(p)"
+              >
+                Voir les variantes
+              </button>
             </td>
           </tr>
         </tbody>
