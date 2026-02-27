@@ -113,4 +113,25 @@ export class UserService {
       totalPages: number;
     }>(`${this.API_URI}/me/activity${query}`);
   }
+
+  exportUserActivity(
+    userId: string,
+    format: 'json' | 'pdf',
+    deleteAfterExport: boolean
+  ): Observable<Blob> {
+    const query = `?format=${format}&deleteAfterExport=${deleteAfterExport}`;
+    return this.http.get(`${this.ADMIN_API_URI}/users/${userId}/activity/export${query}`, {
+      responseType: 'blob'
+    });
+  }
+
+  exportAllUsersActivity(
+    format: 'json' | 'pdf',
+    deleteAfterExport: boolean
+  ): Observable<Blob> {
+    const query = `?format=${format}&deleteAfterExport=${deleteAfterExport}`;
+    return this.http.get(`${this.ADMIN_API_URI}/users/activity/export-all${query}`, {
+      responseType: 'blob'
+    });
+  }
 }
