@@ -32,6 +32,12 @@ export class UsersListComponent {
   activityPage = 1;
   activityLimit = 10;
   activityTotal = 0;
+  activityExportFormat: 'json' | 'pdf' = 'json';
+  exportLoading = false;
+  showGlobalExportModal = false;
+  globalExportFormat: 'json' | 'pdf' = 'json';
+  globalExportLoading = false;
+  globalExportError: string | null = null;
   
   // Pagination et filtre
   page = 1;
@@ -57,6 +63,19 @@ export class UsersListComponent {
 
   onCreateUser() {
     this.router.navigate(['/admin/users/new']);
+  }
+
+  openGlobalExportModal() {
+    this.globalExportError = null;
+    this.showGlobalExportModal = true;
+    this.cdr.detectChanges();
+  }
+
+  closeGlobalExportModal() {
+    this.showGlobalExportModal = false;
+    this.globalExportError = null;
+    this.globalExportLoading = false;
+    this.cdr.detectChanges();
   }
 
   onEditUser(user: any) {
@@ -231,6 +250,76 @@ export class UsersListComponent {
     if (p < 1 || p > this.activityTotalPages) return;
     this.activityPage = p;
     this.loadUserActivities();
+  }
+
+  exportActivity(deleteAfterExport: boolean) {
+    const userId = this.selectedUserForActivity?._id || this.selectedUserForActivity?.id;
+    if (!userId || this.exportLoading) return;
+
+    this.exportLoading = true;
+    this.activityError = null;
+
+    this.userService.exportUserActivity(userId, this.activityExportFormat, deleteAfterExport).subscribe({
+      next: (blob) => {
+        const timestamp = Date.now();
+        const extension = this.activityExportFormat === 'pdf' ? 'pdf' : 'json';
+        const username = this.selectedUserForActivity?.username || userId;
+        const fileName = `activity-${username}-${timestamp}.${extension}`;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        if (deleteAfterExport) {
+          this.activityPage = 1;
+          this.loadUserActivities();
+        }
+
+        this.exportLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.activityError = err?.error?.message || "Erreur lors de l'export de l'historique";
+        this.exportLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  exportAllActivities(deleteAfterExport: boolean) {
+    if (this.globalExportLoading) return;
+
+    this.globalExportLoading = true;
+    this.globalExportError = null;
+
+    this.userService.exportAllUsersActivity(this.globalExportFormat, deleteAfterExport).subscribe({
+      next: (blob) => {
+        const timestamp = Date.now();
+        const extension = this.globalExportFormat === 'pdf' ? 'pdf' : 'json';
+        const fileName = `activity-all-users-${timestamp}.${extension}`;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        if (deleteAfterExport && this.showActivityModal) {
+          this.activityPage = 1;
+          this.loadUserActivities();
+        }
+
+        this.globalExportLoading = false;
+        this.closeGlobalExportModal();
+      },
+      error: (err) => {
+        this.globalExportError = err?.error?.message || "Erreur lors de l'export global";
+        this.globalExportLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   get activityTotalPages(): number {
