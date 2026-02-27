@@ -9,6 +9,13 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
+  /** Produit + variantes pour un client (GET /shops/:shopId/products/:productId) */
+  getProductWithVariantsByShop(shopId: string, productId: string) {
+    return this.http.get<{ product: any; variants: any[]; shop: any }>(
+      `${this.SHOPS_URI}/${shopId}/products/${productId}`
+    );
+  }
+
   /** Produits d'une boutique pour les clients (accès public, pagination, recherche) */
   getProductsByShop(
     shopId: string,

@@ -1,6 +1,7 @@
 const Shop = require('../model/boutique.model');
 const User = require('../model/user.model');
 const Product = require('../model/produit.model');
+const ProductVariant = require('../model/produitVariant.model');
 
 function escapeRegex(str) {
   return String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -48,6 +49,37 @@ const getProductsByShopId = async (shopId, options = {}) => {
     page,
     limit,
     totalPages: Math.ceil(total / limit) || 1
+  };
+};
+
+/**
+ * Produit + variantes d'une boutique (accès public client).
+ * @param {string} shopId - ID de la boutique
+ * @param {string} productId - ID du produit
+ * @returns {{ product, variants, shop }}
+ */
+const getProductWithVariantsByShop = async (shopId, productId) => {
+  const shop = await Shop.findById(shopId).populate('category', 'name');
+  if (!shop) {
+    throw new Error('Boutique non trouvée');
+  }
+  if (shop.status !== 'ACTIVE') {
+    throw new Error('Boutique non disponible');
+  }
+
+  const product = await Product.findOne({ _id: productId, shopId: shop._id }).lean();
+  if (!product) {
+    throw new Error('Produit non trouvé');
+  }
+  if (product.status !== 'ACTIVE') {
+    throw new Error('Produit non disponible');
+  }
+
+  const variants = await ProductVariant.find({ productId: product._id, isActive: true }).lean();
+  return {
+    product,
+    variants,
+    shop: { _id: shop._id, name: shop.name, slug: shop.slug }
   };
 };
 
@@ -101,5 +133,6 @@ module.exports = {
     getShopById,
     getShopsAvailableForBoutique,
     getProductsByShopId,
+    getProductWithVariantsByShop,
     deleteShop
 };
