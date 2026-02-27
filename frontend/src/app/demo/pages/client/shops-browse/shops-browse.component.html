@@ -78,9 +78,15 @@
         <p class="text-muted">Essayez de modifier vos critères de recherche</p>
       </div>
 
-      <div *ngIf="filteredShops.length > 0" class="row g-4">
-        <div class="col-xl-3 col-lg-4 col-md-6" *ngFor="let shop of filteredShops">
-          <div class="shop-card">
+      <div *ngIf="filteredShops.length > 0" class="row g-4 row-eq-height">
+        <div class="col-xl-3 col-lg-4 col-md-6 d-flex" *ngFor="let shop of filteredShops">
+          <div
+            class="shop-card flex-grow-1"
+            (click)="goToProducts(shop._id)"
+            role="button"
+            tabindex="0"
+            (keydown.enter)="goToProducts(shop._id)"
+          >
             <div class="shop-card-image">
               <img
                 [src]="getShopImage(shop)"
@@ -112,10 +118,14 @@
               </div>
             </div>
             <div class="shop-card-footer">
-              <button class="btn btn-primary btn-sm w-100">
+              <a
+                [routerLink]="['/client/shops', shop._id]"
+                (click)="$event.stopPropagation()"
+                class="btn btn-primary btn-sm w-100"
+              >
                 <i antIcon type="eye" theme="outline" class="me-1"></i>
-                Voir les détails
-              </button>
+                Voir Détail
+              </a>
             </div>
           </div>
         </div>

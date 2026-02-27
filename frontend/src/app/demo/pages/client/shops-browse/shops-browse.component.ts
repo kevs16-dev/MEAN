@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { SharedModule } from '../../../../theme/shared/shared.module';
 import { ShopService } from '../../../../service/shop.service';
 import { CategoryService } from '../../../../service/category.service';
@@ -8,13 +9,14 @@ import { CategoryService } from '../../../../service/category.service';
 @Component({
   selector: 'app-shops-browse',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule],
+  imports: [CommonModule, FormsModule, RouterModule, SharedModule],
   templateUrl: './shops-browse.component.html',
   styleUrls: ['./shops-browse.component.scss']
 })
 export class ShopsBrowseComponent implements OnInit, AfterViewInit {
   private shopService = inject(ShopService);
   private categoryService = inject(CategoryService);
+  private router = inject(Router);
 
   shops: any[] = [];
   filteredShops: any[] = [];
@@ -134,5 +136,9 @@ export class ShopsBrowseComponent implements OnInit, AfterViewInit {
     if (shop?.location?.floor) parts.push(`Étage ${shop.location.floor}`);
     if (shop?.location?.block) parts.push(`Bloc ${shop.location.block}`);
     return parts.length > 0 ? parts.join(' • ') : 'Centre commercial';
+  }
+
+  goToProducts(shopId: string): void {
+    this.router.navigate(['/client/shops', shopId, 'products']);
   }
 }

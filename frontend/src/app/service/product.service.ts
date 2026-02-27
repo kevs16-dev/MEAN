@@ -5,8 +5,33 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private API_URI = `${environment.apiUrl}/products`;
+  private SHOPS_URI = `${environment.apiUrl}/shops`;
 
   constructor(private http: HttpClient) {}
+
+  /** Produits d'une boutique pour les clients (accès public, pagination, recherche) */
+  getProductsByShop(
+    shopId: string,
+    params?: { page?: number; limit?: number; search?: string }
+  ) {
+    let query = '';
+    if (params) {
+      const q: string[] = [];
+      if (params.page != null) q.push(`page=${params.page}`);
+      if (params.limit != null) q.push(`limit=${params.limit}`);
+      if (params.search != null && params.search !== '')
+        q.push(`search=${encodeURIComponent(params.search)}`);
+      if (q.length) query = '?' + q.join('&');
+    }
+    return this.http.get<{
+      shop: any;
+      products: any[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>(`${this.SHOPS_URI}/${shopId}/products${query}`);
+  }
 
   getMyProducts(params?: { page?: number; limit?: number; search?: string }) {
     let query = '';
