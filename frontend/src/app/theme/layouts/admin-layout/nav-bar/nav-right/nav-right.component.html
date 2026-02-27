@@ -106,7 +106,7 @@
           <ng-template ngbNavContent>
             @for (task of setting; track task) {
               <div>
-                <a href="javascript:" class="dropdown-item">
+                <a href="javascript:" class="dropdown-item" (click)="$event.preventDefault(); task.action && task.action()">
                   <i class="text-muted" antIcon theme="outline" type="{{ task.icon }}"></i>
                   <span>{{ task.title }}</span>
                 </a>
@@ -119,3 +119,75 @@
     </div>
   </li>
 </ul>
+
+<div
+  class="modal fade show"
+  [class.show]="showHistoryModal"
+  [style.display]="showHistoryModal ? 'block' : 'none'"
+  tabindex="-1"
+  *ngIf="showHistoryModal"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Mon historique d'activité</h5>
+        <button type="button" class="btn-close" (click)="closeHistory()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="historyLoading">Chargement...</div>
+        <div *ngIf="historyError" class="text-danger">{{ historyError }}</div>
+
+        <table *ngIf="!historyLoading && myActivities.length" class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Action</th>
+              <th>Type</th>
+              <th>Détails</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of myActivities">
+              <td>{{ a.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ getActionLabel(a.actionType) }}</td>
+              <td>{{ a.entityType }}</td>
+              <td>
+                <span *ngIf="a.metadata?.productName">{{ a.metadata.productName }}</span>
+                <span *ngIf="a.metadata?.eventTitle">{{ a.metadata.eventTitle }}</span>
+                <span *ngIf="a.actionType === 'LOGIN_SUCCESS'">Connexion réussie</span>
+                <span *ngIf="!a.metadata?.productName && !a.metadata?.eventTitle && a.actionType !== 'LOGIN_SUCCESS'">-</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="!historyLoading && !myActivities.length" class="text-muted">
+          Aucun historique disponible.
+        </div>
+
+        <nav *ngIf="!historyLoading && historyTotalPages > 1" class="mt-3">
+          <ul class="pagination pagination-sm justify-content-center">
+            <li class="page-item" [class.disabled]="historyPage === 1">
+              <button class="page-link" (click)="goToHistoryPage(historyPage - 1)">Précédent</button>
+            </li>
+            <li
+              class="page-item"
+              *ngFor="let p of [].constructor(historyTotalPages); let idx = index"
+              [class.active]="historyPage === idx + 1"
+            >
+              <button class="page-link" (click)="goToHistoryPage(idx + 1)">{{ idx + 1 }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="historyPage === historyTotalPages">
+              <button class="page-link" (click)="goToHistoryPage(historyPage + 1)">Suivant</button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeHistory()">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show" [style.display]="showHistoryModal ? 'block' : 'none'" *ngIf="showHistoryModal"></div>

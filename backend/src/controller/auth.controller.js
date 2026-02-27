@@ -11,7 +11,15 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Email et mot de passe sont requis' });
         }
 
-        const result = await authService.login({ email, password });
+        const forwardedFor = req.headers['x-forwarded-for'];
+        const context = {
+            ip: Array.isArray(forwardedFor)
+                ? forwardedFor[0]
+                : (typeof forwardedFor === 'string' ? forwardedFor.split(',')[0].trim() : req.ip),
+            userAgent: req.headers['user-agent'] || null
+        };
+
+        const result = await authService.login({ email, password }, context);
         res.status(200).json({ message: 'Connexion réussie', token: result.token, user: result.user });
     } catch (error) {
         if (error.code === 'INVALID_CREDENTIALS') {

@@ -23,6 +23,15 @@ export class UsersListComponent {
   showDeleteModal = false;
   userToDelete: any = null;
   deleteLoading = false;
+
+  showActivityModal = false;
+  activityLoading = false;
+  activityError: string | null = null;
+  selectedUserForActivity: any = null;
+  userActivities: any[] = [];
+  activityPage = 1;
+  activityLimit = 10;
+  activityTotal = 0;
   
   // Pagination et filtre
   page = 1;
@@ -170,5 +179,79 @@ export class UsersListComponent {
     const total = this.total || 0;
     const pages = Math.ceil(total / limit);
     return pages > 0 ? pages : 1;
+  }
+
+  onOpenActivity(user: any) {
+    this.selectedUserForActivity = user;
+    this.showActivityModal = true;
+    this.activityPage = 1;
+    this.activityError = null;
+    this.loadUserActivities();
+    this.cdr.detectChanges();
+  }
+
+  closeActivityModal() {
+    this.showActivityModal = false;
+    this.selectedUserForActivity = null;
+    this.userActivities = [];
+    this.activityPage = 1;
+    this.activityTotal = 0;
+    this.activityLoading = false;
+    this.activityError = null;
+    this.cdr.detectChanges();
+  }
+
+  loadUserActivities() {
+    const userId = this.selectedUserForActivity?._id || this.selectedUserForActivity?.id;
+    if (!userId) return;
+
+    this.activityLoading = true;
+    this.activityError = null;
+
+    this.userService
+      .getUserActivity(userId, { page: this.activityPage, limit: this.activityLimit })
+      .subscribe({
+        next: (res) => {
+          this.userActivities = Array.isArray(res.logs) ? res.logs : [];
+          this.activityTotal = typeof res.total === 'number' ? res.total : 0;
+          this.activityLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.activityError = err?.error?.message || "Erreur lors de la récupération de l'historique";
+          this.userActivities = [];
+          this.activityTotal = 0;
+          this.activityLoading = false;
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  goToActivityPage(p: number) {
+    if (p < 1 || p > this.activityTotalPages) return;
+    this.activityPage = p;
+    this.loadUserActivities();
+  }
+
+  get activityTotalPages(): number {
+    const limit = this.activityLimit || 1;
+    const total = this.activityTotal || 0;
+    const pages = Math.ceil(total / limit);
+    return pages > 0 ? pages : 1;
+  }
+
+  getActionLabel(actionType: string): string {
+    switch (actionType) {
+      case 'PRODUCT_CREATED':
+        return 'Création produit';
+      case 'PRODUCT_UPDATED':
+        return 'Mise à jour produit';
+      case 'EVENT_CREATED':
+        return 'Création évènement';
+      case 'LOGIN_SUCCESS':
+        return 'Connexion';
+      default:
+        return actionType || 'Action';
+    }
   }
 }

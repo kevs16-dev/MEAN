@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const userService = require('../service/user.service');
+const activityLogService = require('../service/activity-log.service');
 
 exports.createUserByAdmin = async (req, res) => {
     try {
@@ -173,6 +174,24 @@ exports.deleteUser = async (req, res) => {
         console.error('deleteUser error:', error);
         return res.status(error.status || 500).json({ 
             message: error.message || 'Erreur lors de la suppression de l\'utilisateur' 
+        });
+    }
+};
+
+exports.getMyActivity = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, actionType } = req.query;
+        const result = await activityLogService.getMyActivity(req.user.id, {
+            page,
+            limit,
+            actionType
+        });
+
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error('getMyActivity error:', error);
+        return res.status(error.status || 500).json({
+            message: error.message || "Erreur lors de la récupération de l'historique"
         });
     }
 };

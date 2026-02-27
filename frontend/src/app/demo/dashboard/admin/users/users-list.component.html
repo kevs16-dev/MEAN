@@ -53,6 +53,12 @@
                     <path d="M1 13.5V16h2.5l7.373-7.373-2.5-2.5L1 13.5zm11.854-6.646-2.5-2.5L3 11.707V14h2.293l7.561-7.146z"/>
                   </svg>
                 </button>
+                <button class="btn btn-sm btn-icon btn-link" title="Historique" (click)="onOpenActivity(u)">
+                  <svg class="icon-inline text-info" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M8.515 3.548a.5.5 0 0 0-1.03 0L6.94 6H4.5a.5.5 0 0 0 0 1h2.816a.5.5 0 0 0 .485-.379L8 5.61l.199 1.011a.5.5 0 0 0 .485.379H11.5a.5.5 0 0 0 0-1H9.059l-.544-2.452z"/>
+                    <path d="M8 1a7 7 0 1 0 4.95 11.95.5.5 0 0 0-.707-.708A6 6 0 1 1 14 8a.5.5 0 0 0 1 0A7 7 0 0 0 8 1z"/>
+                  </svg>
+                </button>
                 <button
                   class="btn btn-sm btn-icon btn-link"
                   [title]="u.isActive === false ? 'Activer' : 'Désactiver'"
@@ -131,3 +137,78 @@
 </div>
 
 <div class="modal-backdrop fade show" [style.display]="showDeleteModal ? 'block' : 'none'" *ngIf="showDeleteModal"></div>
+
+<!-- MODAL HISTORIQUE UTILISATEUR -->
+<div
+  class="modal fade show"
+  [class.show]="showActivityModal"
+  [style.display]="showActivityModal ? 'block' : 'none'"
+  tabindex="-1"
+  *ngIf="showActivityModal"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Historique d'activité - {{ selectedUserForActivity?.prenom }} {{ selectedUserForActivity?.nom }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeActivityModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="activityLoading">Chargement...</div>
+        <div *ngIf="activityError" class="text-danger">{{ activityError }}</div>
+
+        <table *ngIf="!activityLoading && userActivities.length" class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Action</th>
+              <th>Type</th>
+              <th>Détails</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of userActivities">
+              <td>{{ a.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ getActionLabel(a.actionType) }}</td>
+              <td>{{ a.entityType }}</td>
+              <td>
+                <span *ngIf="a.metadata?.productName">{{ a.metadata.productName }}</span>
+                <span *ngIf="a.metadata?.eventTitle">{{ a.metadata.eventTitle }}</span>
+                <span *ngIf="a.actionType === 'LOGIN_SUCCESS'">Connexion réussie</span>
+                <span *ngIf="!a.metadata?.productName && !a.metadata?.eventTitle && a.actionType !== 'LOGIN_SUCCESS'">-</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="!activityLoading && !userActivities.length" class="text-muted">
+          Aucun historique pour cet utilisateur.
+        </div>
+
+        <nav *ngIf="!activityLoading && activityTotalPages > 1" class="mt-3">
+          <ul class="pagination pagination-sm justify-content-center">
+            <li class="page-item" [class.disabled]="activityPage === 1">
+              <button class="page-link" (click)="goToActivityPage(activityPage - 1)">Précédent</button>
+            </li>
+            <li
+              class="page-item"
+              *ngFor="let p of [].constructor(activityTotalPages); let idx = index"
+              [class.active]="activityPage === idx + 1"
+            >
+              <button class="page-link" (click)="goToActivityPage(idx + 1)">{{ idx + 1 }}</button>
+            </li>
+            <li class="page-item" [class.disabled]="activityPage === activityTotalPages">
+              <button class="page-link" (click)="goToActivityPage(activityPage + 1)">Suivant</button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeActivityModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show" [style.display]="showActivityModal ? 'block' : 'none'" *ngIf="showActivityModal"></div>

@@ -38,10 +38,9 @@ import {
   ArrowRightOutline,
   GithubOutline
 } from '@ant-design/icons-angular/icons';
-import { title } from 'process';
 import { UserService } from '../../../../../service/user.service';
 import { NotificationService } from '../../../../../service/notification.service';
-import { Observable, Subscription, timer } from 'rxjs';
+import { Subscription, timer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 @Component({
@@ -58,6 +57,13 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
   unreadCount = 0;
   loadingNotifications: boolean = false;
   showAllNotifications = false;
+  showHistoryModal = false;
+  historyLoading = false;
+  historyError: string | null = null;
+  myActivities: any[] = [];
+  historyPage = 1;
+  historyLimit = 10;
+  historyTotal = 0;
 
   private notificationsSub?: Subscription;
 
@@ -162,6 +168,68 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showAllNotifications = !this.showAllNotifications;
   }
 
+  openHistory() {
+    this.showHistoryModal = true;
+    this.historyPage = 1;
+    this.loadMyHistory();
+  }
+
+  closeHistory() {
+    this.showHistoryModal = false;
+    this.myActivities = [];
+    this.historyError = null;
+    this.historyLoading = false;
+    this.historyPage = 1;
+    this.historyTotal = 0;
+    this.cdr.markForCheck();
+  }
+
+  loadMyHistory() {
+    this.historyLoading = true;
+    this.historyError = null;
+    this.userService.getMyActivity({ page: this.historyPage, limit: this.historyLimit }).subscribe({
+      next: (res) => {
+        this.myActivities = Array.isArray(res.logs) ? res.logs : [];
+        this.historyTotal = typeof res.total === 'number' ? res.total : 0;
+        this.historyLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.historyError = err?.error?.message || "Erreur lors de la récupération de l'historique";
+        this.myActivities = [];
+        this.historyTotal = 0;
+        this.historyLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  goToHistoryPage(page: number) {
+    if (page < 1 || page > this.historyTotalPages) return;
+    this.historyPage = page;
+    this.loadMyHistory();
+  }
+
+  get historyTotalPages(): number {
+    const pages = Math.ceil((this.historyTotal || 0) / (this.historyLimit || 1));
+    return pages > 0 ? pages : 1;
+  }
+
+  getActionLabel(actionType: string): string {
+    switch (actionType) {
+      case 'PRODUCT_CREATED':
+        return 'Création produit';
+      case 'PRODUCT_UPDATED':
+        return 'Mise à jour produit';
+      case 'EVENT_CREATED':
+        return 'Création évènement';
+      case 'LOGIN_SUCCESS':
+        return 'Connexion';
+      default:
+        return actionType || 'Action';
+    }
+  }
+
   deconnexion() {
     event.preventDefault();
     this.authService.deconnexion();
@@ -211,7 +279,8 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     {
       icon: 'unordered-list',
-      title: 'History'
+      title: 'Historique',
+      action: () => this.openHistory()
     }
   ];
 }

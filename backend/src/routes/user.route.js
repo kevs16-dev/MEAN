@@ -7,6 +7,7 @@ const roleMiddleware = require('../middleware/role.middleware');
 
 
 router.get('/', authMiddleware, roleMiddleware('ADMIN'), userController.getAllUsers);
+router.get('/me/activity', authMiddleware, userController.getMyActivity);
 router.post('/', authMiddleware, roleMiddleware('ADMIN'), userController.createUserByAdmin);
 router.put('/:id', authMiddleware, roleMiddleware('ADMIN'), userController.updateUserByAdmin);
 router.get('/:id', authMiddleware, roleMiddleware('ADMIN'), userController.getUserById);
