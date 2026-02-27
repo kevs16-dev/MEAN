@@ -9,7 +9,7 @@ export class ShopService {
 
     constructor(private http: HttpClient) {}
 
-    getShopById(id: number) {
+    getShopById(id: string | number) {
         return this.http.get<any>(`${this.API_URI}/${id}`);
     }
 

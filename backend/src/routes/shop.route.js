@@ -9,6 +9,7 @@ router.post('/', authMiddleware, authorize('ADMIN'), shopController.createShop);
 router.get('/', shopController.getAllShops);
 router.get('/available-for-boutique', authMiddleware, roleMiddleware('ADMIN'), shopController.getShopsAvailableForBoutique);
 router.delete('/:id', authMiddleware, authorize('ADMIN'), shopController.deleteShop);
+router.get('/:id/products', shopController.getProductsByShop);
 router.get('/:id', shopController.getShopById);
 
 module.exports = router;
