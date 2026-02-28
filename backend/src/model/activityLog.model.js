@@ -15,13 +15,22 @@ const activityLogSchema = new mongoose.Schema(
     },
     actionType: {
       type: String,
-      enum: ['PRODUCT_CREATED', 'PRODUCT_UPDATED', 'EVENT_CREATED', 'LOGIN_SUCCESS'],
+      enum: [
+        'PRODUCT_CREATED',
+        'PRODUCT_UPDATED',
+        'EVENT_CREATED',
+        'LOGIN_SUCCESS',
+        'ORDER_CREATED',
+        'ORDER_RECEIVED',
+        'ORDER_CONFIRMED',
+        'ORDER_REJECTED'
+      ],
       required: true,
       index: true
     },
     entityType: {
       type: String,
-      enum: ['PRODUCT', 'EVENT', 'USER'],
+      enum: ['PRODUCT', 'EVENT', 'USER', 'ORDER'],
       required: true,
       index: true
     },

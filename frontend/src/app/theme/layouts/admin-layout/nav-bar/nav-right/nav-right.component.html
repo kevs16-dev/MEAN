@@ -162,8 +162,12 @@
               <td>
                 <span *ngIf="a.metadata?.productName">{{ a.metadata.productName }}</span>
                 <span *ngIf="a.metadata?.eventTitle">{{ a.metadata.eventTitle }}</span>
+                <span *ngIf="a.metadata?.orderNumber">
+                  #{{ a.metadata.orderNumber }}
+                  <span *ngIf="a.metadata?.status">({{ a.metadata.status }})</span>
+                </span>
                 <span *ngIf="a.actionType === 'LOGIN_SUCCESS'">Connexion réussie</span>
-                <span *ngIf="!a.metadata?.productName && !a.metadata?.eventTitle && a.actionType !== 'LOGIN_SUCCESS'">-</span>
+                <span *ngIf="!a.metadata?.productName && !a.metadata?.eventTitle && !a.metadata?.orderNumber && a.actionType !== 'LOGIN_SUCCESS'">-</span>
               </td>
             </tr>
           </tbody>

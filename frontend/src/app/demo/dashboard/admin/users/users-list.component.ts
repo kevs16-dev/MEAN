@@ -339,6 +339,14 @@ export class UsersListComponent {
         return 'Création évènement';
       case 'LOGIN_SUCCESS':
         return 'Connexion';
+      case 'ORDER_CREATED':
+        return 'Commande créée';
+      case 'ORDER_RECEIVED':
+        return 'Commande reçue';
+      case 'ORDER_CONFIRMED':
+        return 'Commande confirmée';
+      case 'ORDER_REJECTED':
+        return 'Commande rejetée';
       default:
         return actionType || 'Action';
     }
