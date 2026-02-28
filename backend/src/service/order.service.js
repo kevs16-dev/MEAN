@@ -6,6 +6,7 @@ const ProductVariant = require('../model/produitVariant.model');
 const Shop = require('../model/boutique.model');
 const User = require('../model/user.model');
 const Notification = require('../model/notification.model');
+const activityLogService = require('./activity-log.service');
 
 const ORDER_STATUS = {
   PENDING: 'PENDING',
@@ -66,6 +67,89 @@ const notifyClientForOrderStatus = async (order, status, session) => {
     ],
     { session }
   );
+};
+
+const logClientOrderCreated = async (clientUserId, order, session) => {
+  await activityLogService.logActivity({
+    userId: clientUserId,
+    actorRole: 'CLIENT',
+    actionType: 'ORDER_CREATED',
+    entityType: 'ORDER',
+    entityId: order._id,
+    metadata: {
+      orderNumber: String(order._id).slice(-8),
+      shopId: order.shopId,
+      totalAmount: order.totalAmount,
+      status: order.status
+    },
+    session
+  });
+};
+
+const logOrderReceivedForShopUsers = async (shopId, order, session) => {
+  const shopUsers = await User.find({
+    role: 'BOUTIQUE',
+    shopId,
+    isActive: true
+  })
+    .select('_id')
+    .session(session);
+
+  for (const shopUser of shopUsers) {
+    await activityLogService.logActivity({
+      userId: shopUser._id,
+      actorRole: 'BOUTIQUE',
+      actionType: 'ORDER_RECEIVED',
+      entityType: 'ORDER',
+      entityId: order._id,
+      metadata: {
+        orderNumber: String(order._id).slice(-8),
+        shopId: order.shopId,
+        totalAmount: order.totalAmount,
+        status: order.status
+      },
+      session
+    });
+  }
+};
+
+const logOrderStatusChange = async ({
+  boutiqueUserId,
+  order,
+  targetStatus,
+  session
+}) => {
+  const actionType = targetStatus === ORDER_STATUS.CONFIRMED ? 'ORDER_CONFIRMED' : 'ORDER_REJECTED';
+
+  await activityLogService.logActivity({
+    userId: boutiqueUserId,
+    actorRole: 'BOUTIQUE',
+    actionType,
+    entityType: 'ORDER',
+    entityId: order._id,
+    metadata: {
+      orderNumber: String(order._id).slice(-8),
+      shopId: order.shopId,
+      totalAmount: order.totalAmount,
+      status: targetStatus
+    },
+    session
+  });
+
+  await activityLogService.logActivity({
+    userId: order.userId,
+    actorRole: 'CLIENT',
+    actionType,
+    entityType: 'ORDER',
+    entityId: order._id,
+    metadata: {
+      orderNumber: String(order._id).slice(-8),
+      shopId: order.shopId,
+      totalAmount: order.totalAmount,
+      status: targetStatus
+    },
+    session
+  });
 };
 
 const getBoutiqueUserShopId = async (userId) => {
@@ -175,6 +259,8 @@ const createOrdersFromCart = async (clientUserId) => {
 
       for (const order of createdOrders) {
         await notifyShopUsersForNewOrder(order.shopId, order, session);
+        await logClientOrderCreated(clientUserId, order, session);
+        await logOrderReceivedForShopUsers(order.shopId, order, session);
       }
     });
 
@@ -350,6 +436,12 @@ const updateOrderStatusForShop = async (boutiqueUserId, orderId, targetStatus) =
       updatedOrder = order;
 
       await notifyClientForOrderStatus(order, targetStatus, session);
+      await logOrderStatusChange({
+        boutiqueUserId,
+        order,
+        targetStatus,
+        session
+      });
     });
 
     return await Order.findById(updatedOrder._id)

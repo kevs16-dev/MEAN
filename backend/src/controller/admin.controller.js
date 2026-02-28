@@ -37,7 +37,10 @@ const buildPdfExport = (user, logs) => {
 
         logs.forEach((log, index) => {
             const date = log.createdAt ? new Date(log.createdAt).toLocaleString('fr-FR') : '-';
-            const details = log?.metadata?.productName || log?.metadata?.eventTitle || (log.actionType === 'LOGIN_SUCCESS' ? 'Connexion reussie' : '-');
+            const orderDetails = log?.metadata?.orderNumber
+                ? `Commande #${log.metadata.orderNumber}${log?.metadata?.status ? ` (${log.metadata.status})` : ''}`
+                : null;
+            const details = log?.metadata?.productName || log?.metadata?.eventTitle || orderDetails || (log.actionType === 'LOGIN_SUCCESS' ? 'Connexion reussie' : '-');
             doc
                 .fontSize(10)
                 .text(`${index + 1}. [${date}] ${log.actionType} | ${log.entityType} | ${details}`);
@@ -82,7 +85,10 @@ const buildAllPdfExport = (logs) => {
             const date = log.createdAt ? new Date(log.createdAt).toLocaleString('fr-FR') : '-';
             const user = log.userId || {};
             const username = user.username || user.email || 'Utilisateur inconnu';
-            const details = log?.metadata?.productName || log?.metadata?.eventTitle || (log.actionType === 'LOGIN_SUCCESS' ? 'Connexion reussie' : '-');
+            const orderDetails = log?.metadata?.orderNumber
+                ? `Commande #${log.metadata.orderNumber}${log?.metadata?.status ? ` (${log.metadata.status})` : ''}`
+                : null;
+            const details = log?.metadata?.productName || log?.metadata?.eventTitle || orderDetails || (log.actionType === 'LOGIN_SUCCESS' ? 'Connexion reussie' : '-');
             doc
                 .fontSize(10)
                 .text(`${index + 1}. [${date}] ${username} | ${log.actionType} | ${log.entityType} | ${details}`);
