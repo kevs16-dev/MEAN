@@ -1,2 +1,89 @@
-// Styles spécifiques au dashboard boutique (optionnels)
+.boutique-dashboard {
+  .metric-title {
+    letter-spacing: 0.2px;
+  }
+
+  .metric-amount {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 1.55rem;
+    line-height: 1.2;
+  }
+
+  .trend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+    padding: 0.35rem 0.55rem;
+  }
+
+  .metric-subtitle {
+    font-size: 0.9rem;
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  label {
+    margin: 0;
+    font-weight: 600;
+    color: #495057;
+  }
+}
+
+.period-select {
+  min-width: 210px;
+  border-radius: 10px;
+  border: 1px solid #d9d9d9;
+  background: #fff;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  &:focus {
+    border-color: #1677ff;
+    box-shadow: 0 0 0 0.2rem rgba(22, 119, 255, 0.15);
+  }
+}
+
+.period-label {
+  color: #495057;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef5ff 100%);
+  border: 1px solid #d7e8ff;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.chart-box {
+  min-height: 320px;
+}
+
+.products-table {
+  thead th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #6c757d;
+    border-bottom-width: 1px;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
 
