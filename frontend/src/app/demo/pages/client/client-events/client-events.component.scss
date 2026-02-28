@@ -91,6 +91,12 @@
   }
 }
 
+.event-head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
 .date-badge {
   background: #f3f1ff;
   color: #4f3fff;
@@ -99,6 +105,29 @@
   font-size: 0.78rem;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.event-visibility {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.22rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+
+  &.private {
+    background: #ffe9e9;
+    color: #b42318;
+    border: 1px solid #ffd1d1;
+  }
+
+  &.public {
+    background: #e8f9ef;
+    color: #067647;
+    border: 1px solid #c9efd9;
+  }
 }
 
 .event-description {
@@ -149,6 +178,24 @@
   width: min(600px, 100%);
   max-height: 90vh;
   overflow: auto;
+}
+
+.event-modal-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+:host ::ng-deep .fc .fc-event.event-private {
+  background-color: #b42318;
+  border-color: #b42318;
+}
+
+:host ::ng-deep .fc .fc-event.event-public {
+  background-color: #067647;
+  border-color: #067647;
 }
 
 @media (max-width: 992px) {
