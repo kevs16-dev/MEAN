@@ -84,5 +84,61 @@
       </div>
     </app-card>
   </div>
+
+  <div class="col-md-12 col-xl-6">
+    <app-card cardTitle="Top produits les plus vendus">
+      <div *ngIf="isLoadingSales" class="text-center py-4">Chargement...</div>
+      <div *ngIf="!isLoadingSales && !salesError && topProductsBestSold.length === 0" class="alert alert-info mb-0">
+        Aucune donnée sur la période sélectionnée.
+      </div>
+
+      <div *ngIf="!isLoadingSales && !salesError && topProductsBestSold.length > 0" class="table-responsive">
+        <table class="table table-sm align-middle mb-0 products-table">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th class="text-end">Quantité vendue</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (product of topProductsBestSold; track product.key) {
+              <tr>
+                <td>{{ product.name }}</td>
+                <td class="text-end fw-semibold">{{ product.quantity }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </app-card>
+  </div>
+
+  <div class="col-md-12 col-xl-6">
+    <app-card cardTitle="Top produits les moins vendus">
+      <div *ngIf="isLoadingSales" class="text-center py-4">Chargement...</div>
+      <div *ngIf="!isLoadingSales && !salesError && topProductsLeastSold.length === 0" class="alert alert-info mb-0">
+        Aucune donnée sur la période sélectionnée.
+      </div>
+
+      <div *ngIf="!isLoadingSales && !salesError && topProductsLeastSold.length > 0" class="table-responsive">
+        <table class="table table-sm align-middle mb-0 products-table">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th class="text-end">Quantité vendue</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (product of topProductsLeastSold; track product.key) {
+              <tr>
+                <td>{{ product.name }}</td>
+                <td class="text-end fw-semibold">{{ product.quantity }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </app-card>
+  </div>
 </div>
 

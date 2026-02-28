@@ -16,6 +16,12 @@ import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
 type ShopOrder = {
   createdAt?: string;
   totalAmount?: number;
+  status?: string;
+  items?: Array<{
+    nameSnapshot?: string;
+    quantity?: number;
+    productId?: string | { _id?: string; name?: string };
+  }>;
 };
 
 type DailySalesData = {
@@ -30,6 +36,12 @@ type MonthlyComparisonData = {
   worstMonthLabel: string;
   currentMonthLabel: string;
   bestMonthLabel: string;
+};
+
+type ProductSalesRow = {
+  key: string;
+  name: string;
+  quantity: number;
 };
 
 @Component({
@@ -52,6 +64,8 @@ export class BoutiqueHomeComponent implements OnInit {
   chartOptions: Partial<ApexOptions> = {};
   monthlyHistogramOptions: Partial<ApexOptions> = {};
   monthlyHoverLabels: string[] = ['-', '-', '-'];
+  topProductsBestSold: ProductSalesRow[] = [];
+  topProductsLeastSold: ProductSalesRow[] = [];
 
   constructor() {
     this.iconService.addIcon(...[RiseOutline]);
@@ -124,6 +138,8 @@ export class BoutiqueHomeComponent implements OnInit {
           this.salesError = 'Impossible de charger les ventes.';
           this.chartOptions = this.createChartOptions([], []);
           this.monthlyHistogramOptions = this.createMonthlyHistogramOptions([0, 0, 0], ['-', '-', '-']);
+          this.topProductsBestSold = [];
+          this.topProductsLeastSold = [];
           this.isLoadingSales = false;
         }
       });
@@ -148,7 +164,8 @@ export class BoutiqueHomeComponent implements OnInit {
   }
 
   private refreshChartFromCurrentPeriod(): void {
-    const dailySales = this.buildDailySalesData(this.allOrders, this.selectedPeriodDays);
+    const periodOrders = this.getOrdersForSelectedPeriod(this.allOrders, this.selectedPeriodDays);
+    const dailySales = this.buildDailySalesData(periodOrders, this.selectedPeriodDays);
     this.totalSales = dailySales.totalSales;
     this.totalOrders = dailySales.totalOrders;
     this.chartOptions = this.createChartOptions(dailySales.labels, dailySales.values);
@@ -160,6 +177,10 @@ export class BoutiqueHomeComponent implements OnInit {
       monthlyComparison.bestMonthLabel
     ];
     this.monthlyHistogramOptions = this.createMonthlyHistogramOptions(monthlyComparison.values, this.monthlyHoverLabels);
+
+    const { bestSold, leastSold } = this.buildTopProducts(periodOrders);
+    this.topProductsBestSold = bestSold;
+    this.topProductsLeastSold = leastSold;
   }
 
   private buildDailySalesData(orders: ShopOrder[], daysCount: number): DailySalesData {
@@ -348,6 +369,68 @@ export class BoutiqueHomeComponent implements OnInit {
         borderColor: '#f5f5f5'
       }
     };
+  }
+
+  private getOrdersForSelectedPeriod(orders: ShopOrder[], daysCount: number): ShopOrder[] {
+    const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999);
+
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setDate(startDate.getDate() - daysCount + 1);
+
+    return orders.filter((order) => {
+      if (!order?.createdAt || order.status === 'CANCELLED') {
+        return false;
+      }
+      const orderDate = new Date(order.createdAt);
+      if (Number.isNaN(orderDate.getTime())) {
+        return false;
+      }
+      return orderDate >= startDate && orderDate <= endDate;
+    });
+  }
+
+  private buildTopProducts(orders: ShopOrder[]): { bestSold: ProductSalesRow[]; leastSold: ProductSalesRow[] } {
+    const quantityByProduct = new Map<string, ProductSalesRow>();
+
+    for (const order of orders) {
+      const items = order.items ?? [];
+      for (const item of items) {
+        const quantity = Number(item?.quantity ?? 0);
+        if (quantity <= 0) {
+          continue;
+        }
+
+        const productId =
+          typeof item.productId === 'string'
+            ? item.productId
+            : item.productId?._id;
+        const productName =
+          item.nameSnapshot?.trim() ||
+          (typeof item.productId === 'object' ? item.productId?.name : '') ||
+          'Produit sans nom';
+        const key = productId || productName;
+
+        const current = quantityByProduct.get(key);
+        if (!current) {
+          quantityByProduct.set(key, { key, name: productName, quantity });
+        } else {
+          current.quantity += quantity;
+        }
+      }
+    }
+
+    const rows = [...quantityByProduct.values()];
+    const bestSold = [...rows]
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 3);
+
+    const leastSold = [...rows]
+      .sort((a, b) => a.quantity - b.quantity)
+      .slice(0, 3);
+
+    return { bestSold, leastSold };
   }
 
   private toDateKey(date: Date): string {
