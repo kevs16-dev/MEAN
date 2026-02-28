@@ -70,10 +70,121 @@
         </div>
       </section>
 
+      @if (canViewReviews()) {
+        <section class="mb-4">
+          <h5><span class="star-icon me-2">★</span>Avis &amp; Notes</h5>
+          <div class="shop-reviews-section">
+            @if (shopReviewsLoading) {
+              <p class="text-muted">Chargement des avis...</p>
+            } @else {
+              <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
+                @if (shopReviewsTotal > 0) {
+                  <span class="shop-reviews-average">
+                    ★ {{ shopAverageRating != null ? (shopAverageRating | number:'1.1-1') : '—' }}
+                    <span class="text-muted">({{ shopReviewsTotal }} avis)</span>
+                  </span>
+                }
+                @if (isClient()) {
+                  <button type="button" class="btn btn-outline-primary btn-sm" (click)="openReviewModal()">
+                    <span class="star-icon">★</span> {{ myShopReview ? 'Modifier mon avis' : 'Noter cette boutique' }}
+                  </button>
+                }
+              </div>
+              @if (shopReviews.length === 0) {
+                <p class="text-muted mb-0">Aucun avis pour cette boutique.</p>
+              } @else {
+                <ul class="shop-reviews-list list-unstyled mb-0">
+                  @for (r of shopReviews; track r._id) {
+                    <li class="shop-review-item">
+                      <div class="shop-review-meta">
+                        <strong>{{ getReviewAuthorName(r) }}</strong>
+                        <span class="shop-review-stars">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</span>
+                        <span class="text-muted small">{{ r.createdAt | date:'short' }}</span>
+                      </div>
+                      <p *ngIf="r.comment" class="shop-review-comment mb-0">{{ r.comment }}</p>
+                    </li>
+                  }
+                </ul>
+              }
+            }
+          </div>
+        </section>
+      }
+
       <div class="shop-detail-actions">
         <button type="button" class="btn btn-primary" (click)="goToProducts()">
           <i antIcon type="shopping" theme="outline" class="me-1"></i>
           Voir les produits
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Noter la boutique -->
+<div
+  *ngIf="showReviewModal"
+  class="shop-review-modal-overlay"
+  (click)="closeReviewModal()"
+  role="button"
+  aria-label="Fermer"
+  tabindex="-1"
+>
+  <div class="shop-review-modal-dialog" (click)="$event.stopPropagation()">
+    <div class="shop-review-modal-header">
+      <h5 class="shop-review-modal-title">Noter {{ shop?.name }}</h5>
+      <button type="button" class="shop-review-modal-close" (click)="closeReviewModal()" aria-label="Fermer">×</button>
+    </div>
+    <div class="shop-review-modal-body">
+      <div class="star-rating mb-3">
+        @for (star of [1,2,3,4,5]; track star) {
+          <button
+            type="button"
+            class="star-btn"
+            [class.filled]="star <= (reviewModalHoverRating || reviewModalRating)"
+            (click)="setReviewStars(star)"
+            (mouseenter)="reviewModalHoverRating = star"
+            (mouseleave)="reviewModalHoverRating = 0"
+          >
+            ★
+          </button>
+        }
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Commentaire (optionnel)</label>
+        <textarea
+          class="form-control"
+          rows="3"
+          [(ngModel)]="reviewModalComment"
+          placeholder="Partagez votre expérience..."
+          maxlength="2000"
+        ></textarea>
+        <small class="text-muted">{{ reviewModalComment.length }}/2000</small>
+      </div>
+      @if (reviewModalError) {
+        <div class="alert alert-danger py-2">{{ reviewModalError }}</div>
+      }
+    </div>
+    <div class="shop-review-modal-footer">
+      @if (myShopReview?._id) {
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-sm"
+          [disabled]="reviewModalSubmitting"
+          (click)="deleteMyShopReview()"
+        >
+          Supprimer mon avis
+        </button>
+      }
+      <div class="ms-auto">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeReviewModal()">Annuler</button>
+        <button
+          type="button"
+          class="btn btn-primary ms-2"
+          [disabled]="reviewModalSubmitting || reviewModalRating < 1"
+          (click)="submitShopReview()"
+        >
+          {{ reviewModalSubmitting ? 'Envoi...' : 'Enregistrer' }}
         </button>
       </div>
     </div>
