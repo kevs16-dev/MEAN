@@ -40,7 +40,12 @@
     <article class="event-card" *ngFor="let e of visibleEvents" (click)="openEventModal(e)">
       <div class="event-head">
         <h5>{{ e.title }}</h5>
-        <span class="date-badge">{{ e.startDate | date:'dd/MM/yyyy' }}</span>
+        <div class="event-head-right">
+          <span class="event-visibility" [ngClass]="isPrivateEvent(e) ? 'private' : 'public'">
+            {{ isPrivateEvent(e) ? 'Privé' : 'Public' }}
+          </span>
+          <span class="date-badge">{{ e.startDate | date:'dd/MM/yyyy' }}</span>
+        </div>
       </div>
 
       <p class="event-description">{{ e.description || 'Aucune description.' }}</p>
@@ -64,7 +69,12 @@
         <button type="button" class="btn-close" aria-label="Close" (click)="closeEventModal()"></button>
       </div>
       <div class="card-body" *ngIf="selectedEvent as e">
-        <h5 class="card-title">{{ e.title }}</h5>
+        <div class="event-modal-title-row">
+          <h5 class="card-title mb-0">{{ e.title }}</h5>
+          <span class="event-visibility" [ngClass]="isPrivateEvent(e) ? 'private' : 'public'">
+            {{ isPrivateEvent(e) ? 'Evènement privé' : 'Evènement public' }}
+          </span>
+        </div>
         <p class="card-text mb-3">{{ e.description || '—' }}</p>
         <p class="mb-2">
           <i class="ti ti-calendar-event me-1"></i>
@@ -78,6 +88,59 @@
           <i class="ti ti-bell me-1"></i>
           Rappel: {{ e.reminderDaysBefore }} jour(s) avant
         </p>
+
+        <div class="mt-3" *ngIf="e.isPrivate">
+          <h6 class="mb-2">Billets privés</h6>
+
+          <div class="alert alert-success py-2 mb-2" *ngIf="registrationSuccess">
+            {{ registrationSuccess }}
+          </div>
+          <div class="alert alert-danger py-2 mb-2" *ngIf="registrationError">
+            {{ registrationError }}
+          </div>
+
+          <div class="list-group" *ngIf="e.ticketTypes?.length; else noTicketType">
+            <div
+              class="list-group-item d-flex justify-content-between align-items-center"
+              *ngFor="let ticketType of e.ticketTypes"
+            >
+              <div>
+                <div class="fw-semibold">{{ ticketType.name }}</div>
+                <small class="text-muted">
+                  Max: {{ ticketType.maxPlaces }} | Restantes: {{ getRemainingPlaces(e, ticketType) }} | PAF: {{ ticketType.paf }}
+                </small>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                [disabled]="registeringTicketTypeName === ticketType.name || isRegisteredToEvent(e) || getRemainingPlaces(e, ticketType) <= 0"
+                (click)="registerToPrivateEvent(ticketType.name)"
+              >
+                {{
+                  isRegisteredToEvent(e)
+                    ? 'Déjà inscrit'
+                    : (registeringTicketTypeName === ticketType.name ? 'Inscription...' : 'S’inscrire')
+                }}
+              </button>
+            </div>
+          </div>
+
+          <ng-template #noTicketType>
+            <div class="text-muted">Aucun type de billet disponible.</div>
+          </ng-template>
+
+          <div class="mt-3" *ngIf="isRegisteredToEvent(e)">
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              [disabled]="isDownloadingTicket"
+              (click)="downloadMyTicket()"
+            >
+              {{ isDownloadingTicket ? 'Téléchargement...' : 'Télécharger mon ticket' }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

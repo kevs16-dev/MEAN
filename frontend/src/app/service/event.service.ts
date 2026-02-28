@@ -29,4 +29,35 @@ export class EventService {
         }
         return this.http.get<any[]>(`${this.API_URI}/role`, { params });
     }
+
+    registerToPrivateEvent(eventId: string, ticketTypeName: string) {
+        return this.http.post<any>(`${this.API_URI}/${eventId}/register`, { ticketTypeName });
+    }
+
+    downloadPrivateEventTicket(eventId: string) {
+        return this.http.get(`${this.API_URI}/${eventId}/ticket`, {
+            responseType: 'blob'
+        });
+    }
+
+    getPrivateEventParticipants(eventId: string) {
+        return this.http.get<{
+            eventId: string;
+            eventTitle: string;
+            participants: Array<{
+                ticketNumber: number;
+                ticketCode: string;
+                ticketTypeName: string;
+                paf: number;
+                registeredAt: string | null;
+                participant: {
+                    id: string | null;
+                    nom: string;
+                    prenom: string;
+                    username: string;
+                    email: string;
+                };
+            }>;
+        }>(`${this.API_URI}/${eventId}/participants`);
+    }
 }
