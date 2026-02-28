@@ -12,6 +12,7 @@ export interface CartItemVariant {
   stock: number;
   reservedStock: number;
   availableStock: number;
+  imageUrl?: string | null;
 }
 
 /** Produit dans un item du panier (enrichi) */
@@ -25,6 +26,7 @@ export interface CartItemProduct {
 export interface CartItemShop {
   _id: string;
   name: string;
+  logo?: string | null;
 }
 
 /** Item enrichi du panier */

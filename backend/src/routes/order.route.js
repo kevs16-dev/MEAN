@@ -4,6 +4,7 @@ const roleMiddleware = require('../middleware/role.middleware');
 const orderController = require('../controller/order.controller');
 
 router.post('/from-cart', authMiddleware, roleMiddleware('CLIENT'), orderController.createOrdersFromCart);
+router.post('/my/receipt-pdf', authMiddleware, roleMiddleware('CLIENT'), orderController.getMyReceiptPdf);
 router.get('/my', authMiddleware, roleMiddleware('CLIENT'), orderController.getMyOrders);
 
 router.get('/shop/my', authMiddleware, roleMiddleware('BOUTIQUE'), orderController.getShopOrders);

@@ -65,7 +65,7 @@ const getCart = async (userId) => {
     const product = variant.productId;
     if (!product || !product.shopId) continue;
 
-    const shop = await Shop.findById(product.shopId).select('name _id status').lean();
+    const shop = await Shop.findById(product.shopId).select('name _id status logo').lean();
     if (!shop) continue;
     // Inclure les items même si shop non ACTIVE (affichage panier), la commande validera côté order
 
@@ -80,7 +80,8 @@ const getCart = async (userId) => {
         currentPrice: variant.currentPrice,
         stock: variant.stock,
         reservedStock: variant.reservedStock,
-        availableStock
+        availableStock,
+        imageUrl: variant.imageUrl || null
       },
       product: {
         _id: product._id,
@@ -89,7 +90,8 @@ const getCart = async (userId) => {
       },
       shop: {
         _id: shop._id,
-        name: shop.name
+        name: shop.name,
+        logo: shop.logo || null
       },
       subtotal: variant.currentPrice * item.quantity
     });

@@ -12,6 +12,7 @@ import { AuthService } from '../../../../service/auth.service';
 interface ShopGroup {
   shopId: string;
   shopName: string;
+  shopLogo?: string | null;
   items: CartItem[];
   shopSubtotal: number;
 }
@@ -69,13 +70,14 @@ export class CartPageComponent implements OnInit {
 
   private buildGroupedByShop(cart: CartResponse): ShopGroup[] {
     const items = cart?.items ?? [];
-    const byShop = new Map<string, { shopName: string; items: CartItem[]; shopSubtotal: number }>();
+    const byShop = new Map<string, { shopName: string; shopLogo?: string | null; items: CartItem[]; shopSubtotal: number }>();
 
     for (const item of items) {
       const sid = item.shop._id;
       const shopName = item.shop.name;
+      const shopLogo = item.shop.logo ?? null;
       if (!byShop.has(sid)) {
-        byShop.set(sid, { shopName, items: [], shopSubtotal: 0 });
+        byShop.set(sid, { shopName, shopLogo, items: [], shopSubtotal: 0 });
       }
       const g = byShop.get(sid)!;
       g.items.push(item);
@@ -85,6 +87,7 @@ export class CartPageComponent implements OnInit {
     return Array.from(byShop.entries()).map(([shopId, g]) => ({
       shopId,
       shopName: g.shopName,
+      shopLogo: g.shopLogo,
       items: g.items,
       shopSubtotal: g.shopSubtotal
     }));
@@ -175,10 +178,28 @@ export class CartPageComponent implements OnInit {
       next: (res) => {
         this.isPlacingOrder = false;
         const count = res?.orders?.length ?? 0;
-        this.messageSuccess = `${count} commande(s) passée(s) avec succès !`;
-        setTimeout(() => {
-          this.router.navigate(['/client/orders']);
-        }, 1500);
+        this.messageSuccess = `${count} commande(s) passée(s) avec succès ! Téléchargement du PDF...`;
+        const orderIds = (res?.orders ?? []).map((o: { _id?: string }) => o?._id).filter(Boolean);
+        if (orderIds.length > 0) {
+          this.orderService.getReceiptPdf(orderIds).subscribe({
+            next: (blob) => {
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `recapitulatif-commande-${Date.now()}.pdf`;
+              link.click();
+              URL.revokeObjectURL(url);
+              this.messageSuccess = `${count} commande(s) passée(s) avec succès !`;
+              setTimeout(() => this.router.navigate(['/client/orders']), 1500);
+            },
+            error: () => {
+              this.messageSuccess = `${count} commande(s) passée(s) avec succès !`;
+              setTimeout(() => this.router.navigate(['/client/orders']), 1500);
+            }
+          });
+        } else {
+          setTimeout(() => this.router.navigate(['/client/orders']), 1500);
+        }
       },
       error: (err) => {
         this.isPlacingOrder = false;

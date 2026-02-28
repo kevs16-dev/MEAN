@@ -1,4 +1,6 @@
 const orderService = require('../service/order.service');
+const orderReceiptPdfService = require('../service/order-receipt-pdf.service');
+const User = require('../model/user.model');
 
 const getStatusCode = (error) => error?.status || 500;
 
@@ -86,6 +88,40 @@ exports.rejectOrder = async (req, res) => {
   } catch (error) {
     res.status(getStatusCode(error)).json({
       message: error.message || 'Erreur lors du rejet de la commande'
+    });
+  }
+};
+
+/**
+ * Télécharge un PDF récapitulatif des commandes passées (CLIENT).
+ * Body: { orderIds: string[] }
+ */
+exports.getMyReceiptPdf = async (req, res) => {
+  try {
+    const { orderIds } = req.body || {};
+    const ids = Array.isArray(orderIds) ? orderIds : [orderIds].filter(Boolean);
+    if (!ids.length) {
+      return res.status(400).json({ message: 'orderIds requis (tableau)' });
+    }
+
+    const [orders, user] = await Promise.all([
+      orderService.getMyOrdersByIdsForReceipt(req.user.id, ids),
+      User.findById(req.user.id).select('nom prenom username email').lean()
+    ]);
+
+    if (!orders.length) {
+      return res.status(404).json({ message: 'Aucune commande trouvée' });
+    }
+
+    const pdfBuffer = await orderReceiptPdfService.generateReceiptPdf(orders, user || {});
+    const filename = `recapitulatif-commande-${Date.now()}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.status(200).send(pdfBuffer);
+  } catch (error) {
+    res.status(getStatusCode(error)).json({
+      message: error.message || 'Erreur lors de la génération du PDF'
     });
   }
 };

@@ -23,11 +23,21 @@
 
   <ng-container *ngIf="!isLoading && !error && groupedByShop.length > 0">
     <ng-container *ngFor="let group of groupedByShop">
-      <h5 class="mt-4 mb-3 border-bottom pb-2">{{ group.shopName }}</h5>
+      <h5 class="mt-4 mb-3 border-bottom pb-2 d-flex align-items-center gap-2">
+        <img
+          *ngIf="group.shopLogo"
+          [src]="group.shopLogo"
+          alt=""
+          class="cart-shop-logo"
+          (error)="$any($event.target).style.display='none'"
+        />
+        {{ group.shopName }}
+      </h5>
       <div class="table-responsive mb-4">
         <table class="table table-sm table-striped align-middle">
           <thead>
             <tr>
+              <th>Image</th>
               <th>Produit</th>
               <th>Variante</th>
               <th>Prix unit.</th>
@@ -38,6 +48,16 @@
           </thead>
           <tbody>
             <tr *ngFor="let item of group.items">
+              <td>
+                <img
+                  *ngIf="item.variant?.imageUrl"
+                  [src]="item.variant.imageUrl"
+                  alt=""
+                  class="cart-variant-thumb"
+                  (error)="$any($event.target).style.display='none'"
+                />
+                <span *ngIf="!item.variant?.imageUrl" class="cart-variant-placeholder">—</span>
+              </td>
               <td>{{ item.product?.name ?? '—' }}</td>
               <td>
                 <ng-container *ngIf="item.variant?.attributes?.length; else noAttrs">

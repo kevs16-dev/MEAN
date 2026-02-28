@@ -29,6 +29,13 @@ export class OrderService {
     return this.http.post<CreateOrdersResponse>(`${this.API_URI}/from-cart`, {});
   }
 
+  /** Télécharger le PDF récapitulatif des commandes (CLIENT) */
+  getReceiptPdf(orderIds: string[]): Observable<Blob> {
+    return this.http.post(`${this.API_URI}/my/receipt-pdf`, { orderIds }, {
+      responseType: 'blob'
+    });
+  }
+
   /** Liste des commandes du CLIENT connecté */
   getMyOrders(params?: { page?: number; limit?: number }): Observable<MyOrdersResponse> {
     let query = '';

@@ -225,6 +225,29 @@ const getMyOrderById = async (clientUserId, orderId) => {
   return order;
 };
 
+/**
+ * Récupère les commandes du CLIENT par leurs IDs (pour génération PDF récapitulatif).
+ * @param {string} clientUserId - ID utilisateur CLIENT
+ * @param {string[]} orderIds - IDs des commandes
+ * @returns {Promise<object[]>}
+ */
+const getMyOrdersByIdsForReceipt = async (clientUserId, orderIds) => {
+  if (!Array.isArray(orderIds) || orderIds.length === 0) {
+    return [];
+  }
+  const ids = orderIds
+    .filter((id) => id && mongoose.Types.ObjectId.isValid(id))
+    .map((id) => new mongoose.Types.ObjectId(id));
+  if (ids.length === 0) {
+    return [];
+  }
+  return Order.find({ _id: { $in: ids }, userId: clientUserId })
+    .populate('shopId', 'name logo contact location description')
+    .populate('items.productVariantId', 'attributes imageUrl sku')
+    .sort({ createdAt: -1 })
+    .lean();
+};
+
 const getShopOrders = async (boutiqueUserId, { page = 1, limit = 10, status } = {}) => {
   const shopId = await getBoutiqueUserShopId(boutiqueUserId);
   const safePage = toPositiveInt(page, 1);
@@ -348,6 +371,7 @@ module.exports = {
   createOrdersFromCart,
   getMyOrders,
   getMyOrderById,
+  getMyOrdersByIdsForReceipt,
   getShopOrders,
   getShopOrderById,
   confirmOrder,
