@@ -2,7 +2,16 @@ const ActivityLog = require('../model/activityLog.model');
 const User = require('../model/user.model');
 const AppError = require('../utils/AppError');
 
-const ALLOWED_ACTION_TYPES = ['PRODUCT_CREATED', 'PRODUCT_UPDATED', 'EVENT_CREATED', 'LOGIN_SUCCESS'];
+const ALLOWED_ACTION_TYPES = [
+  'PRODUCT_CREATED',
+  'PRODUCT_UPDATED',
+  'EVENT_CREATED',
+  'LOGIN_SUCCESS',
+  'ORDER_CREATED',
+  'ORDER_RECEIVED',
+  'ORDER_CONFIRMED',
+  'ORDER_REJECTED'
+];
 
 const logActivity = async ({
   userId,
@@ -10,20 +19,28 @@ const logActivity = async ({
   actionType,
   entityType,
   entityId,
-  metadata = {}
+  metadata = {},
+  session = null
 }) => {
   if (!userId || !actionType || !entityType || !entityId || !actorRole) {
     return null;
   }
 
-  return ActivityLog.create({
+  const payload = {
     userId,
     actorRole,
     actionType,
     entityType,
     entityId,
     metadata
-  });
+  };
+
+  if (session) {
+    const created = await ActivityLog.create([payload], { session });
+    return created[0] || null;
+  }
+
+  return ActivityLog.create(payload);
 };
 
 const getUserActivityForAdmin = async (userId, options = {}) => {
