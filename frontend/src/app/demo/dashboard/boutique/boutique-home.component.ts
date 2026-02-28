@@ -2,6 +2,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { forkJoin, map, of, switchMap } from 'rxjs';
 
 // Project import
@@ -14,6 +15,7 @@ import { RiseOutline } from '@ant-design/icons-angular/icons';
 import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
 
 type ShopOrder = {
+  _id?: string;
   createdAt?: string;
   totalAmount?: number;
   status?: string;
@@ -47,7 +49,7 @@ type ProductSalesRow = {
 @Component({
   selector: 'app-boutique-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardComponent, IconDirective, NgApexchartsModule],
+  imports: [CommonModule, FormsModule, RouterModule, CardComponent, IconDirective, NgApexchartsModule],
   templateUrl: './boutique-home.component.html',
   styleUrls: ['./boutique-home.component.scss']
 })
@@ -98,6 +100,17 @@ export class BoutiqueHomeComponent implements OnInit {
         color: 'text-warning'
       }
     ];
+  }
+
+  get recentOrders(): ShopOrder[] {
+    return [...this.allOrders]
+      .filter((order) => !!order?.createdAt)
+      .sort((a, b) => {
+        const dateA = new Date(a.createdAt ?? '').getTime();
+        const dateB = new Date(b.createdAt ?? '').getTime();
+        return dateB - dateA;
+      })
+      .slice(0, 5);
   }
 
   private loadDailySalesChart(): void {
@@ -431,6 +444,34 @@ export class BoutiqueHomeComponent implements OnInit {
       .slice(0, 3);
 
     return { bestSold, leastSold };
+  }
+
+  getStatusBadgeClass(status?: string): string {
+    switch (status) {
+      case 'PENDING':
+        return 'bg-warning text-dark';
+      case 'CONFIRMED':
+        return 'bg-primary';
+      case 'SHIPPED':
+        return 'bg-info';
+      case 'DELIVERED':
+        return 'bg-success';
+      case 'CANCELLED':
+        return 'bg-secondary';
+      default:
+        return 'bg-secondary';
+    }
+  }
+
+  getStatusLabel(status?: string): string {
+    const labels: Record<string, string> = {
+      PENDING: 'En attente',
+      CONFIRMED: 'Confirmée',
+      SHIPPED: 'Expédiée',
+      DELIVERED: 'Livrée',
+      CANCELLED: 'Annulée'
+    };
+    return labels[status ?? ''] ?? (status || 'Inconnu');
   }
 
   private toDateKey(date: Date): string {
