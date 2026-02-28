@@ -258,7 +258,6 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  /** Précharge les compteurs d'avis pour tous les variants (affichage immédiat du nombre dans le bouton) */
   loadVariantReviewCounts(): void {
     const variantIds = this.variants.filter((v) => v?._id).map((v) => v._id);
     if (variantIds.length === 0) return;
@@ -284,7 +283,6 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
-  /** Popup liste avis sous la ligne */
   toggleReviewsPopup(variantId: string): void {
     if (this.expandedVariantId === variantId) {
       this.expandedVariantId = null;
