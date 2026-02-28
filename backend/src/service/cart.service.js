@@ -4,7 +4,6 @@ const ProductVariant = require('../model/produitVariant.model');
 const Product = require('../model/produit.model');
 const Shop = require('../model/boutique.model');
 
-/** Normalise userId pour la requête (string ou ObjectId) */
 const toObjectId = (id) => {
   if (!id) return null;
   if (id instanceof mongoose.Types.ObjectId) return id;
@@ -67,7 +66,6 @@ const getCart = async (userId) => {
 
     const shop = await Shop.findById(product.shopId).select('name _id status logo').lean();
     if (!shop) continue;
-    // Inclure les items même si shop non ACTIVE (affichage panier), la commande validera côté order
 
     const availableStock = getAvailableStock(variant);
     enrichedItems.push({
