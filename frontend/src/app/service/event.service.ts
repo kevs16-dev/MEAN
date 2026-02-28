@@ -22,8 +22,11 @@ export class EventService {
         return this.http.get<any[]>(`${this.API_URI}/status`, { params });
     }
 
-    getEventsForRole(role: 'ADMIN' | 'BOUTIQUE' | 'CLIENT' | 'ALL') {
-        const params = new HttpParams().set('role', role);
+    getEventsForRole(role: 'ADMIN' | 'BOUTIQUE' | 'CLIENT' | 'ALL', status?: 'DRAFT' | 'PUBLISHED' | 'CANCELLED') {
+        let params = new HttpParams().set('role', role);
+        if (status) {
+            params = params.set('status', status);
+        }
         return this.http.get<any[]>(`${this.API_URI}/role`, { params });
     }
 }

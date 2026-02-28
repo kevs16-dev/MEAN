@@ -211,6 +211,12 @@ const routes: Routes = [
             .then((c) => c.ClientHomeComponent)
       },
       {
+        path: 'events',
+        loadComponent: () =>
+          import('./demo/pages/client/client-events/client-events.component')
+            .then((c) => c.ClientEventsComponent)
+      },
+      {
         path: 'shops',
         loadComponent: () =>
           import('./demo/pages/client/shops-browse/shops-browse.component')
