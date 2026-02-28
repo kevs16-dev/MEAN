@@ -1,370 +1,353 @@
 const mongoose = require('mongoose');
-const Order = require('../model/order.model');
 const Cart = require('../model/cart.model');
-const ProductVariant = require('../model/produitVariant.model');
+const Order = require('../model/order.model');
 const Product = require('../model/produit.model');
+const ProductVariant = require('../model/produitVariant.model');
 const Shop = require('../model/boutique.model');
 const User = require('../model/user.model');
-const { getAvailableStock } = require('./cart.service');
+const Notification = require('../model/notification.model');
 
-/**
- * Récupère la boutique du user BOUTIQUE
- * @param {string} userId - ID utilisateur BOUTIQUE
- * @returns {Promise<object>}
- */
-const getShopForBoutiqueUser = async (userId) => {
-  const user = await User.findById(userId).select('shopId role').lean();
-  if (!user || user.role !== 'BOUTIQUE') {
-    throw new Error('Utilisateur BOUTIQUE non trouvé');
-  }
-  if (!user.shopId) {
-    throw new Error('Aucune boutique associée');
-  }
-  const shop = await Shop.findOne({ _id: user.shopId, status: 'ACTIVE' }).lean();
-  if (!shop) {
-    throw new Error('Boutique non disponible');
-  }
-  return shop;
+const ORDER_STATUS = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED'
 };
 
-/**
- * Génère le nameSnapshot (nom produit + attributs variante)
- * @param {object} product - Produit avec name
- * @param {object} variant - Variante avec attributes
- * @returns {string}
- */
-const buildNameSnapshot = (product, variant) => {
-  const name = product?.name || 'Produit';
-  const attrs = (variant?.attributes || [])
-    .map((a) => `${a.name}: ${a.value}`)
-    .join(', ');
-  return attrs ? `${name} (${attrs})` : name;
+const toPositiveInt = (value, fallback) => {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < 1) return fallback;
+  return Math.floor(n);
 };
 
-/**
- * Crée les commandes à partir du panier du CLIENT.
- * - Groupe les items par boutique
- * - Une commande par boutique
- * - Incrémente reservedStock pour chaque variante
- * - Vide le panier des articles commandés
- * @param {string} userId - ID utilisateur CLIENT
- * @returns {{ orders: object[] }}
- */
-const createOrdersFromCart = async (userId) => {
-  const cart = await Cart.findOne({ userId });
-  if (!cart || !cart.items || cart.items.length === 0) {
-    throw new Error('Panier vide');
+const getAvailableStock = (variant) => {
+  const stock = Number(variant?.stock) || 0;
+  const reserved = Number(variant?.reservedStock) || 0;
+  return Math.max(0, stock - reserved);
+};
+
+const notifyShopUsersForNewOrder = async (shopId, order, session) => {
+  const users = await User.find({
+    role: 'BOUTIQUE',
+    shopId,
+    isActive: true
+  })
+    .select('_id')
+    .session(session);
+
+  if (!users.length) return;
+
+  const shortId = String(order._id).slice(-8);
+  const notifications = users.map((user) => ({
+    userId: user._id,
+    title: 'Nouvelle commande reçue',
+    message: `Une nouvelle commande (#${shortId}) a été reçue dans votre boutique.`,
+    type: 'INFO',
+    isRead: false
+  }));
+
+  await Notification.insertMany(notifications, { session });
+};
+
+const notifyClientForOrderStatus = async (order, status, session) => {
+  const shortId = String(order._id).slice(-8);
+  const isConfirmed = status === ORDER_STATUS.CONFIRMED;
+
+  await Notification.create(
+    [
+      {
+        userId: order.userId,
+        title: isConfirmed ? 'Commande confirmée' : 'Commande rejetée',
+        message: isConfirmed
+          ? `Votre commande #${shortId} a été confirmée par la boutique.`
+          : `Votre commande #${shortId} a été rejetée par la boutique.`,
+        type: isConfirmed ? 'SUCCESS' : 'WARNING',
+        isRead: false
+      }
+    ],
+    { session }
+  );
+};
+
+const getBoutiqueUserShopId = async (userId) => {
+  const boutiqueUser = await User.findById(userId).select('role shopId');
+  if (!boutiqueUser || boutiqueUser.role !== 'BOUTIQUE') {
+    const err = new Error('Accès interdit');
+    err.status = 403;
+    throw err;
   }
 
-  const itemsWithDetails = [];
-  for (const item of cart.items) {
-    const variant = await ProductVariant.findById(item.productVariantId)
-      .populate('productId', 'name shopId')
-      .lean();
-    if (!variant || !variant.isActive) continue;
-
-    const product = variant.productId;
-    if (!product) continue;
-
-    const shop = await Shop.findById(product.shopId).lean();
-    if (!shop || shop.status !== 'ACTIVE') continue;
-
-    const availableStock = getAvailableStock(variant);
-    if (availableStock < item.quantity) {
-      throw new Error(
-        `Stock insuffisant pour "${buildNameSnapshot(product, variant)}" (demandé: ${item.quantity}, disponible: ${availableStock})`
-      );
-    }
-
-    itemsWithDetails.push({
-      productVariantId: item.productVariantId,
-      quantity: item.quantity,
-      nameSnapshot: buildNameSnapshot(product, variant),
-      priceSnapshot: variant.currentPrice,
-      shopId: shop._id
-    });
+  if (!boutiqueUser.shopId) {
+    const err = new Error('Aucune boutique associée à cet utilisateur');
+    err.status = 400;
+    throw err;
   }
 
-  if (itemsWithDetails.length === 0) {
-    throw new Error('Aucun article valide dans le panier');
-  }
+  return boutiqueUser.shopId;
+};
 
-  const byShop = {};
-  for (const it of itemsWithDetails) {
-    const sid = it.shopId.toString();
-    if (!byShop[sid]) byShop[sid] = [];
-    byShop[sid].push(it);
-  }
-
+const createOrdersFromCart = async (clientUserId) => {
   const session = await mongoose.startSession();
-  await session.startTransaction();
+  let createdOrders = [];
 
   try {
-    const createdOrders = [];
+    await session.withTransaction(async () => {
+      const cart = await Cart.findOne({ userId: clientUserId }).session(session);
+      if (!cart || !Array.isArray(cart.items) || cart.items.length === 0) {
+        const err = new Error('Panier vide');
+        err.status = 400;
+        throw err;
+      }
 
-    for (const shopId of Object.keys(byShop)) {
-      const items = byShop[shopId];
-      let totalAmount = 0;
-      const orderItems = items.map((it) => {
-        totalAmount += it.priceSnapshot * it.quantity;
-        return {
-          productVariantId: it.productVariantId,
-          nameSnapshot: it.nameSnapshot,
-          priceSnapshot: it.priceSnapshot,
-          quantity: it.quantity
-        };
-      });
+      const groupedByShop = new Map();
 
-      const order = await Order.create(
-        [
-          {
-            userId,
-            shopId,
-            items: orderItems,
-            totalAmount,
-            status: 'PENDING',
-            paymentStatus: 'PENDING'
-          }
-        ],
-        { session }
-      );
-      createdOrders.push(order[0]);
+      for (const item of cart.items) {
+        const variant = await ProductVariant.findById(item.productVariantId).session(session);
+        if (!variant || !variant.isActive) {
+          const err = new Error('Une ou plusieurs variantes sont indisponibles');
+          err.status = 400;
+          throw err;
+        }
 
-      for (const it of items) {
-        await ProductVariant.findByIdAndUpdate(
-          it.productVariantId,
-          { $inc: { reservedStock: it.quantity } },
+        const product = await Product.findById(variant.productId).session(session);
+        if (!product) {
+          const err = new Error('Produit introuvable pour une variante du panier');
+          err.status = 400;
+          throw err;
+        }
+
+        const shop = await Shop.findById(product.shopId).session(session);
+        if (!shop || shop.status !== 'ACTIVE') {
+          const err = new Error(`La boutique "${shop?.name || 'inconnue'}" n'est pas disponible`);
+          err.status = 400;
+          throw err;
+        }
+
+        const availableStock = getAvailableStock(variant);
+        if (item.quantity > availableStock) {
+          const err = new Error(
+            `Stock insuffisant pour "${product.name}" (disponible: ${availableStock})`
+          );
+          err.status = 400;
+          throw err;
+        }
+
+        variant.reservedStock = (Number(variant.reservedStock) || 0) + item.quantity;
+        await variant.save({ session });
+
+        const shopKey = String(shop._id);
+        if (!groupedByShop.has(shopKey)) {
+          groupedByShop.set(shopKey, {
+            shopId: shop._id,
+            items: [],
+            totalAmount: 0
+          });
+        }
+
+        const group = groupedByShop.get(shopKey);
+        group.items.push({
+          productVariantId: variant._id,
+          nameSnapshot: product.name,
+          priceSnapshot: variant.currentPrice,
+          quantity: item.quantity
+        });
+        group.totalAmount += (Number(variant.currentPrice) || 0) * (Number(item.quantity) || 0);
+      }
+
+      for (const group of groupedByShop.values()) {
+        const order = await Order.create(
+          [
+            {
+              userId: clientUserId,
+              shopId: group.shopId,
+              items: group.items,
+              totalAmount: group.totalAmount,
+              status: ORDER_STATUS.PENDING,
+              paymentStatus: 'PENDING'
+            }
+          ],
           { session }
         );
+
+        createdOrders.push(order[0]);
       }
-    }
 
-    const variantIdsToRemove = itemsWithDetails.map((i) => i.productVariantId);
-    cart.items = cart.items.filter(
-      (i) => !variantIdsToRemove.some((vid) => vid.toString() === i.productVariantId.toString())
-    );
-    if (cart.items.length === 0) {
-      await Cart.findByIdAndDelete(cart._id, { session });
-    } else {
-      await cart.save({ session });
-    }
+      await Cart.findOneAndDelete({ userId: clientUserId }).session(session);
 
-    await session.commitTransaction();
+      for (const order of createdOrders) {
+        await notifyShopUsersForNewOrder(order.shopId, order, session);
+      }
+    });
 
-    const populated = await Order.find({ _id: { $in: createdOrders.map((o) => o._id) } })
+    createdOrders = await Order.find({ _id: { $in: createdOrders.map((o) => o._id) } })
       .populate('shopId', 'name')
-      .lean();
+      .sort({ createdAt: -1 });
 
-    return { orders: populated };
-  } catch (err) {
-    await session.abortTransaction();
-    throw err;
+    return createdOrders;
   } finally {
     session.endSession();
   }
 };
 
-/**
- * Liste des commandes du CLIENT connecté
- * @param {string} userId - ID utilisateur CLIENT
- * @param {{ page?: number, limit?: number }} options
- */
-const getMyOrders = async (userId, options = {}) => {
-  const page = Math.max(1, parseInt(options.page, 10) || 1);
-  const limit = Math.min(50, Math.max(1, parseInt(options.limit, 10) || 10));
-  const skip = (page - 1) * limit;
+const getMyOrders = async (clientUserId, { page = 1, limit = 10 } = {}) => {
+  const safePage = toPositiveInt(page, 1);
+  const safeLimit = Math.min(toPositiveInt(limit, 10), 100);
+  const skip = (safePage - 1) * safeLimit;
 
+  const query = { userId: clientUserId };
   const [orders, total] = await Promise.all([
-    Order.find({ userId })
+    Order.find(query)
       .populate('shopId', 'name')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit)
-      .lean(),
-    Order.countDocuments({ userId })
-  ]);
-
-  return {
-    orders,
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit) || 1
-  };
-};
-
-/**
- * Détail d'une commande (CLIENT : uniquement ses commandes)
- * @param {string} userId - ID utilisateur CLIENT
- * @param {string} orderId - ID commande
- */
-const getOrderById = async (userId, orderId) => {
-  const order = await Order.findOne({ _id: orderId, userId })
-    .populate('shopId', 'name slug')
-    .populate('items.productVariantId', 'sku attributes')
-    .lean();
-
-  if (!order) {
-    throw new Error('Commande non trouvée');
-  }
-
-  return order;
-};
-
-/**
- * Liste des commandes de la boutique du BOUTIQUE connecté
- * @param {string} boutiqueUserId - ID utilisateur BOUTIQUE
- * @param {{ page?: number, limit?: number, status?: string }} options
- */
-const getShopOrders = async (boutiqueUserId, options = {}) => {
-  const shop = await getShopForBoutiqueUser(boutiqueUserId);
-  const page = Math.max(1, parseInt(options.page, 10) || 1);
-  const limit = Math.min(50, Math.max(1, parseInt(options.limit, 10) || 10));
-  const status = typeof options.status === 'string' && options.status.trim()
-    ? options.status.trim()
-    : null;
-  const skip = (page - 1) * limit;
-
-  const query = { shopId: shop._id };
-  if (status) {
-    query.status = status;
-  }
-
-  const [orders, total] = await Promise.all([
-    Order.find(query)
-      .populate('userId', 'username nom prenom email')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean(),
+      .limit(safeLimit),
     Order.countDocuments(query)
   ]);
 
   return {
     orders,
     total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit) || 1
+    page: safePage,
+    limit: safeLimit,
+    totalPages: Math.max(1, Math.ceil(total / safeLimit))
   };
 };
 
-/**
- * Détail d'une commande pour la BOUTIQUE (commande liée à sa boutique)
- * @param {string} boutiqueUserId - ID utilisateur BOUTIQUE
- * @param {string} orderId - ID commande
- */
-const getShopOrderById = async (boutiqueUserId, orderId) => {
-  const shop = await getShopForBoutiqueUser(boutiqueUserId);
-  const order = await Order.findOne({ _id: orderId, shopId: shop._id })
-    .populate('userId', 'username nom prenom email telephone')
-    .populate('items.productVariantId', 'sku attributes')
-    .lean();
+const getMyOrderById = async (clientUserId, orderId) => {
+  const order = await Order.findOne({ _id: orderId, userId: clientUserId })
+    .populate('shopId', 'name');
 
   if (!order) {
-    throw new Error('Commande non trouvée');
+    const err = new Error('Commande introuvable');
+    err.status = 404;
+    throw err;
   }
 
   return order;
 };
 
-/**
- * Confirme une commande par la BOUTIQUE.
- * Diminue stock réel, diminue reservedStock, augmente soldCount pour chaque variante.
- * @param {string} boutiqueUserId - ID utilisateur BOUTIQUE
- * @param {string} orderId - ID commande
- */
-const confirmOrder = async (boutiqueUserId, orderId) => {
-  const shop = await getShopForBoutiqueUser(boutiqueUserId);
-  const order = await Order.findOne({ _id: orderId, shopId: shop._id });
-  if (!order) {
-    throw new Error('Commande non trouvée');
-  }
-  if (order.status !== 'PENDING') {
-    throw new Error('Cette commande ne peut plus être confirmée');
+const getShopOrders = async (boutiqueUserId, { page = 1, limit = 10, status } = {}) => {
+  const shopId = await getBoutiqueUserShopId(boutiqueUserId);
+  const safePage = toPositiveInt(page, 1);
+  const safeLimit = Math.min(toPositiveInt(limit, 10), 100);
+  const skip = (safePage - 1) * safeLimit;
+
+  const query = { shopId };
+  if (status && String(status).trim()) {
+    query.status = String(status).trim();
   }
 
+  const [orders, total] = await Promise.all([
+    Order.find(query)
+      .populate('userId', 'nom prenom username email telephone')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(safeLimit),
+    Order.countDocuments(query)
+  ]);
+
+  return {
+    orders,
+    total,
+    page: safePage,
+    limit: safeLimit,
+    totalPages: Math.max(1, Math.ceil(total / safeLimit))
+  };
+};
+
+const getShopOrderById = async (boutiqueUserId, orderId) => {
+  const shopId = await getBoutiqueUserShopId(boutiqueUserId);
+  const order = await Order.findOne({ _id: orderId, shopId })
+    .populate('userId', 'nom prenom username email telephone');
+
+  if (!order) {
+    const err = new Error('Commande introuvable');
+    err.status = 404;
+    throw err;
+  }
+
+  return order;
+};
+
+const updateOrderStatusForShop = async (boutiqueUserId, orderId, targetStatus) => {
+  const shopId = await getBoutiqueUserShopId(boutiqueUserId);
   const session = await mongoose.startSession();
-  await session.startTransaction();
+  let updatedOrder = null;
 
   try {
-    for (const item of order.items) {
-      const variant = await ProductVariant.findById(item.productVariantId).session(session);
-      if (!variant) {
-        throw new Error(`Variante non trouvée: ${item.productVariantId}`);
+    await session.withTransaction(async () => {
+      const order = await Order.findOne({ _id: orderId, shopId }).session(session);
+      if (!order) {
+        const err = new Error('Commande introuvable');
+        err.status = 404;
+        throw err;
       }
-      const qty = item.quantity || 0;
-      if (variant.reservedStock < qty) {
-        throw new Error(`Stock réservé insuffisant pour "${item.nameSnapshot}"`);
-      }
-      if (variant.stock < qty) {
-        throw new Error(`Stock insuffisant pour "${item.nameSnapshot}" (demandé: ${qty}, disponible: ${variant.stock})`);
-      }
-      variant.stock -= qty;
-      variant.reservedStock -= qty;
-      variant.soldCount += qty;
-      await variant.save({ session });
-    }
 
-    order.status = 'CONFIRMED';
-    await order.save({ session });
+      if (order.status !== ORDER_STATUS.PENDING) {
+        const err = new Error('Seules les commandes en attente peuvent être modifiées');
+        err.status = 400;
+        throw err;
+      }
 
-    await session.commitTransaction();
-    return Order.findById(orderId).populate('shopId', 'name').populate('userId', 'username nom prenom').lean();
-  } catch (err) {
-    await session.abortTransaction();
-    throw err;
+      for (const item of order.items) {
+        const variant = await ProductVariant.findById(item.productVariantId).session(session);
+        if (!variant) {
+          const err = new Error('Une variante de la commande est introuvable');
+          err.status = 400;
+          throw err;
+        }
+
+        const qty = Number(item.quantity) || 0;
+        if (qty <= 0) continue;
+
+        if ((Number(variant.reservedStock) || 0) < qty) {
+          const err = new Error('Stock réservé incohérent pour la commande');
+          err.status = 400;
+          throw err;
+        }
+
+        if (targetStatus === ORDER_STATUS.CONFIRMED) {
+          if ((Number(variant.stock) || 0) < qty) {
+            const err = new Error('Stock insuffisant pour confirmer la commande');
+            err.status = 400;
+            throw err;
+          }
+
+          variant.stock = (Number(variant.stock) || 0) - qty;
+          variant.reservedStock = (Number(variant.reservedStock) || 0) - qty;
+          variant.soldCount = (Number(variant.soldCount) || 0) + qty;
+        } else if (targetStatus === ORDER_STATUS.CANCELLED) {
+          variant.reservedStock = (Number(variant.reservedStock) || 0) - qty;
+        }
+
+        await variant.save({ session });
+      }
+
+      order.status = targetStatus;
+      await order.save({ session });
+      updatedOrder = order;
+
+      await notifyClientForOrderStatus(order, targetStatus, session);
+    });
+
+    return await Order.findById(updatedOrder._id)
+      .populate('userId', 'nom prenom username email telephone');
   } finally {
     session.endSession();
   }
 };
 
-/**
- * Rejette une commande par la BOUTIQUE.
- * Libère le reservedStock pour chaque variante.
- * @param {string} boutiqueUserId - ID utilisateur BOUTIQUE
- * @param {string} orderId - ID commande
- */
+const confirmOrder = async (boutiqueUserId, orderId) => {
+  return updateOrderStatusForShop(boutiqueUserId, orderId, ORDER_STATUS.CONFIRMED);
+};
+
 const rejectOrder = async (boutiqueUserId, orderId) => {
-  const shop = await getShopForBoutiqueUser(boutiqueUserId);
-  const order = await Order.findOne({ _id: orderId, shopId: shop._id });
-  if (!order) {
-    throw new Error('Commande non trouvée');
-  }
-  if (order.status !== 'PENDING') {
-    throw new Error('Cette commande ne peut plus être rejetée');
-  }
-
-  const session = await mongoose.startSession();
-  await session.startTransaction();
-
-  try {
-    for (const item of order.items) {
-      const qty = item.quantity || 0;
-      await ProductVariant.findByIdAndUpdate(
-        item.productVariantId,
-        { $inc: { reservedStock: -qty } },
-        { session }
-      );
-    }
-
-    order.status = 'CANCELLED';
-    await order.save({ session });
-
-    await session.commitTransaction();
-    return Order.findById(orderId).populate('shopId', 'name').populate('userId', 'username nom prenom').lean();
-  } catch (err) {
-    await session.abortTransaction();
-    throw err;
-  } finally {
-    session.endSession();
-  }
+  return updateOrderStatusForShop(boutiqueUserId, orderId, ORDER_STATUS.CANCELLED);
 };
 
 module.exports = {
   createOrdersFromCart,
   getMyOrders,
-  getOrderById,
+  getMyOrderById,
   getShopOrders,
   getShopOrderById,
   confirmOrder,
