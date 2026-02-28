@@ -3,13 +3,11 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-/** Réponse POST /orders/from-cart */
 export interface CreateOrdersResponse {
   message: string;
   orders: any[];
 }
 
-/** Réponse GET /orders/my */
 export interface MyOrdersResponse {
   orders: any[];
   total: number;
@@ -24,12 +22,16 @@ export class OrderService {
 
   constructor(private http: HttpClient) {}
 
-  /** Créer les commandes à partir du panier (CLIENT) */
   createOrdersFromCart(): Observable<CreateOrdersResponse> {
     return this.http.post<CreateOrdersResponse>(`${this.API_URI}/from-cart`, {});
   }
 
-  /** Liste des commandes du CLIENT connecté */
+  getReceiptPdf(orderIds: string[]): Observable<Blob> {
+    return this.http.post(`${this.API_URI}/my/receipt-pdf`, { orderIds }, {
+      responseType: 'blob'
+    });
+  }
+
   getMyOrders(params?: { page?: number; limit?: number }): Observable<MyOrdersResponse> {
     let query = '';
     if (params) {
@@ -41,12 +43,10 @@ export class OrderService {
     return this.http.get<MyOrdersResponse>(`${this.API_URI}/my${query}`);
   }
 
-  /** Détail d'une commande (CLIENT) */
   getOrderById(id: string): Observable<any> {
     return this.http.get<any>(`${this.API_URI}/${id}`);
   }
 
-  /** Liste des commandes de la boutique (BOUTIQUE) */
   getShopOrders(params?: { page?: number; limit?: number; status?: string }): Observable<MyOrdersResponse> {
     let query = '';
     if (params) {
@@ -59,17 +59,14 @@ export class OrderService {
     return this.http.get<MyOrdersResponse>(`${this.API_URI}/shop/my${query}`);
   }
 
-  /** Détail d'une commande (BOUTIQUE) */
   getShopOrderById(id: string): Observable<any> {
     return this.http.get<any>(`${this.API_URI}/shop/${id}`);
   }
 
-  /** Confirmer une commande (BOUTIQUE) */
   confirmOrder(id: string): Observable<{ message: string; order: any }> {
     return this.http.put<{ message: string; order: any }>(`${this.API_URI}/shop/${id}/confirm`, {});
   }
 
-  /** Rejeter une commande (BOUTIQUE) */
   rejectOrder(id: string): Observable<{ message: string; order: any }> {
     return this.http.put<{ message: string; order: any }>(`${this.API_URI}/shop/${id}/reject`, {});
   }
