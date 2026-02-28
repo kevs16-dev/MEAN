@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row g-3 boutique-dashboard">
   <div class="col-sm-12">
     <app-card cardTitle="Comportement des ventes boutique">
       <div class="toolbar">
@@ -25,27 +25,27 @@
   @for (analytic of analyticCards; track analytic.title) {
     <div class="col-md-6 col-xl-3">
       <app-card [showHeader]="false" blockClass="dashboard-card">
-        <h6 class="mb-2 f-w-400 text-muted">{{ analytic.title }}</h6>
-        <h4 class="mb-3">
+        <h6 class="metric-title mb-2 f-w-400 text-muted">{{ analytic.title }}</h6>
+        <h4 class="metric-amount mb-3">
           {{ analytic.amount }}
-          <span class="badge {{ analytic.background }} border {{ analytic.border }}">
+          <span class="badge trend-badge {{ analytic.background }} border {{ analytic.border }}">
             <i antIcon type="{{ analytic.icon }}" theme="outline"></i>
             {{ analytic.trend }}
           </span>
         </h4>
-        <p class="mb-0 text-muted text-sm">
+        <p class="metric-subtitle mb-0 text-muted text-sm">
           <span class="{{ analytic.color }}">{{ analytic.subtitle }}</span>
         </p>
       </app-card>
     </div>
   }
 
-  <div class="col-sm-12">
-    <app-card cardTitle="Ventes par jour">
+  <div class="col-md-12 col-xl-8">
+    <app-card cardTitle="Ventes par jour" class="chart-card">
       <div *ngIf="isLoadingSales" class="text-center py-4">Chargement du graphe...</div>
       <div *ngIf="!isLoadingSales && salesError" class="alert alert-danger">{{ salesError }}</div>
 
-      <div *ngIf="!isLoadingSales && !salesError">
+      <div *ngIf="!isLoadingSales && !salesError" class="chart-box">
         <apx-chart
           [series]="chartOptions.series!"
           [chart]="chartOptions.chart!"
@@ -58,6 +58,28 @@
           [colors]="chartOptions.colors!"
           [grid]="chartOptions.grid!"
           [noData]="chartOptions.noData!"
+        ></apx-chart>
+      </div>
+    </app-card>
+  </div>
+
+  <div class="col-md-12 col-xl-4">
+    <app-card cardTitle="Histogramme mensuel" class="chart-card">
+      <div *ngIf="isLoadingSales" class="text-center py-4">Chargement de l'histogramme...</div>
+      <div *ngIf="!isLoadingSales && salesError" class="alert alert-danger">{{ salesError }}</div>
+
+      <div *ngIf="!isLoadingSales && !salesError" class="chart-box">
+        <apx-chart
+          [series]="monthlyHistogramOptions.series!"
+          [chart]="monthlyHistogramOptions.chart!"
+          [plotOptions]="monthlyHistogramOptions.plotOptions!"
+          [xaxis]="monthlyHistogramOptions.xaxis!"
+          [yaxis]="monthlyHistogramOptions.yaxis!"
+          [tooltip]="monthlyHistogramOptions.tooltip!"
+          [dataLabels]="monthlyHistogramOptions.dataLabels!"
+          [colors]="monthlyHistogramOptions.colors!"
+          [grid]="monthlyHistogramOptions.grid!"
+          [noData]="monthlyHistogramOptions.noData!"
         ></apx-chart>
       </div>
     </app-card>

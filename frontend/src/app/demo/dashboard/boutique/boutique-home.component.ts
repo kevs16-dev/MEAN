@@ -25,6 +25,13 @@ type DailySalesData = {
   totalOrders: number;
 };
 
+type MonthlyComparisonData = {
+  values: number[];
+  worstMonthLabel: string;
+  currentMonthLabel: string;
+  bestMonthLabel: string;
+};
+
 @Component({
   selector: 'app-boutique-home',
   standalone: true,
@@ -43,6 +50,8 @@ export class BoutiqueHomeComponent implements OnInit {
   totalSales = 0;
   totalOrders = 0;
   chartOptions: Partial<ApexOptions> = {};
+  monthlyHistogramOptions: Partial<ApexOptions> = {};
+  monthlyHoverLabels: string[] = ['-', '-', '-'];
 
   constructor() {
     this.iconService.addIcon(...[RiseOutline]);
@@ -114,6 +123,7 @@ export class BoutiqueHomeComponent implements OnInit {
         error: () => {
           this.salesError = 'Impossible de charger les ventes.';
           this.chartOptions = this.createChartOptions([], []);
+          this.monthlyHistogramOptions = this.createMonthlyHistogramOptions([0, 0, 0], ['-', '-', '-']);
           this.isLoadingSales = false;
         }
       });
@@ -142,6 +152,14 @@ export class BoutiqueHomeComponent implements OnInit {
     this.totalSales = dailySales.totalSales;
     this.totalOrders = dailySales.totalOrders;
     this.chartOptions = this.createChartOptions(dailySales.labels, dailySales.values);
+
+    const monthlyComparison = this.buildMonthlyComparisonData(this.allOrders);
+    this.monthlyHoverLabels = [
+      monthlyComparison.worstMonthLabel,
+      monthlyComparison.currentMonthLabel,
+      monthlyComparison.bestMonthLabel
+    ];
+    this.monthlyHistogramOptions = this.createMonthlyHistogramOptions(monthlyComparison.values, this.monthlyHoverLabels);
   }
 
   private buildDailySalesData(orders: ShopOrder[], daysCount: number): DailySalesData {
@@ -240,11 +258,117 @@ export class BoutiqueHomeComponent implements OnInit {
     };
   }
 
+  private buildMonthlyComparisonData(orders: ShopOrder[]): MonthlyComparisonData {
+    const salesByMonth = new Map<string, number>();
+
+    for (const order of orders) {
+      if (!order?.createdAt) {
+        continue;
+      }
+
+      const orderDate = new Date(order.createdAt);
+      if (Number.isNaN(orderDate.getTime())) {
+        continue;
+      }
+
+      const key = this.toMonthKey(orderDate);
+      const amount = Number(order.totalAmount ?? 0);
+      salesByMonth.set(key, (salesByMonth.get(key) ?? 0) + amount);
+    }
+
+    const currentMonthKey = this.toMonthKey(new Date());
+    if (!salesByMonth.has(currentMonthKey)) {
+      salesByMonth.set(currentMonthKey, 0);
+    }
+
+    const entries = [...salesByMonth.entries()].sort((a, b) => a[1] - b[1]);
+    const worst = entries[0] ?? [currentMonthKey, 0];
+    const best = entries[entries.length - 1] ?? [currentMonthKey, 0];
+    const current = [currentMonthKey, salesByMonth.get(currentMonthKey) ?? 0] as const;
+
+    return {
+      values: [worst[1], current[1], best[1]].map((value) => Number(value.toFixed(2))),
+      worstMonthLabel: this.toMonthDisplayLabel(worst[0]),
+      currentMonthLabel: this.toMonthDisplayLabel(current[0]),
+      bestMonthLabel: this.toMonthDisplayLabel(best[0])
+    };
+  }
+
+  private createMonthlyHistogramOptions(values: number[], monthLabels: string[]): Partial<ApexOptions> {
+    const categories = ['Pire mois', 'Mois actuel', 'Meilleur mois'];
+    return {
+      chart: {
+        type: 'bar',
+        height: 320,
+        toolbar: { show: false },
+        background: 'transparent'
+      },
+      series: [
+        {
+          name: 'Ventes mensuelles (€)',
+          data: values
+        }
+      ],
+      plotOptions: {
+        bar: {
+          distributed: true,
+          columnWidth: '55%',
+          borderRadius: 6
+        }
+      },
+      xaxis: {
+        categories
+      },
+      yaxis: {
+        labels: {
+          formatter: (value) => `${value.toFixed(0)} €`
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      colors: ['#ff7875', '#1677ff', '#73d13d'],
+      tooltip: {
+        x: {
+          formatter: (_value: string, opts?: { dataPointIndex?: number }) => {
+            const index = opts?.dataPointIndex ?? -1;
+            const category = categories[index] ?? 'Mois';
+            const month = monthLabels[index] ?? '-';
+            return `${category} - ${month}`;
+          }
+        },
+        y: {
+          formatter: (value) => `${value.toFixed(2)} €`
+        }
+      },
+      noData: {
+        text: 'Aucune donnée'
+      },
+      grid: {
+        borderColor: '#f5f5f5'
+      }
+    };
+  }
+
   private toDateKey(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private toMonthKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  }
+
+  private toMonthDisplayLabel(monthKey: string): string {
+    const [year, month] = monthKey.split('-').map((value) => Number(value));
+    if (!year || !month) {
+      return monthKey;
+    }
+    return new Date(year, month - 1, 1).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
   }
 
   private toDisplayLabel(date: Date): string {
