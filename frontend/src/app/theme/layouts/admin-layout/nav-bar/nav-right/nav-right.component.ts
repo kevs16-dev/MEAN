@@ -36,9 +36,11 @@ import {
   CommentOutline,
   UnorderedListOutline,
   ArrowRightOutline,
-  GithubOutline
+  GithubOutline,
+  ShoppingCartOutline
 } from '@ant-design/icons-angular/icons';
 import { UserService } from '../../../../../service/user.service';
+import { CartService } from '../../../../../service/cart.service';
 import { NotificationService } from '../../../../../service/notification.service';
 import { Subscription, timer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -75,10 +77,14 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
   direction: string = 'ltr';
 
   // constructor
+  cartCount = 0;
+  private cartCountSub?: Subscription;
+
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private notificationService: NotificationService,
+    private cartService: CartService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {
@@ -102,13 +108,25 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
         ArrowRightOutline,
         BellOutline,
         GithubOutline,
-        WalletOutline
+        WalletOutline,
+        ShoppingCartOutline
       ]
     );
   }
 
+  isClient(): boolean {
+    return this.authService.getUserRole() === 'CLIENT';
+  }
+
   ngOnInit() {
     this.utilisateur = this.userService.getUtilisateur();
+    if (this.isClient()) {
+      this.cartService.refreshCount();
+      this.cartCountSub = this.cartService.cartCount$.subscribe((count) => {
+        this.cartCount = count;
+        this.cdr.markForCheck();
+      });
+    }
   }
 
   ngAfterViewInit() {
@@ -142,6 +160,7 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.notificationsSub?.unsubscribe();
+    this.cartCountSub?.unsubscribe();
   }
 
   markAsRead(notification: any) {

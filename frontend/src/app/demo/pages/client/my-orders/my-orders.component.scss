@@ -1,0 +1,11 @@
+.table th,
+.table td {
+  vertical-align: middle;
+}
+
+.order-row {
+  cursor: pointer;
+}
+.order-row:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}

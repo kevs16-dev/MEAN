@@ -11,5 +11,7 @@ router.use('/events', require('./event.route'));
 router.use('/admin', require('./admin.route'));
 router.use('/upload', require('./upload.route'));
 router.use('/banners', require('./banner.route'));
+router.use('/cart', require('./cart.route'));
+router.use('/orders', require('./order.route'));
 
 module.exports = router;

@@ -1,0 +1,9 @@
+.table th,
+.table td {
+  vertical-align: middle;
+}
+
+.order-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+}

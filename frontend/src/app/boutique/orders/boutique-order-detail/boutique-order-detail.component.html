@@ -1,0 +1,84 @@
+<app-card [cardTitle]="order ? 'Commande #' + (order._id | slice:-8) : 'Détail de la commande'">
+  <div class="mb-3">
+    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="goBack()">
+      ← Retour aux commandes
+    </button>
+  </div>
+
+  <div *ngIf="messageSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ messageSuccess }}
+    <button type="button" class="btn-close" (click)="messageSuccess = null" aria-label="Fermer"></button>
+  </div>
+  <div *ngIf="messageError" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ messageError }}
+    <button type="button" class="btn-close" (click)="messageError = null" aria-label="Fermer"></button>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-4">Chargement...</div>
+  <div *ngIf="!isLoading && error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="!isLoading && !error && order">
+    <section class="order-header mb-4">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h6 class="mb-1">Client</h6>
+          <p class="mb-0">{{ getClientInfo(order) }}</p>
+          <p class="text-muted small mb-0 mt-1">
+            Passée le {{ order.createdAt | date:'dd/MM/yyyy à HH:mm' }}
+          </p>
+        </div>
+        <div class="col-md-6 text-md-end mt-2 mt-md-0">
+          <span class="badge" [ngClass]="getStatusBadgeClass(order.status)">
+            {{ getStatusLabel(order.status) }}
+          </span>
+          <div *ngIf="canConfirmOrReject" class="mt-2">
+            <button
+              type="button"
+              class="btn btn-success btn-sm me-2"
+              [disabled]="isConfirming || isRejecting"
+              (click)="confirmOrder()"
+            >
+              {{ isConfirming ? 'Confirmation...' : 'Confirmer la commande' }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-danger btn-sm"
+              [disabled]="isConfirming || isRejecting"
+              (click)="rejectOrder()"
+            >
+              {{ isRejecting ? 'Rejet...' : 'Rejeter' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <h6 class="mb-3">Articles commandés</h6>
+    <div class="table-responsive mb-4">
+      <table class="table table-sm table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix unitaire</th>
+            <th class="text-end">Sous-total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of order.items">
+            <td>{{ item.nameSnapshot ?? '—' }}</td>
+            <td>{{ item.quantity ?? 0 }}</td>
+            <td>{{ (item.priceSnapshot | number:'1.2-2') + ' €' }}</td>
+            <td class="text-end">{{ ((item.priceSnapshot ?? 0) * (item.quantity ?? 0) | number:'1.2-2') + ' €' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="order-summary border-top pt-3">
+      <div class="d-flex justify-content-end">
+        <h5 class="mb-0">Total : {{ (order.totalAmount | number:'1.2-2') + ' €' }}</h5>
+      </div>
+    </div>
+  </ng-container>
+</app-card>

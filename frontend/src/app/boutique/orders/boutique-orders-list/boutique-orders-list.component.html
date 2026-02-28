@@ -1,0 +1,56 @@
+<app-card cardTitle="Commandes de ma boutique">
+  <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+    <label class="form-label mb-0">Statut :</label>
+    <select
+      class="form-select form-select-sm"
+      style="width: auto"
+      [(ngModel)]="statusFilter"
+      (ngModelChange)="onStatusFilterChange()"
+    >
+      <option value="">Tous</option>
+      <option value="PENDING">En attente</option>
+      <option value="CONFIRMED">Confirmée</option>
+      <option value="SHIPPED">Expédiée</option>
+      <option value="DELIVERED">Livrée</option>
+      <option value="CANCELLED">Annulée</option>
+    </select>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-4">Chargement...</div>
+  <div *ngIf="!isLoading && error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="!isLoading && !error && orders.length === 0" class="alert alert-info">
+    Aucune commande pour le moment.
+  </div>
+
+  <div *ngIf="!isLoading && !error && orders.length > 0" class="table-responsive">
+    <table class="table table-sm table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Date</th>
+          <th>Statut</th>
+          <th class="text-end">Montant</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let o of orders" class="order-row" (click)="goToDetail(o._id)">
+          <td>{{ getClientName(o) }}</td>
+          <td>{{ o.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <span class="badge" [ngClass]="getStatusBadgeClass(o.status)">
+              {{ getStatusLabel(o.status) }}
+            </span>
+          </td>
+          <td class="text-end">{{ (o.totalAmount | number:'1.2-2') + ' €' }}</td>
+          <td>
+            <a [routerLink]="['/boutique/orders', o._id]" class="btn btn-outline-primary btn-sm" (click)="$event.stopPropagation()">
+              Voir
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</app-card>

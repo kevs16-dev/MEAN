@@ -151,6 +151,22 @@ const routes: Routes = [
         data: { roles: ['BOUTIQUE'] }
       },
       {
+        path: 'boutique/orders',
+        loadComponent: () =>
+          import('./boutique/orders/boutique-orders-list/boutique-orders-list.component')
+            .then((c) => c.BoutiqueOrdersListComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['BOUTIQUE'] }
+      },
+      {
+        path: 'boutique/orders/:id',
+        loadComponent: () =>
+          import('./boutique/orders/boutique-order-detail/boutique-order-detail.component')
+            .then((c) => c.BoutiqueOrderDetailComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['BOUTIQUE'] }
+      },
+      {
         path: 'profil',
         loadComponent: () =>
           import('./demo/pages/profil/gestion-profil.component')
@@ -223,6 +239,24 @@ const routes: Routes = [
         loadComponent: () =>
           import('./demo/pages/client/shop-detail/shop-detail.component')
             .then((c) => c.ShopDetailComponent)
+      },
+      {
+        path: 'cart',
+        loadComponent: () =>
+          import('./demo/pages/client/cart-page/cart-page.component')
+            .then((c) => c.CartPageComponent)
+      },
+      {
+        path: 'orders',
+        loadComponent: () =>
+          import('./demo/pages/client/my-orders/my-orders.component')
+            .then((c) => c.MyOrdersComponent)
+      },
+      {
+        path: 'orders/:id',
+        loadComponent: () =>
+          import('./demo/pages/client/order-detail/order-detail.component')
+            .then((c) => c.OrderDetailComponent)
       }
     ]
   },

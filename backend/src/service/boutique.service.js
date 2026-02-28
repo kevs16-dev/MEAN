@@ -37,10 +37,39 @@ const getProductsByShopId = async (shopId, options = {}) => {
   }
 
   const skip = (page - 1) * limit;
-  const [products, total] = await Promise.all([
+  const [productsRaw, total] = await Promise.all([
     Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
     Product.countDocuments(query)
   ]);
+
+  const productIds = productsRaw.map((p) => p._id);
+  const stockMap = {};
+  if (productIds.length > 0) {
+    const stockAgg = await ProductVariant.aggregate([
+      { $match: { productId: { $in: productIds }, isActive: true } },
+      {
+        $group: {
+          _id: '$productId',
+          totalAvailable: {
+            $sum: {
+              $max: [
+                0,
+                { $subtract: [{ $ifNull: ['$stock', 0] }, { $ifNull: ['$reservedStock', 0] }] }
+              ]
+            }
+          }
+        }
+      }
+    ]);
+    for (const row of stockAgg) {
+      stockMap[row._id.toString()] = row.totalAvailable;
+    }
+  }
+
+  const products = productsRaw.map((p) => {
+    const totalAvailable = stockMap[p._id.toString()] ?? 0;
+    return { ...p, totalAvailableStock: totalAvailable };
+  });
 
   return {
     shop: { _id: shop._id, name: shop.name, slug: shop.slug, category: shop.category },
@@ -75,7 +104,13 @@ const getProductWithVariantsByShop = async (shopId, productId) => {
     throw new Error('Produit non disponible');
   }
 
-  const variants = await ProductVariant.find({ productId: product._id, isActive: true }).lean();
+  const variantsRaw = await ProductVariant.find({ productId: product._id, isActive: true }).lean();
+  const variants = variantsRaw.map((v) => {
+    const stock = Number(v.stock) ?? 0;
+    const reserved = Number(v.reservedStock) ?? 0;
+    const availableStock = Math.max(0, stock - reserved);
+    return { ...v, availableStock };
+  });
   return {
     product,
     variants,
