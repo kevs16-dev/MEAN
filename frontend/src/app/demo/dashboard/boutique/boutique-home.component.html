@@ -1,9 +1,65 @@
 <div class="row">
   <div class="col-sm-12">
-    <app-card cardTitle="Espace boutique">
-      <p>
-        Bienvenue dans l'espace boutique. Cette page est la page par défaut après connexion en tant que boutique.
-      </p>
+    <app-card cardTitle="Comportement des ventes boutique">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <label for="periodDays">Période</label>
+          <select
+            id="periodDays"
+            class="period-select"
+            [ngModel]="selectedPeriodDays"
+            (ngModelChange)="onPeriodChange($event)"
+          >
+            <option [ngValue]="7">7 derniers jours</option>
+            <option [ngValue]="30">30 derniers jours</option>
+          </select>
+        </div>
+
+        <p class="period-label mb-0">
+          Données du {{ periodRange.startDate }} au {{ periodRange.endDate }}
+        </p>
+      </div>
+    </app-card>
+  </div>
+
+  @for (analytic of analyticCards; track analytic.title) {
+    <div class="col-md-6 col-xl-3">
+      <app-card [showHeader]="false" blockClass="dashboard-card">
+        <h6 class="mb-2 f-w-400 text-muted">{{ analytic.title }}</h6>
+        <h4 class="mb-3">
+          {{ analytic.amount }}
+          <span class="badge {{ analytic.background }} border {{ analytic.border }}">
+            <i antIcon type="{{ analytic.icon }}" theme="outline"></i>
+            {{ analytic.trend }}
+          </span>
+        </h4>
+        <p class="mb-0 text-muted text-sm">
+          <span class="{{ analytic.color }}">{{ analytic.subtitle }}</span>
+        </p>
+      </app-card>
+    </div>
+  }
+
+  <div class="col-sm-12">
+    <app-card cardTitle="Ventes par jour">
+      <div *ngIf="isLoadingSales" class="text-center py-4">Chargement du graphe...</div>
+      <div *ngIf="!isLoadingSales && salesError" class="alert alert-danger">{{ salesError }}</div>
+
+      <div *ngIf="!isLoadingSales && !salesError">
+        <apx-chart
+          [series]="chartOptions.series!"
+          [chart]="chartOptions.chart!"
+          [xaxis]="chartOptions.xaxis!"
+          [yaxis]="chartOptions.yaxis!"
+          [stroke]="chartOptions.stroke!"
+          [fill]="chartOptions.fill!"
+          [tooltip]="chartOptions.tooltip!"
+          [dataLabels]="chartOptions.dataLabels!"
+          [colors]="chartOptions.colors!"
+          [grid]="chartOptions.grid!"
+          [noData]="chartOptions.noData!"
+        ></apx-chart>
+      </div>
     </app-card>
   </div>
 </div>

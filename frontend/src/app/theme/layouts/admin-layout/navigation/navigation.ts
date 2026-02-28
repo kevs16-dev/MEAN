@@ -28,12 +28,23 @@ export const NavigationItems: NavigationItem[] = [
     icon: 'icon-navigation',
     children: [
       {
-        id: 'default',
+        id: 'dashboard-admin',
         title: 'Dashboard',
         type: 'item',
         classes: 'nav-item',
         url: '/admin/home',
         icon: 'dashboard',
+        roles: ['ADMIN'],
+        breadcrumbs: false
+      },
+      {
+        id: 'dashboard-boutique',
+        title: 'Dashboard',
+        type: 'item',
+        classes: 'nav-item',
+        url: '/boutique/home',
+        icon: 'dashboard',
+        roles: ['BOUTIQUE'],
         breadcrumbs: false
       }
     ]
