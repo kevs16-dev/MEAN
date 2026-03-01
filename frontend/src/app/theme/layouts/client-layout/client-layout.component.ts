@@ -15,5 +15,7 @@ import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcru
   templateUrl: './client-layout.component.html',
   styleUrls: ['./client-layout.component.scss']
 })
-export class ClientLayoutComponent {}
+export class ClientLayoutComponent {
+  currentYear = new Date().getFullYear();
+}
 

@@ -8,6 +8,125 @@
   .pc-container {
     margin-left: 0;
   }
+
+  .client-mall-footer {
+    margin-left: 0;
+    margin-top: 0;
+    padding: 40px 24px 20px;
+    background: linear-gradient(160deg, #131a38 0%, #1f2c63 100%);
+    color: #f5f7ff;
+
+    .footer-wrapper {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .mall-footer-top {
+      .info-card {
+        height: 100%;
+        padding: 22px 20px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(5px);
+      }
+
+      h5 {
+        margin-bottom: 12px;
+        font-size: 1.1rem;
+        color: #ffffff;
+      }
+
+      p {
+        margin-bottom: 0;
+        color: rgba(245, 247, 255, 0.86);
+      }
+
+      .mall-contact li,
+      .mall-hours li {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 6px 0;
+        color: rgba(245, 247, 255, 0.9);
+      }
+
+      .mall-hours li strong {
+        color: #ffffff;
+      }
+    }
+
+    .newsletter-form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+
+      input {
+        flex: 1 1 190px;
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-weight: 600;
+        background: #ffd464;
+        color: #1a2244;
+      }
+    }
+
+    .mall-map-wrapper {
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      overflow: hidden;
+
+      iframe {
+        width: 100%;
+        min-height: 260px;
+        border: 0;
+        display: block;
+      }
+    }
+
+    .mall-footer-bottom {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+
+      p {
+        color: rgba(245, 247, 255, 0.85);
+      }
+    }
+
+    .footer-link {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 0;
+
+      .list-inline-item {
+        margin: 0;
+      }
+
+      a {
+        color: #ffffff;
+        transition: color 0.2s ease;
+      }
+
+      a:hover {
+        color: #ffd464;
+      }
+    }
+  }
 }
 
 :host ::ng-deep .pc-header {
@@ -23,5 +142,25 @@
   width: 100%;
   padding: 0 18px !important;
   background: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .client-layout .client-mall-footer {
+    padding: 32px 16px 16px;
+
+    .mall-footer-top {
+      .mall-contact li,
+      .mall-hours li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+    }
+
+    .mall-footer-bottom {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
 }
 
