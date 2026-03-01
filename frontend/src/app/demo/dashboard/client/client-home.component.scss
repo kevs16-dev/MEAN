@@ -69,6 +69,101 @@
   display: block;
 }
 
+.featured-slide {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+  background: linear-gradient(120deg, #1f2942 0%, #3a4661 100%);
+
+  .featured-slide-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.featured-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 1.2rem 1.5rem 2rem;
+  padding-left: 3.5rem;
+  pointer-events: auto;
+
+  &.no-image {
+    background: linear-gradient(120deg, #1f2942 0%, #3a4661 100%);
+  }
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0) 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.featured-badge {
+  display: inline-block;
+  background: rgba(91, 75, 255, 0.9);
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.featured-overlay h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.featured-details {
+  margin: 0.4rem 0 0.6rem;
+  font-size: 0.9rem;
+  opacity: 0.95;
+  max-width: 420px;
+}
+
+.featured-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.7rem;
+}
+
+.featured-price {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #16c79a;
+}
+
+.featured-shop {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.featured-cta {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  color: #5b4bff;
+  font-weight: 600;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
 .banner-overlay {
   position: absolute;
   inset: auto 0 0 0;
@@ -250,6 +345,22 @@
 
   .banner-slide-image {
     height: 220px;
+  }
+
+  .featured-slide {
+    height: 220px;
+  }
+
+  .featured-overlay h3 {
+    font-size: 1.1rem;
+  }
+
+  .featured-details {
+    display: none;
+  }
+
+  .featured-meta {
+    gap: 0.5rem;
   }
 }
 

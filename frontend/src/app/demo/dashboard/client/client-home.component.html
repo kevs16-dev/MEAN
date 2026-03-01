@@ -1,28 +1,53 @@
 <div class="client-home">
-  <section class="banner-slider-section" *ngIf="banners.length > 0">
+  <section class="banner-slider-section" *ngIf="slides.length > 0">
     <div class="banner-slider">
-      <img
-        class="banner-slide-image"
-        [src]="banners[currentSlide].imageUrl"
-        [alt]="banners[currentSlide].title || 'Bannière'"
-      />
-      <div class="banner-overlay">
-        <h3>{{ banners[currentSlide].title || 'Offres et nouveautés' }}</h3>
-        <p>Retrouvez les actualités et promotions des boutiques.</p>
-      </div>
+      <!-- Slide Bannière -->
+      <ng-container *ngIf="slides[currentSlide].type === 'banner'">
+        <img
+          class="banner-slide-image"
+          [src]="slides[currentSlide].data.imageUrl"
+          [alt]="slides[currentSlide].data.title || 'Bannière'"
+        />
+        <div class="banner-overlay">
+          <h3>{{ slides[currentSlide].data.title || 'Offres et nouveautés' }}</h3>
+          <p>Retrouvez les actualités et promotions des boutiques.</p>
+        </div>
+      </ng-container>
 
-      <button type="button" class="slider-btn slider-btn-prev" (click)="prevSlide()">
-        ‹
-      </button>
-      <button type="button" class="slider-btn slider-btn-next" (click)="nextSlide()">
-        ›
-      </button>
+      <!-- Slide Produit phare -->
+      <ng-container *ngIf="slides[currentSlide].type === 'featured'">
+        <div class="featured-slide">
+          <img
+            *ngIf="getFeaturedImageUrl(slides[currentSlide].data)"
+            class="featured-slide-image"
+            [src]="getFeaturedImageUrl(slides[currentSlide].data)"
+            [alt]="slides[currentSlide].data.product?.name || 'Produit phare'"
+          />
+          <div class="featured-overlay" [class.no-image]="!getFeaturedImageUrl(slides[currentSlide].data)">
+            <span class="featured-badge">Produit phare</span>
+            <h3>{{ slides[currentSlide].data.product?.name }}</h3>
+            <p class="featured-details" *ngIf="slides[currentSlide].data.product?.description">
+              {{ (slides[currentSlide].data.product.description | slice:0:120) + (slides[currentSlide].data.product.description?.length > 120 ? '...' : '') }}
+            </p>
+            <div class="featured-meta">
+              <span class="featured-price">{{ slides[currentSlide].data.variant?.currentPrice | number:'1.0-0' }} Ar</span>
+              <span class="featured-shop">{{ slides[currentSlide].data.shop?.name }}</span>
+            </div>
+            <a [routerLink]="getProductUrl(slides[currentSlide].data)" class="featured-cta">
+              Voir le produit
+            </a>
+          </div>
+        </div>
+      </ng-container>
 
-      <div class="slider-dots" *ngIf="banners.length > 1">
+      <button type="button" class="slider-btn slider-btn-prev" (click)="prevSlide()">‹</button>
+      <button type="button" class="slider-btn slider-btn-next" (click)="nextSlide()">›</button>
+
+      <div class="slider-dots" *ngIf="slides.length > 1">
         <button
           type="button"
           class="slider-dot"
-          *ngFor="let banner of banners; let i = index"
+          *ngFor="let slide of slides; let i = index"
           [class.active]="i === currentSlide"
           (click)="goToSlide(i)"
           [attr.aria-label]="'Aller au slide ' + (i + 1)"

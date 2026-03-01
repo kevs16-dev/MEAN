@@ -14,5 +14,6 @@ router.use('/admin', require('./admin.route'));
 router.use('/upload', require('./upload.route'));
 router.use('/banners', require('./banner.route'));
 router.use('/reviews', require('./review.route'));
+router.use('/featured', require('./featured.route'));
 
 module.exports = router;
