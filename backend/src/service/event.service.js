@@ -1,5 +1,6 @@
 const Event = require('../model/event.model');
 const { createNotificationForRole } = require('./notification.service');
+const { upsertGroupedRegistrationNotification } = require('./notification.service');
 const User = require('../model/user.model');
 const { logActivity } = require('./activity-log.service');
 
@@ -148,6 +149,30 @@ const registerClientToPrivateEvent = async (eventId, userId, ticketTypeName) => 
 
     await event.save();
 
+    try {
+        const [participantUser, ownerUser] = await Promise.all([
+            User.findById(userId).select('nom prenom username'),
+            User.findById(event.createdBy).select('role')
+        ]);
+
+        if (ownerUser?.role === 'BOUTIQUE') {
+            const participantName =
+                [participantUser?.prenom, participantUser?.nom].filter(Boolean).join(' ') ||
+                participantUser?.username ||
+                'Un client';
+
+            await upsertGroupedRegistrationNotification({
+                targetUserId: event.createdBy,
+                eventId: event._id,
+                eventTitle: event.title,
+                participantName,
+                ticketTypeName: selectedTicketType.name
+            });
+        }
+    } catch (error) {
+        console.error('notification EVENT_REGISTRATION error:', error);
+    }
+
     return event;
 };
 
@@ -201,6 +226,7 @@ const getPrivateEventTicketDataForClient = async (eventId, userId) => {
             }
         })
         .lean();
+
     if (!event) {
         throw new Error("L'évènement est introuvable.");
     }

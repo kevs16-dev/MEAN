@@ -7,7 +7,7 @@ const drawHeader = (doc) => {
   doc.save();
   doc.roundedRect(35, 30, 525, 110, 14).fill('#1d4ed8');
   doc.fillColor('#ffffff').fontSize(22).font('Helvetica-Bold').text("Ticket d'évènement", 55, 54);
-  doc.fontSize(11).font('Helvetica').fillColor('#dbeafe').text('Accès nominatif - à présenter à l’entrée', 55, 84);
+  doc.fontSize(11).font('Helvetica').fillColor('#dbeafe').text("Accès nominatif - à présenter à l'entrée", 55, 84);
   doc.restore();
 };
 
@@ -85,14 +85,13 @@ const generateEventTicketPdf = async ({ event, registration, ticketNumber, ticke
     const ticketCodeValue = ticketCode || `${String(event?._id || '').slice(-6).toUpperCase()}-${String(ticketNumberValue).padStart(4, '0')}`;
 
     drawHeader(doc);
-
     doc.roundedRect(35, 155, 525, 380, 14).lineWidth(1).strokeColor('#d1d5db').stroke();
 
     if (shopLogoBuffer) {
       try {
         doc.image(shopLogoBuffer, 55, 175, { fit: [70, 70], align: 'center', valign: 'center' });
       } catch {
-        // Ignore logo render errors and keep generating ticket
+        // Ignore image rendering errors.
       }
     }
 
@@ -118,9 +117,7 @@ const generateEventTicketPdf = async ({ event, registration, ticketNumber, ticke
     doc.font('Helvetica').fontSize(10).fillColor('#374151').text(`Code ticket : ${ticketCodeValue}`, 360, 480, { width: 170 });
 
     doc.font('Helvetica').fontSize(9).fillColor('#6b7280')
-      .text('Ce ticket est personnel. Le QR code contient les données de vérification.', 55, 548, {
-        width: 470
-      });
+      .text('Ce ticket est personnel. Le QR code contient les données de vérification.', 55, 548, { width: 470 });
 
     doc.end();
   });
