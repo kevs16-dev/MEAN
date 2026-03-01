@@ -88,3 +88,128 @@
     margin-top: 1.5rem;
   }
 }
+
+.star-icon {
+  color: #ffc107;
+}
+
+.shop-reviews-average {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #0d6efd;
+}
+
+.shop-reviews-list {
+  padding-left: 0;
+}
+
+.shop-review-item {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e9ecef;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.shop-review-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.shop-review-stars {
+  color: #ffc107;
+  font-size: 0.9rem;
+}
+
+.shop-review-comment {
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.shop-review-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.shop-review-modal-dialog {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.25);
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.shop-review-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.shop-review-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.shop-review-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 0;
+}
+
+.shop-review-modal-close:hover {
+  color: #212529;
+}
+
+.shop-review-modal-body {
+  padding: 1.25rem;
+}
+
+.shop-review-modal-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.shop-review-modal-body .star-rating {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.shop-review-modal-body .star-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #dee2e6;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.shop-review-modal-body .star-btn:hover {
+  color: #ffc107;
+}
+
+.shop-review-modal-body .star-btn.filled {
+  color: #ffc107;
+}

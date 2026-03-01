@@ -58,52 +58,121 @@
             <th>Prix</th>
             <th>Stock dispo.</th>
             <th *ngIf="isClient()">Quantité</th>
-            <th *ngIf="isClient()">Action</th>
+            <th *ngIf="isClient() || canViewReviews()">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let v of variants">
-            <td>
-              <img
-                *ngIf="v.imageUrl"
-                [src]="v.imageUrl"
-                alt=""
-                class="variant-thumb variant-thumb-clickable"
-                (click)="openImageModal(v.imageUrl)"
-                (error)="$any($event.target).style.display='none'"
-              />
-              <span *ngIf="!v.imageUrl" class="variant-thumb variant-thumb-placeholder">—</span>
-            </td>
-            <td class="attributes-cell">
-              <ng-container *ngIf="v.attributes?.length; else noAttrs">
-                <div *ngFor="let a of v.attributes" class="attribute-line">{{ a?.name }}: {{ a?.value }}</div>
-              </ng-container>
-              <ng-template #noAttrs>—</ng-template>
-            </td>
-            <td class="text-nowrap">{{ v.sku || '—' }}</td>
-            <td>{{ v.currentPrice != null ? (v.currentPrice | number: '1.2-2') + ' €' : '—' }}</td>
-            <td>{{ getAvailableStock(v) }}</td>
-            <td *ngIf="isClient()">
-              <input
-                type="number"
-                class="form-control form-control-sm qty-input"
-                [ngModel]="getQuantity(v)"
-                (ngModelChange)="setQuantity(v, $event)"
-                [min]="1"
-                [max]="getAvailableStock(v)"
-              />
-            </td>
-            <td *ngIf="isClient()">
-              <button
-                type="button"
-                class="btn btn-primary btn-sm"
-                [disabled]="!canAddToCart(v)"
-                (click)="addToCart(v)"
-              >
-                Ajouter au panier
-              </button>
-            </td>
-          </tr>
+          <ng-container *ngFor="let v of variants">
+            <tr>
+              <td>
+                <img
+                  *ngIf="v.imageUrl"
+                  [src]="v.imageUrl"
+                  alt=""
+                  class="variant-thumb variant-thumb-clickable"
+                  (click)="openImageModal(v.imageUrl)"
+                  (error)="$any($event.target).style.display='none'"
+                />
+                <span *ngIf="!v.imageUrl" class="variant-thumb variant-thumb-placeholder">—</span>
+              </td>
+              <td class="attributes-cell">
+                <ng-container *ngIf="v.attributes?.length; else noAttrs">
+                  <div *ngFor="let a of v.attributes" class="attribute-line">{{ a?.name }}: {{ a?.value }}</div>
+                </ng-container>
+                <ng-template #noAttrs>—</ng-template>
+              </td>
+              <td class="text-nowrap">{{ v.sku || '—' }}</td>
+              <td>{{ v.currentPrice != null ? (v.currentPrice | number: '1.2-2') + ' €' : '—' }}</td>
+              <td>{{ getAvailableStock(v) }}</td>
+              <td *ngIf="isClient()">
+                <input
+                  type="number"
+                  class="form-control form-control-sm qty-input"
+                  [ngModel]="getQuantity(v)"
+                  (ngModelChange)="setQuantity(v, $event)"
+                  [min]="1"
+                  [max]="getAvailableStock(v)"
+                />
+              </td>
+              <td *ngIf="isClient() || canViewReviews()" class="actions-cell">
+                <div class="d-flex flex-wrap gap-1 align-items-center">
+                  <button
+                    *ngIf="isClient()"
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    [disabled]="!canAddToCart(v)"
+                    (click)="addToCart(v)"
+                  >
+                    Ajouter au panier
+                  </button>
+                  <button
+                    *ngIf="isClient()"
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    (click)="openReviewModal(v)"
+                    title="Noter ce variant"
+                  >
+                    <span class="star-icon">★</span> Noter
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-info btn-sm"
+                    [class.active]="expandedVariantId === v._id"
+                    (click)="toggleReviewsPopup(v._id)"
+                    title="Voir les avis"
+                  >
+                    <span class="avis-badge" *ngIf="variantReviewsData[v._id]?.totalCount">
+                      {{ variantReviewsData[v._id].totalCount }}
+                    </span>
+                    Avis
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <!-- Popup avis sous la ligne -->
+            @if (expandedVariantId === v._id && canViewReviews()) {
+              <tr class="reviews-popup-row">
+                <td [attr.colspan]="isClient() ? 7 : 6">
+                  <div class="reviews-popup-content">
+                    @if (variantReviewsData[v._id]?.loading) {
+                      <p class="text-muted mb-0">Chargement des avis...</p>
+                    } @else {
+                      @let data = variantReviewsData[v._id];
+                      @if (data) {
+                        <div class="reviews-popup-header mb-2">
+                          @if (data.totalCount > 0) {
+                            <span class="reviews-average">
+                              ★ {{ data.averageRating != null ? (data.averageRating | number:'1.1-1') : '—' }}
+                              ({{ data.totalCount }} avis)
+                            </span>
+                          }
+                          <button type="button" class="btn btn-sm btn-link p-0 ms-2" (click)="toggleReviewsPopup(v._id)">
+                            Fermer
+                          </button>
+                        </div>
+                        @if (data.reviews.length === 0) {
+                          <p class="text-muted mb-0">Aucun avis pour ce variant.</p>
+                        } @else {
+                          <ul class="reviews-list list-unstyled mb-0">
+                            @for (r of data.reviews; track r._id) {
+                              <li class="review-item">
+                                <div class="review-meta">
+                                  <strong>{{ getReviewAuthorName(r) }}</strong>
+                                  <span class="review-stars">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</span>
+                                  <span class="text-muted small">{{ r.createdAt | date:'short' }}</span>
+                                </div>
+                                <p *ngIf="r.comment" class="review-comment mb-0">{{ r.comment }}</p>
+                              </li>
+                            }
+                          </ul>
+                        }
+                      }
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </ng-container>
         </tbody>
       </table>
     </div>
@@ -123,5 +192,81 @@
       ×
     </button>
     <img [src]="modalImageUrl" alt="Agrandissement" class="image-modal-img" />
+  </div>
+</div>
+
+<!-- Modal Noter (style Google Maps) -->
+<div
+  *ngIf="reviewModalVariant"
+  class="review-modal-overlay"
+  (click)="closeReviewModal()"
+  role="button"
+  aria-label="Fermer"
+  tabindex="-1"
+>
+  <div class="review-modal-dialog" (click)="$event.stopPropagation()">
+    <div class="review-modal-header">
+      <h5 class="review-modal-title">Noter ce variant</h5>
+      <button type="button" class="review-modal-close" (click)="closeReviewModal()" aria-label="Fermer">×</button>
+    </div>
+    <div class="review-modal-body">
+      <p class="text-muted small mb-2" *ngIf="reviewModalVariant">
+        <span *ngFor="let a of reviewModalVariant.attributes; let last = last">
+          {{ a?.name }}: {{ a?.value }}{{ last ? '' : ', ' }}
+        </span>
+        <span *ngIf="reviewModalVariant.sku"> — {{ reviewModalVariant.sku }}</span>
+      </p>
+      <div class="star-rating mb-3">
+        @for (star of [1,2,3,4,5]; track star) {
+          <button
+            type="button"
+            class="star-btn"
+            [class.filled]="star <= (reviewModalHoverRating || reviewModalRating)"
+            (click)="setReviewStars(star)"
+            (mouseenter)="reviewModalHoverRating = star"
+            (mouseleave)="reviewModalHoverRating = 0"
+          >
+            ★
+          </button>
+        }
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Commentaire (optionnel)</label>
+        <textarea
+          class="form-control"
+          rows="3"
+          [(ngModel)]="reviewModalComment"
+          placeholder="Partagez votre expérience..."
+          maxlength="2000"
+        ></textarea>
+        <small class="text-muted">{{ reviewModalComment.length }}/2000</small>
+      </div>
+      @if (reviewModalError) {
+        <div class="alert alert-danger py-2">{{ reviewModalError }}</div>
+      }
+    </div>
+    <div class="review-modal-footer">
+      @if (reviewModalMyReview?._id) {
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-sm"
+          [disabled]="reviewModalSubmitting"
+          (click)="deleteMyVariantReview()"
+        >
+          Supprimer mon avis
+        </button>
+      }
+      <div class="ms-auto">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeReviewModal()">Annuler</button>
+        <button
+          type="button"
+          class="btn btn-primary ms-2"
+          [disabled]="reviewModalSubmitting || reviewModalRating < 1"
+          (click)="submitReview()"
+        >
+          {{ reviewModalSubmitting ? 'Envoi...' : 'Enregistrer' }}
+        </button>
+      </div>
+    </div>
   </div>
 </div>
