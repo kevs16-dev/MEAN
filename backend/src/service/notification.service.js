@@ -5,6 +5,45 @@ const createNotification = async (notificationData) => {
     return await Notification.create(notificationData);
 };
 
+const upsertGroupedRegistrationNotification = async ({
+    targetUserId,
+    eventId,
+    eventTitle,
+    participantName,
+    ticketTypeName
+}) => {
+    const safeEventTitle = String(eventTitle || 'Evènement privé').trim();
+    const safeParticipantName = String(participantName || 'Un client').trim();
+    const safeTicketType = String(ticketTypeName || 'Billet').trim();
+    const groupKey = `EVENT_REGISTRATION:${String(eventId)}`;
+
+    const existingUnread = await Notification.findOne({
+        userId: targetUserId,
+        groupKey,
+        isRead: false
+    });
+
+    if (!existingUnread) {
+        return await Notification.create({
+            userId: targetUserId,
+            groupKey,
+            aggregateCount: 1,
+            title: `Nouvelle inscription - ${safeEventTitle}`,
+            message: `${safeParticipantName} s'est inscrit(e) (${safeTicketType}).`,
+            type: 'INFO',
+            isRead: false
+        });
+    }
+
+    const nextCount = Number(existingUnread.aggregateCount || 1) + 1;
+    existingUnread.aggregateCount = nextCount;
+    existingUnread.title = `${nextCount} nouvelles inscriptions - ${safeEventTitle}`;
+    existingUnread.message = `Dernière inscription: ${safeParticipantName} (${safeTicketType}).`;
+    existingUnread.type = 'INFO';
+    existingUnread.isRead = false;
+    return await existingUnread.save();
+};
+
 const createNotificationForRole = async (role, notificationData) => {
     const roleList = Array.isArray(role) ? role : [role];
     const userFilter = roleList.includes('ALL') ? {} : { role: { $in: roleList }};
@@ -34,6 +73,7 @@ const markAsRead = async (notificationId) => {
 module.exports = {
     createNotification,
     createNotificationForRole,
+    upsertGroupedRegistrationNotification,
     getNotificationsByUser,
     markAsRead
 };
