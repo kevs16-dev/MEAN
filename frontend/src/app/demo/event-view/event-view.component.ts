@@ -23,9 +23,16 @@ export class EventViewComponent implements OnInit {
   searchTerm = '';
   dateFilter: 'ALL' | 'UPCOMING' | 'PAST' = 'ALL';
   events: any[] = [];
+  userRole: 'ADMIN' | 'BOUTIQUE' | 'CLIENT' = 'CLIENT';
+  currentUserId: string | null = null;
   viewMode: 'list' | 'calendar' = 'calendar';
   selectedEvent: any | null = null;
   isEventModalOpen = false;
+  isParticipantsModalOpen = false;
+  participantsLoading = false;
+  participantsError: string | null = null;
+  participants: any[] = [];
+  participantsEventTitle = '';
   calendarOptions: any = {
     plugins: [dayGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
@@ -39,13 +46,10 @@ export class EventViewComponent implements OnInit {
   };
 
   ngOnInit() {
-    const storedRole = localStorage.getItem('userRole');
-    const userRole =
-      storedRole === 'ADMIN' || storedRole === 'BOUTIQUE'
-        ? storedRole
-        : 'CLIENT';
+    this.userRole = this.getStoredUserRole();
+    this.currentUserId = this.getStoredUserId();
 
-    this.eventService.getEventsForRole(userRole).subscribe(events => {
+    this.eventService.getEventsForRole(this.userRole).subscribe(events => {
       this.events = events;
 
       // ⬇️ on met à jour SEULEMENT la propriété events
@@ -57,9 +61,11 @@ export class EventViewComponent implements OnInit {
           start: e.startDate,
           end: e.endDate,
           extendedProps: {
+            _id: e._id,
             description: e.description,
             location: e.location,
-            reminderDaysBefore: e.reminderDaysBefore ?? 0
+            reminderDaysBefore: e.reminderDaysBefore ?? 0,
+            isPrivate: !!e.isPrivate
           }
         }))
       };
@@ -109,6 +115,42 @@ export class EventViewComponent implements OnInit {
     this.selectedEvent = null;
   }
 
+  closeParticipantsModal(): void {
+    this.isParticipantsModalOpen = false;
+    this.participants = [];
+    this.participantsError = null;
+    this.participantsLoading = false;
+    this.participantsEventTitle = '';
+  }
+
+  canShowParticipants(event: any): boolean {
+    return this.userRole === 'BOUTIQUE' && !!event?.isPrivate && this.isEventOwnedByCurrentUser(event);
+  }
+
+  openParticipants(event: any): void {
+    if (!event?._id || !this.canShowParticipants(event)) {
+      return;
+    }
+
+    this.isParticipantsModalOpen = true;
+    this.participantsLoading = true;
+    this.participantsError = null;
+    this.participants = [];
+    this.participantsEventTitle = event.title || 'Evènement privé';
+
+    this.eventService.getPrivateEventParticipants(event._id).subscribe({
+      next: (data) => {
+        this.participantsLoading = false;
+        this.participants = data?.participants || [];
+        this.participantsEventTitle = data?.eventTitle || this.participantsEventTitle;
+      },
+      error: (err) => {
+        this.participantsLoading = false;
+        this.participantsError = err?.error?.message || 'Impossible de récupérer les participants.';
+      }
+    });
+  }
+
   private handleCalendarEventClick(arg: any): void {
     const clickedEvent = arg?.event;
     if (!clickedEvent) {
@@ -116,13 +158,58 @@ export class EventViewComponent implements OnInit {
     }
 
     this.selectedEvent = {
+      _id: clickedEvent.extendedProps?._id || clickedEvent.id,
       title: clickedEvent.title,
       description: clickedEvent.extendedProps?.description,
       location: clickedEvent.extendedProps?.location,
       reminderDaysBefore: clickedEvent.extendedProps?.reminderDaysBefore ?? 0,
+      isPrivate: !!clickedEvent.extendedProps?.isPrivate,
       startDate: clickedEvent.start,
       endDate: clickedEvent.end
     };
     this.isEventModalOpen = true;
+  }
+
+  private getStoredUserRole(): 'ADMIN' | 'BOUTIQUE' | 'CLIENT' {
+    const roleFromKey = localStorage.getItem('userRole');
+    if (roleFromKey === 'ADMIN' || roleFromKey === 'BOUTIQUE' || roleFromKey === 'CLIENT') {
+      return roleFromKey;
+    }
+
+    const rawUser = localStorage.getItem('user');
+    if (!rawUser) {
+      return 'CLIENT';
+    }
+
+    try {
+      const parsedUser = JSON.parse(rawUser);
+      const role = parsedUser?.role;
+      return role === 'ADMIN' || role === 'BOUTIQUE' || role === 'CLIENT' ? role : 'CLIENT';
+    } catch {
+      return 'CLIENT';
+    }
+  }
+
+  private getStoredUserId(): string | null {
+    const rawUser = localStorage.getItem('user');
+    if (!rawUser) {
+      return null;
+    }
+
+    try {
+      const parsedUser = JSON.parse(rawUser);
+      return parsedUser?._id || parsedUser?.id || null;
+    } catch {
+      return null;
+    }
+  }
+
+  private isEventOwnedByCurrentUser(event: any): boolean {
+    if (!this.currentUserId) {
+      return false;
+    }
+    const createdBy = event?.createdBy;
+    const createdById = typeof createdBy === 'object' ? createdBy?._id : createdBy;
+    return String(createdById || '') === String(this.currentUserId);
   }
 }

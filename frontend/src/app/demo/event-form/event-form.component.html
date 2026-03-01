@@ -91,6 +91,83 @@
         <div class="col-12">
           <div class="form-check">
             <input
+              id="isPrivate"
+              class="form-check-input"
+              type="checkbox"
+              formControlName="isPrivate"
+            />
+            <label class="form-check-label" for="isPrivate">
+              Evènement privé
+            </label>
+          </div>
+        </div>
+
+        <ng-container *ngIf="eventForm.get('isPrivate')?.value">
+          <div class="col-12">
+            <label class="form-label">Types de billet *</label>
+          </div>
+
+          <div class="col-12" formArrayName="ticketTypes">
+            <div
+              class="row g-2 align-items-end mb-2"
+              *ngFor="let ticketTypeGroup of ticketTypes.controls; let i = index"
+              [formGroupName]="i"
+            >
+              <div class="col-md-4">
+                <label class="form-label">Type de billet *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="name"
+                  placeholder="Ex: VIP, Standard"
+                />
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Max places *</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  formControlName="maxPlaces"
+                  min="1"
+                  step="1"
+                  placeholder="Ex: 100"
+                />
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">PAF *</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  formControlName="paf"
+                  min="0"
+                  step="0.01"
+                  placeholder="Ex: 15"
+                />
+              </div>
+
+              <div class="col-md-2 d-flex">
+                <button
+                  type="button"
+                  class="btn btn-outline-danger w-100"
+                  [disabled]="ticketTypes.length <= 1"
+                  (click)="removeTicketType(i)"
+                >
+                  Retirer
+                </button>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-outline-primary" (click)="addTicketType()">
+              Ajouter un type de billet
+            </button>
+          </div>
+        </ng-container>
+
+        <div class="col-12">
+          <div class="form-check">
+            <input
               id="createNotification"
               class="form-check-input"
               type="checkbox"
