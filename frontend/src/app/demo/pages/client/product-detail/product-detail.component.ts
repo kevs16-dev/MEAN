@@ -1,11 +1,13 @@
 import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { CardComponent } from '../../../../theme/shared/components/card/card.component';
 import { ProductService } from '../../../../service/product.service';
 import { CartService } from '../../../../service/cart.service';
 import { AuthService } from '../../../../service/auth.service';
+import { ReviewService, type Review } from '../../../../service/review.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -18,6 +20,7 @@ export class ProductDetailComponent implements OnInit {
   private productService = inject(ProductService);
   private cartService = inject(CartService);
   private authService = inject(AuthService);
+  private reviewService = inject(ReviewService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -32,6 +35,19 @@ export class ProductDetailComponent implements OnInit {
   messageError: string | null = null;
   /** Quantité saisie par variante (clé = _id variante) */
   variantQuantities: Record<string, number> = {};
+
+  /** Avis variant : modal de notation */
+  reviewModalVariant: any = null;
+  reviewModalRating = 0;
+  reviewModalHoverRating = 0;
+  reviewModalComment = '';
+  reviewModalMyReview: Review | null = null;
+  reviewModalSubmitting = false;
+  reviewModalError: string | null = null;
+
+  /** Avis variant : popup liste sous la ligne */
+  expandedVariantId: string | null = null;
+  variantReviewsData: Record<string, { reviews: Review[]; averageRating: number | null; totalCount: number; loading: boolean }> = {};
 
   ngOnInit(): void {
     this.shopId = this.route.snapshot.paramMap.get('shopId');
@@ -51,6 +67,9 @@ export class ProductDetailComponent implements OnInit {
           if (v?._id) this.variantQuantities[v._id] = 1;
         });
         this.isLoading = false;
+        if (this.canViewReviews() && this.variants.length > 0) {
+          this.loadVariantReviewCounts();
+        }
       },
       error: (err) => {
         this.error = err?.error?.message || 'Impossible de charger le produit.';
@@ -138,8 +157,170 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
+  /** Peut voir les avis (CLIENT ou BOUTIQUE) */
+  canViewReviews(): boolean {
+    const role = this.authService.getUserRole();
+    return role === 'CLIENT' || role === 'BOUTIQUE';
+  }
+
+  /** Ouverture modal Noter */
+  openReviewModal(v: any): void {
+    this.reviewModalVariant = v;
+    this.reviewModalRating = 0;
+    this.reviewModalHoverRating = 0;
+    this.reviewModalComment = '';
+    this.reviewModalMyReview = null;
+    this.reviewModalError = null;
+    this.reviewService.getMyVariantReview(v._id).subscribe({
+      next: (res) => {
+        this.reviewModalMyReview = res.review ?? null;
+        if (this.reviewModalMyReview) {
+          this.reviewModalRating = this.reviewModalMyReview.rating;
+          this.reviewModalComment = this.reviewModalMyReview.comment || '';
+        }
+      }
+    });
+  }
+
+  closeReviewModal(): void {
+    this.reviewModalVariant = null;
+    this.reviewModalSubmitting = false;
+  }
+
+  setReviewStars(n: number): void {
+    this.reviewModalRating = n;
+  }
+
+  submitReview(): void {
+    if (!this.reviewModalVariant || this.reviewModalRating < 1) {
+      this.reviewModalError = 'Veuillez sélectionner une note (1 à 5 étoiles).';
+      return;
+    }
+    this.reviewModalSubmitting = true;
+    this.reviewModalError = null;
+    this.reviewService.createVariantReview(
+      this.reviewModalVariant._id,
+      this.reviewModalRating,
+      this.reviewModalComment || undefined
+    ).subscribe({
+      next: () => {
+        const variantId = this.reviewModalVariant._id;
+        this.refreshVariantReviews(variantId);
+        this.closeReviewModal();
+        this.messageSuccess = 'Avis enregistré.';
+        setTimeout(() => (this.messageSuccess = null), 3000);
+      },
+      error: (err) => {
+        this.reviewModalError = err?.error?.message || 'Erreur lors de l\'enregistrement.';
+        this.reviewModalSubmitting = false;
+      }
+    });
+  }
+
+  deleteMyVariantReview(): void {
+    if (!this.reviewModalMyReview?._id) return;
+    this.reviewModalSubmitting = true;
+    this.reviewModalError = null;
+    this.reviewService.deleteVariantReview(this.reviewModalMyReview._id).subscribe({
+      next: () => {
+        this.reviewModalMyReview = null;
+        this.reviewModalRating = 0;
+        this.reviewModalComment = '';
+        this.refreshVariantReviews(this.reviewModalVariant._id);
+        this.reviewModalSubmitting = false;
+        this.messageSuccess = 'Avis supprimé.';
+        setTimeout(() => (this.messageSuccess = null), 3000);
+      },
+      error: (err) => {
+        this.reviewModalError = err?.error?.message || 'Erreur lors de la suppression.';
+        this.reviewModalSubmitting = false;
+      }
+    });
+  }
+
+  refreshVariantReviews(variantId: string): void {
+    const prev = this.variantReviewsData[variantId];
+    if (prev) {
+      prev.loading = true;
+      this.reviewService.getVariantReviews(variantId).subscribe({
+        next: (res) => {
+          this.variantReviewsData[variantId] = {
+            reviews: res.reviews,
+            averageRating: res.averageRating,
+            totalCount: res.totalCount,
+            loading: false
+          };
+        },
+        error: () => {
+          if (this.variantReviewsData[variantId]) this.variantReviewsData[variantId].loading = false;
+        }
+      });
+    }
+  }
+
+  loadVariantReviewCounts(): void {
+    const variantIds = this.variants.filter((v) => v?._id).map((v) => v._id);
+    if (variantIds.length === 0) return;
+
+    const requests = variantIds.map((id) =>
+      this.reviewService.getVariantReviews(id, 1, 1)
+    );
+
+    forkJoin(requests).subscribe({
+      next: (results) => {
+        results.forEach((res, i) => {
+          const id = variantIds[i];
+          if (id) {
+            this.variantReviewsData[id] = {
+              reviews: res.reviews || [],
+              averageRating: res.averageRating ?? null,
+              totalCount: res.totalCount ?? res.total ?? 0,
+              loading: false
+            };
+          }
+        });
+      }
+    });
+  }
+
+  toggleReviewsPopup(variantId: string): void {
+    if (this.expandedVariantId === variantId) {
+      this.expandedVariantId = null;
+      return;
+    }
+    this.expandedVariantId = variantId;
+    const prev = this.variantReviewsData[variantId];
+    this.variantReviewsData[variantId] = {
+      reviews: prev?.reviews ?? [],
+      averageRating: prev?.averageRating ?? null,
+      totalCount: prev?.totalCount ?? 0,
+      loading: true
+    };
+    this.reviewService.getVariantReviews(variantId, 1, 10).subscribe({
+      next: (res) => {
+        this.variantReviewsData[variantId] = {
+          reviews: res.reviews,
+          averageRating: res.averageRating,
+          totalCount: res.totalCount,
+          loading: false
+        };
+      },
+      error: () => {
+        this.variantReviewsData[variantId].loading = false;
+      }
+    });
+  }
+
+  getReviewAuthorName(r: Review): string {
+    const u = r.userId;
+    if (!u) return 'Anonyme';
+    const parts = [u.prenom, u.nom].filter(Boolean);
+    return parts.length ? parts.join(' ') : (u.username || 'Anonyme');
+  }
+
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.modalImageUrl) this.closeImageModal();
+    if (this.reviewModalVariant) this.closeReviewModal();
   }
 }
