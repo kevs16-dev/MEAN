@@ -52,7 +52,6 @@ export class EventViewComponent implements OnInit {
     this.eventService.getEventsForRole(this.userRole).subscribe(events => {
       this.events = events;
 
-      // ⬇️ on met à jour SEULEMENT la propriété events
       this.calendarOptions = {
         ...this.calendarOptions,
         events: events.map(e => ({

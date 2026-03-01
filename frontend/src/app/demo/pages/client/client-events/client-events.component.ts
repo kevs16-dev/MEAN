@@ -276,20 +276,6 @@ export class ClientEventsComponent implements OnInit, OnDestroy {
     };
   }
 
-  private sortEventsUpcomingToPast(events: any[]): any[] {
-    const nowMs = Date.now();
-
-    const upcoming = events
-      .filter((event) => new Date(event.startDate).getTime() >= nowMs)
-      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-
-    const past = events
-      .filter((event) => new Date(event.startDate).getTime() < nowMs)
-      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-
-    return [...upcoming, ...past];
-  }
-
   private getCurrentUserId(): string | null {
     const rawUser = localStorage.getItem('user');
     if (!rawUser) {
@@ -302,5 +288,19 @@ export class ClientEventsComponent implements OnInit, OnDestroy {
     } catch {
       return null;
     }
+  }
+
+  private sortEventsUpcomingToPast(events: any[]): any[] {
+    const nowMs = Date.now();
+
+    const upcoming = events
+      .filter((event) => new Date(event.startDate).getTime() >= nowMs)
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+    const past = events
+      .filter((event) => new Date(event.startDate).getTime() < nowMs)
+      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+
+    return [...upcoming, ...past];
   }
 }

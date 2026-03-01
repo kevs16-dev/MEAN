@@ -33,14 +33,14 @@
   overflow: auto;
 }
 
+.participants-modal {
+  width: min(980px, 100%);
+}
+
 .event-modal-title-row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
-}
-
-.participants-modal {
-  width: min(980px, 100%);
 }
