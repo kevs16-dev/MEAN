@@ -1,5 +1,3 @@
-// Layout spécifique client : header pleine largeur, sans nav-left
-
 :host {
   display: block;
 }
@@ -9,10 +7,13 @@
     margin-left: 0;
   }
 
+  .page-wrapper {
+    padding-bottom: 20px;
+  }
+
   .client-mall-footer {
     margin-left: 0;
-    margin-top: 0;
-    padding: 40px 24px 20px;
+    padding: 42px 24px 20px;
     background: linear-gradient(160deg, #131a38 0%, #1f2c63 100%);
     color: #f5f7ff;
 
@@ -33,6 +34,23 @@
         backdrop-filter: blur(5px);
       }
 
+      .info-card-brand {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+      }
+
+      .footer-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        margin-bottom: 10px;
+        border-radius: 999px;
+        font-size: .72rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #1a2244;
+        background: #ffd464;
+      }
+
       h5 {
         margin-bottom: 12px;
         font-size: 1.1rem;
@@ -44,7 +62,6 @@
         color: rgba(245, 247, 255, 0.86);
       }
 
-      .mall-contact li,
       .mall-hours li {
         display: flex;
         justify-content: space-between;
@@ -55,6 +72,43 @@
 
       .mall-hours li strong {
         color: #ffffff;
+      }
+
+      .mall-contact li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 0;
+        color: rgba(245, 247, 255, 0.92);
+
+        i {
+          font-size: 18px;
+          color: #ffd464;
+        }
+
+        a {
+          color: #ffffff;
+          text-decoration: none;
+          transition: color 0.2s ease;
+        }
+
+        a:hover {
+          color: #ffd464;
+        }
+      }
+
+      .mall-links {
+        display: grid;
+        a {
+          color: #ffffff;
+          text-decoration: none;
+          font-weight: 500;
+          transition: transform 0.2s ease;
+        }
+
+        a:hover {
+          transform: translateX(3px);
+        }
       }
     }
 
@@ -94,14 +148,13 @@
     }
 
     .mall-footer-bottom {
-      margin-top: 18px;
+      margin-top: 20px;
       padding-top: 18px;
       border-top: 1px solid rgba(255, 255, 255, 0.2);
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 14px;
 
       p {
         color: rgba(245, 247, 255, 0.85);
@@ -110,7 +163,6 @@
 
     .footer-link {
       display: flex;
-      gap: 14px;
       margin-bottom: 0;
 
       .list-inline-item {
@@ -119,7 +171,6 @@
 
       a {
         color: #ffffff;
-        transition: color 0.2s ease;
       }
 
       a:hover {
@@ -149,11 +200,14 @@
     padding: 32px 16px 16px;
 
     .mall-footer-top {
-      .mall-contact li,
       .mall-hours li {
         flex-direction: column;
         align-items: flex-start;
         gap: 2px;
+      }
+
+      .mall-contact li {
+        align-items: flex-start;
       }
     }
 

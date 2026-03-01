@@ -18,20 +18,30 @@
     <div class="footer-wrapper container-fluid">
       <div class="mall-footer-top">
         <div class="row g-4">
-          <div class="col-12 col-lg-4">
-            <div class="info-card">
+          <div class="col-12 col-lg-5">
+            <div class="info-card info-card-brand">
+              <span class="footer-badge">Centre Commercial</span>
               <h5>MEAN Mall</h5>
               <p class="mb-3">
                 Votre destination shopping, restauration et loisirs au coeur de la ville.
               </p>
               <ul class="mall-contact list-unstyled mb-0">
-                <li><strong>Adresse :</strong> Lot II M 85, Antananarivo</li>
-                <li><strong>Telephone :</strong> +261 34 00 000 00</li>
-                <li><strong>Email :</strong> contact@meanmall.mg</li>
+                <li>
+                  <i class="ti ti-map-pin"></i>
+                  <span>Lot II M 85, Antananarivo</span>
+                </li>
+                <li>
+                  <i class="ti ti-phone"></i>
+                  <a href="tel:+261340000000">+261 34 00 000 00</a>
+                </li>
+                <li>
+                  <i class="ti ti-mail"></i>
+                  <a href="mailto:contact@meanmall.mg">contact@meanmall.mg</a>
+                </li>
               </ul>
             </div>
           </div>
-          <div class="col-12 col-md-6 col-lg-4">
+          <div class="col-12 col-md-6 col-lg-3">
             <div class="info-card">
               <h5>Horaires d'ouverture</h5>
               <ul class="mall-hours list-unstyled mb-0">
@@ -43,8 +53,14 @@
           </div>
           <div class="col-12 col-md-6 col-lg-4">
             <div class="info-card">
-              <h5>Restez informe</h5>
-              <p class="mb-3">Recevez les promotions, evenements et nouvelles boutiques.</p>
+              <h5>Navigation rapide</h5>
+              <ul class="mall-links list-unstyled mb-3">
+                <li><a routerLink="/client">Accueil client</a></li>
+                <li><a routerLink="/client/shops">Boutiques</a></li>
+                <li><a routerLink="/client/events">Evenements</a></li>
+                <li><a routerLink="/profil">Mon profil</a></li>
+              </ul>
+              <p class="mb-2">Restez informe des promotions et nouveautes.</p>
               <form class="newsletter-form">
                 <input type="email" placeholder="Votre adresse email" aria-label="Votre adresse email" />
                 <button type="button">S'inscrire</button>
@@ -68,10 +84,10 @@
           Copyright &copy; {{ currentYear }} Rakotondratsimba Mirado Ny Aina Kevin C. - Randriaherimanana Manoa Finaritra
         </p>
         <ul class="list-inline footer-link mb-0">
-          <li class="list-inline-item"><a href="#">Boutiques</a></li>
-          <li class="list-inline-item"><a href="#">Evenements</a></li>
-          <li class="list-inline-item"><a href="#">Services</a></li>
-          <li class="list-inline-item"><a href="#">Nous contacter</a></li>
+          <li class="list-inline-item"><a routerLink="/client/shops">Boutiques</a></li>
+          <li class="list-inline-item"><a routerLink="/client/events">Evenements</a></li>
+          <li class="list-inline-item"><a routerLink="/profil">Compte</a></li>
+          <li class="list-inline-item"><a href="mailto:contact@meanmall.mg">Contact</a></li>
         </ul>
       </div>
     </div>
