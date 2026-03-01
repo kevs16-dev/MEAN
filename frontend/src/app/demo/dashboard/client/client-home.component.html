@@ -31,6 +31,14 @@
     </div>
   </section>
 
+  <section class="shop-logos-marquee" *ngIf="scrollingShopLogos.length > 0">
+    <div class="shop-logos-track">
+      <div class="shop-logo-item" *ngFor="let shop of scrollingShopLogos">
+        <img [src]="shop.image" [alt]="shop.name" />
+      </div>
+    </div>
+  </section>
+
   <section class="quick-actions">
     <article class="action-card action-card-primary">
       <div class="action-icon">
@@ -59,28 +67,87 @@
       <a routerLink="/profil">Gérer mon profil</a>
     </article>
 
-    <article class="action-card">
-      <div class="action-icon">
-        <i class="ti ti-shield-lock"></i>
-      </div>
-      <h4>Sécurité du compte</h4>
-      <p>Renforcez la sécurité de votre espace client en changeant votre mot de passe.</p>
-      <a routerLink="/profil" fragment="password">Modifier mon mot de passe</a>
-    </article>
   </section>
 
-  <section class="service-strip">
-    <div class="service-item">
-      <i class="ti ti-gift"></i>
-      <span>Offres exclusives</span>
+  <section class="featured-products-section">
+    <div class="featured-products-head">
+      <div>
+        <h3>Produits phares</h3>
+        <p>Les produits les plus vendus du centre avec leurs notes clients.</p>
+      </div>
+      <div class="featured-nav" *ngIf="!isLoadingFeaturedProducts && !featuredProductsError && canSlideFeaturedProducts()">
+        <button type="button" class="featured-nav-btn" (click)="prevFeaturedProducts()" aria-label="Produits précédents">
+          &lt;
+        </button>
+        <button type="button" class="featured-nav-btn" (click)="nextFeaturedProducts()" aria-label="Produits suivants">
+          &gt;
+        </button>
+      </div>
     </div>
-    <div class="service-item">
-      <i class="ti ti-clock-hour-4"></i>
-      <span>Infos horaires</span>
+
+    <div *ngIf="featuredProductsSuccessMessage" class="alert alert-success py-2 mb-3">
+      {{ featuredProductsSuccessMessage }}
     </div>
-    <div class="service-item">
-      <i class="ti ti-map-pin"></i>
-      <span>Plan des boutiques</span>
+    <div *ngIf="featuredProductsErrorMessage" class="alert alert-danger py-2 mb-3">
+      {{ featuredProductsErrorMessage }}
+    </div>
+
+    <div *ngIf="isLoadingFeaturedProducts" class="featured-empty-state">Chargement des produits phares...</div>
+    <div *ngIf="!isLoadingFeaturedProducts && featuredProductsError" class="featured-empty-state featured-empty-error">
+      {{ featuredProductsError }}
+    </div>
+    <div *ngIf="!isLoadingFeaturedProducts && !featuredProductsError && featuredProducts.length === 0" class="featured-empty-state">
+      Aucun produit phare disponible pour le moment.
+    </div>
+
+    <div *ngIf="!isLoadingFeaturedProducts && !featuredProductsError && featuredProducts.length > 0" class="featured-products-row">
+      <article class="featured-product-card" *ngFor="let item of visibleFeaturedProducts">
+        <a class="featured-product-image-wrap" [routerLink]="['/client/shops', item.shopId, 'products', item.productId]">
+          <img class="featured-product-image" [src]="item.imageUrl" [alt]="item.name" />
+        </a>
+
+        <div class="featured-product-body">
+          <span class="featured-product-shop">{{ item.shopName }}</span>
+          <h4 class="featured-product-title">{{ item.name }}</h4>
+          <p class="featured-product-description">
+            {{ item.description ? (item.description.length > 95 ? (item.description | slice:0:95) + '...' : item.description) : 'Produit populaire du centre commercial.' }}
+          </p>
+
+          <div class="featured-product-rating">
+            <div class="rating-stars">
+              <span
+                *ngFor="let star of [1, 2, 3, 4, 5]"
+                class="star"
+                [class.filled]="isFilledStar(item.rating, star)"
+              >
+                ★
+              </span>
+            </div>
+            <span class="rating-text" *ngIf="item.rating != null">{{ item.rating | number:'1.1-1' }} ({{ item.ratingCount }})</span>
+            <span class="rating-text" *ngIf="item.rating == null">Pas encore noté</span>
+          </div>
+
+          <div class="featured-product-meta">
+            <span class="featured-price" *ngIf="item.price != null">{{ item.price | number:'1.2-2' }} €</span>
+            <span class="featured-price" *ngIf="item.price == null">Prix indisponible</span>
+            <span class="featured-sold">{{ item.soldCount }} vendus</span>
+          </div>
+
+          <div class="featured-product-actions">
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              [disabled]="!canAddFeaturedToCart(item)"
+              (click)="addFeaturedToCart(item)"
+            >
+              Ajouter au panier
+            </button>
+            <a class="btn btn-outline-primary btn-sm" [routerLink]="['/client/shops', item.shopId, 'products', item.productId]">
+              Voir détail
+            </a>
+          </div>
+        </div>
+      </article>
     </div>
   </section>
 </div>
