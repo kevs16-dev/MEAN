@@ -7,11 +7,6 @@
       </a>
     </li>
   }
-  <li class="pc-h-item">
-    <a href="https://github.com/codedthemes/mantis-free-angular-admin-template" target="_blank" class="pc-head-link me-0 bg-gray-200">
-      <i antIcon type="github" theme="outline"></i>
-    </a>
-  </li>
   <li class="dropdown pc-h-item" ngbDropdown>
     <a href="javascript:" class="pc-head-link dropdown-toggle arrow-none me-0 bg-gray-200" data-bs-toggle="dropdown" ngbDropdownToggle (click)="markAllAsRead()">
       <i antIcon type="bell" theme="outline"></i>
@@ -83,7 +78,7 @@
             <img src="assets/images/user/avatar-2.jpg" alt="user-image" class="user-avatar wid-35" />
           </div>
           <div class="flex-grow-1 ms-3 text-start">
-            <h6 class="mb-0">JWT User</h6>
+            <h6 class="mb-0">{{ getDisplayName() }}</h6>
             <span>{{ utilisateur?.role || 'CLIENT' }}</span>
           </div>
           <a href="#" class="bg-transparent" (click)="deconnexion()"><i class="d-flex f-20" antIcon theme="outline" type="logout"></i></a>
@@ -109,9 +104,14 @@
         <li ngbNavItem="2">
           <a ngbNavLink>
             <i class="me-2" antIcon theme="outline" type="setting"></i>
-            Setting
+            Paramètres
           </a>
           <ng-template ngbNavContent>
+            <div class="dropdown-item-text border-bottom pb-2 mb-2">
+              <div class="fw-semibold">{{ supportStatic.title }}</div>
+              <div class="text-muted small">Email: {{ supportStatic.email }}</div>
+              <div class="text-muted small">Tel: {{ supportStatic.phone }}</div>
+            </div>
             @for (task of setting; track task) {
               <div>
                 <a href="javascript:" class="dropdown-item" (click)="$event.preventDefault(); task.action && task.action()">

@@ -1,6 +1,7 @@
 const ShopReview = require('../model/shopReview.model');
 const Shop = require('../model/boutique.model');
 const User = require('../model/user.model');
+const Notification = require('../model/notification.model');
 const AppError = require('../utils/AppError');
 
 /**
@@ -25,6 +26,29 @@ const ensureShopExists = async (shopId) => {
 };
 
 /**
+ * Notifie les comptes BOUTIQUE liés à la boutique lorsqu'un nouvel avis est reçu.
+ */
+const notifyShopUsersForNewReview = async ({ shopId, shopName, reviewerName, rating }) => {
+  const shopUsers = await User.find({
+    role: 'BOUTIQUE',
+    shopId,
+    isActive: true
+  }).select('_id');
+
+  if (!shopUsers.length) return;
+
+  const notifications = shopUsers.map((user) => ({
+    userId: user._id,
+    title: 'Nouvel avis reçu',
+    message: `${reviewerName} a laissé un avis ${rating}/5 sur ${shopName}.`,
+    type: 'INFO',
+    isRead: false
+  }));
+
+  await Notification.insertMany(notifications);
+};
+
+/**
  * Créer un avis sur une boutique (CLIENT uniquement).
  * Si l'utilisateur a déjà un avis, on le supprime puis on en crée un nouveau.
  */
@@ -35,16 +59,35 @@ const createReview = async (userId, { shopId, rating, comment }) => {
     throw new AppError('SHOP_ID_AND_RATING_REQUIRED', 400);
   }
 
-  await ensureShopExists(shopId);
+  const shop = await ensureShopExists(shopId);
+  const safeRating = parseInt(rating, 10);
 
   await ShopReview.deleteOne({ userId, shopId });
 
   const review = await ShopReview.create({
     userId,
     shopId,
-    rating: parseInt(rating, 10),
+    rating: safeRating,
     comment: comment && String(comment).trim() ? String(comment).trim() : null
   });
+
+  try {
+    const reviewer = await User.findById(userId).select('nom prenom username');
+    const reviewerName =
+      [reviewer?.prenom, reviewer?.nom].filter(Boolean).join(' ') ||
+      reviewer?.username ||
+      'Un client';
+    const shopName = String(shop?.name || 'votre boutique');
+
+    await notifyShopUsersForNewReview({
+      shopId: shop._id,
+      shopName,
+      reviewerName,
+      rating: safeRating
+    });
+  } catch (error) {
+    console.error('notification SHOP_REVIEW_CREATED error:', error);
+  }
 
   return review.populate('userId', 'nom prenom username');
 };
