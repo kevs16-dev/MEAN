@@ -167,6 +167,14 @@ const routes: Routes = [
         data: { roles: ['BOUTIQUE'] }
       },
       {
+        path: 'boutique/reviews',
+        loadComponent: () =>
+          import('./demo/pages/boutique/boutique-reviews/boutique-reviews.component')
+            .then((c) => c.BoutiqueReviewsComponent),
+        canActivate: [RoleGuard],
+        data: { roles: ['BOUTIQUE'] }
+      },
+      {
         path: 'profil',
         loadComponent: () =>
           import('./demo/pages/profil/gestion-profil.component')

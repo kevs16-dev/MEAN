@@ -1,1 +1,12 @@
-// This file is intentionally left empty to allow customers to add custom CSS if needed.
+.b-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.brand-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2942;
+  line-height: 1;
+}

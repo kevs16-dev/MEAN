@@ -1,1 +1,40 @@
-// This file is intentionally left empty to allow customers to add custom CSS if needed.
+.navbar-content {
+  min-height: calc(100vh - 49px);
+  display: flex;
+  flex-direction: column;
+}
+
+.coded-inner-navbar {
+  flex: 1 1 auto;
+}
+
+.nav-user-link-wrap {
+  margin: 0.9rem 0.75rem 1rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #e7ecf6;
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  z-index: 2;
+}
+
+.nav-user-link {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  color: #334155;
+  text-decoration: none;
+  background: #f8faff;
+  border: 1px solid #e4eaf8;
+  font-weight: 600;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.nav-user-link:hover {
+  background: #edf2ff;
+  border-color: #cfdcff;
+  color: #1e293b;
+}

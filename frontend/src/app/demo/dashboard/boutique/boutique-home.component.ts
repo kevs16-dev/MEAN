@@ -8,6 +8,8 @@ import { forkJoin, map, of, switchMap } from 'rxjs';
 // Project import
 import { CardComponent } from '../../../theme/shared/components/card/card.component';
 import { OrderService } from '../../../service/order.service';
+import { ReviewService } from '../../../service/review.service';
+import { UserService } from '../../../service/user.service';
 import { IconDirective, IconService } from '@ant-design/icons-angular';
 import { RiseOutline } from '@ant-design/icons-angular/icons';
 
@@ -55,6 +57,8 @@ type ProductSalesRow = {
 })
 export class BoutiqueHomeComponent implements OnInit {
   private orderService = inject(OrderService);
+  private reviewService = inject(ReviewService);
+  private userService = inject(UserService);
   private iconService = inject(IconService);
   private allOrders: ShopOrder[] = [];
 
@@ -68,12 +72,19 @@ export class BoutiqueHomeComponent implements OnInit {
   monthlyHoverLabels: string[] = ['-', '-', '-'];
   topProductsBestSold: ProductSalesRow[] = [];
   topProductsLeastSold: ProductSalesRow[] = [];
+  totalReviews = 0;
+  averageRating: number | null = null;
+  private shopId: string | null = null;
 
   constructor() {
     this.iconService.addIcon(...[RiseOutline]);
   }
 
   ngOnInit(): void {
+    const user = this.userService.getUtilisateur();
+    const rawShopId = user?.shopId;
+    this.shopId = typeof rawShopId === 'string' ? rawShopId : rawShopId?._id || null;
+    this.loadReviewMetrics();
     this.loadDailySalesChart();
   }
 
@@ -98,8 +109,47 @@ export class BoutiqueHomeComponent implements OnInit {
         icon: 'rise',
         trend: 'Ventes',
         color: 'text-warning'
+      },
+      {
+        title: 'Avis reçus',
+        amount: this.formatNumber(this.totalReviews),
+        subtitle: 'Total des avis boutique',
+        background: 'bg-light-success',
+        border: 'border-success',
+        icon: 'rise',
+        trend: 'Réputation',
+        color: 'text-success'
+      },
+      {
+        title: 'Note',
+        amount: this.averageRating == null ? '— /5' : `${this.averageRating.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} /5`,
+        subtitle: 'Moyenne des avis',
+        background: 'bg-light-info',
+        border: 'border-info',
+        icon: 'rise',
+        trend: 'Qualité',
+        color: 'text-info'
       }
     ];
+  }
+
+  private loadReviewMetrics(): void {
+    if (!this.shopId) {
+      this.totalReviews = 0;
+      this.averageRating = null;
+      return;
+    }
+
+    this.reviewService.getShopReviews(this.shopId, 1, 1).subscribe({
+      next: (res) => {
+        this.totalReviews = Number(res?.totalCount ?? res?.total ?? 0);
+        this.averageRating = res?.averageRating ?? null;
+      },
+      error: () => {
+        this.totalReviews = 0;
+        this.averageRating = null;
+      }
+    });
   }
 
   get recentOrders(): ShopOrder[] {
