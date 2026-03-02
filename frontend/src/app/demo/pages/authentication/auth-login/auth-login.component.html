@@ -88,26 +88,44 @@
 
           <!-- Séparateur -->
           <div class="saprator mt-3">
-            <span>Ou se connecter avec</span>
+            <span>Se connecter en tant que</span>
           </div>
 
-          <!-- OAuth -->
-          <div class="row">
-            @for (item of SignInOptions; track item) {
-              <div class="col-4">
-                <div class="d-grid">
-                  <button
-                    type="button"
-                    class="btn mt-2 btn-light-primary bg-light text-muted"
-                  >
-                    <img src="{{ item.image }}" alt="{{ item.name }}" />
-                    <span class="d-none d-sm-inline-block">
-                      {{ item.name }}
-                    </span>
-                  </button>
-                </div>
+          <!-- Connexion rapide par rôle -->
+          <div class="row g-2 mt-1">
+            <div class="col-12 col-sm-4">
+              <div class="d-grid">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  (click)="fillAndLogin('admin')"
+                >
+                  Admin
+                </button>
               </div>
-            }
+            </div>
+            <div class="col-12 col-sm-4">
+              <div class="d-grid">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  (click)="fillAndLogin('boutique')"
+                >
+                  Boutique
+                </button>
+              </div>
+            </div>
+            <div class="col-12 col-sm-4">
+              <div class="d-grid">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  (click)="fillAndLogin('client')"
+                >
+                  Client
+                </button>
+              </div>
+            </div>
           </div>
 
         </div>
