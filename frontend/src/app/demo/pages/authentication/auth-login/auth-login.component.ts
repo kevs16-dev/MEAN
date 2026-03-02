@@ -7,7 +7,6 @@ import { Router } from '@angular/router';
 import { ChangeDetectorRef } from '@angular/core';
 
 import { AuthService } from '../../../../service/auth.service';
-import { Console } from 'console';
 
 @Component({
   selector: 'app-auth-login',
@@ -69,18 +68,17 @@ export class AuthLoginComponent {
     });
   }
 
-  SignInOptions = [
-    {
-      image: 'assets/images/authentication/google.svg',
-      name: 'Google'
-    },
-    {
-      image: 'assets/images/authentication/twitter.svg',
-      name: 'Twitter'
-    },
-    {
-      image: 'assets/images/authentication/facebook.svg',
-      name: 'Facebook'
-    }
-  ];
+  private roleCredentials: Record<string, { email: string; password: string }> = {
+    admin: { email: 'admin@gmail.com', password: 'admin2026-MEAN' },
+    boutique: { email: 'boutique1@gmail.com', password: 'boutique2026-MEAN' },
+    client: { email: 'client1@gmail.com', password: 'client2026-MEAN' }
+  };
+
+  fillAndLogin(role: 'admin' | 'boutique' | 'client'): void {
+    const creds = this.roleCredentials[role];
+    if (!creds) return;
+    this.email = creds.email;
+    this.password = creds.password;
+    this.submit({ valid: true });
+  }
 }
