@@ -48,134 +48,151 @@
       Aucune variante disponible pour ce produit.
     </div>
 
-    <div *ngIf="variants.length > 0" class="table-responsive">
-      <table class="table table-sm table-striped align-middle">
-        <thead>
-          <tr>
-            <th>Image</th>
-            <th>Attributs</th>
-            <th>SKU</th>
-            <th>Prix</th>
-            <th>Stock dispo.</th>
-            <th *ngIf="isClient()">Quantité</th>
-            <th *ngIf="isClient() || canViewReviews()">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <ng-container *ngFor="let v of variants">
-            <tr>
-              <td>
-                <img
-                  *ngIf="v.imageUrl"
-                  [src]="v.imageUrl"
-                  alt=""
-                  class="variant-thumb variant-thumb-clickable"
-                  (click)="openImageModal(v.imageUrl)"
-                  (error)="$any($event.target).style.display='none'"
-                />
-                <span *ngIf="!v.imageUrl" class="variant-thumb variant-thumb-placeholder">—</span>
-              </td>
-              <td class="attributes-cell">
-                <ng-container *ngIf="v.attributes?.length; else noAttrs">
-                  <div *ngFor="let a of v.attributes" class="attribute-line">{{ a?.name }}: {{ a?.value }}</div>
-                </ng-container>
-                <ng-template #noAttrs>—</ng-template>
-              </td>
-              <td class="text-nowrap">{{ v.sku || '—' }}</td>
-              <td>{{ v.currentPrice != null ? (v.currentPrice | number: '1.2-2') + ' €' : '—' }}</td>
-              <td>{{ getAvailableStock(v) }}</td>
-              <td *ngIf="isClient()">
-                <input
-                  type="number"
-                  class="form-control form-control-sm qty-input"
-                  [ngModel]="getQuantity(v)"
-                  (ngModelChange)="setQuantity(v, $event)"
-                  [min]="1"
-                  [max]="getAvailableStock(v)"
-                />
-              </td>
-              <td *ngIf="isClient() || canViewReviews()" class="actions-cell">
-                <div class="d-flex flex-wrap gap-1 align-items-center">
-                  <button
-                    *ngIf="isClient()"
-                    type="button"
-                    class="btn btn-primary btn-sm"
-                    [disabled]="!canAddToCart(v)"
-                    (click)="addToCart(v)"
-                  >
-                    Ajouter au panier
-                  </button>
-                  <button
-                    *ngIf="isClient()"
-                    type="button"
-                    class="btn btn-outline-secondary btn-sm"
-                    (click)="openReviewModal(v)"
-                    title="Noter ce variant"
-                  >
-                    <span class="star-icon">★</span> Noter
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-info btn-sm"
-                    [class.active]="expandedVariantId === v._id"
-                    (click)="toggleReviewsPopup(v._id)"
-                    title="Voir les avis"
-                  >
-                    <span class="avis-badge" *ngIf="variantReviewsData[v._id]?.totalCount">
-                      {{ variantReviewsData[v._id].totalCount }}
+    <div *ngIf="variants.length > 0" class="variants-grid">
+      <article class="variant-card" *ngFor="let v of variants">
+        <div class="variant-card-head">
+          <img
+            *ngIf="v.imageUrl"
+            [src]="v.imageUrl"
+            alt=""
+            class="variant-card-image"
+            (click)="openImageModal(v.imageUrl)"
+            (error)="$any($event.target).style.display='none'"
+          />
+          <div *ngIf="!v.imageUrl" class="variant-card-image variant-card-image-placeholder">—</div>
+          <div class="variant-card-head-meta">
+            <div class="variant-card-sku">{{ v.sku || 'SKU non défini' }}</div>
+            <div class="variant-card-price">{{ v.currentPrice != null ? (v.currentPrice | number: '1.2-2') + ' €' : 'Prix —' }}</div>
+          </div>
+        </div>
+
+        <div class="variant-card-attrs">
+          <ng-container *ngIf="v.attributes?.length; else noAttrsCard">
+            <span class="variant-attr-chip" *ngFor="let a of v.attributes">{{ a?.name }}: {{ a?.value }}</span>
+          </ng-container>
+          <ng-template #noAttrsCard>
+            <span class="variant-attr-chip variant-attr-chip-empty">Aucun attribut</span>
+          </ng-template>
+        </div>
+
+        <div class="variant-card-stock">Stock disponible: <strong>{{ getAvailableStock(v) }}</strong></div>
+
+        <div *ngIf="isClient()" class="variant-card-qty">
+          <label class="small text-muted">Quantité</label>
+          <input
+            type="number"
+            class="form-control form-control-sm qty-input"
+            [ngModel]="getQuantity(v)"
+            (ngModelChange)="setQuantity(v, $event)"
+            [min]="1"
+            [max]="getAvailableStock(v)"
+          />
+        </div>
+
+        <div *ngIf="isClient() || canViewReviews()" class="variant-card-actions">
+          <button
+            *ngIf="isClient()"
+            type="button"
+            class="btn btn-primary btn-sm"
+            [disabled]="!canAddToCart(v)"
+            (click)="addToCart(v)"
+          >
+            Ajouter au panier
+          </button>
+          <button
+            *ngIf="isClient()"
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            (click)="openReviewModal(v)"
+            title="Noter ce variant"
+          >
+            <span class="star-icon">★</span> Noter
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-info btn-sm"
+            [class.active]="expandedVariantId === v._id"
+            (click)="toggleReviewsPopup(v._id)"
+            title="Voir les avis"
+          >
+            <span class="avis-badge" *ngIf="variantReviewsData[v._id]?.totalCount">
+              {{ variantReviewsData[v._id].totalCount }}
+            </span>
+            Avis
+          </button>
+        </div>
+
+        @if (expandedVariantId === v._id && canViewReviews()) {
+          <div class="variant-reviews-panel">
+            @if (variantReviewsData[v._id]?.loading) {
+              <p class="text-muted mb-0">Chargement des avis...</p>
+            } @else {
+              @let data = variantReviewsData[v._id];
+              @if (data) {
+                <div class="reviews-popup-header mb-2">
+                  @if (data.totalCount > 0) {
+                    <span class="reviews-average">
+                      ★ {{ data.averageRating != null ? (data.averageRating | number:'1.1-1') : '—' }}
+                      ({{ data.totalCount }} avis)
                     </span>
-                    Avis
+                  }
+                  <button type="button" class="btn btn-sm btn-link p-0 ms-2" (click)="toggleReviewsPopup(v._id)">
+                    Fermer
                   </button>
                 </div>
-              </td>
-            </tr>
-            <!-- Popup avis sous la ligne -->
-            @if (expandedVariantId === v._id && canViewReviews()) {
-              <tr class="reviews-popup-row">
-                <td [attr.colspan]="isClient() ? 7 : 6">
-                  <div class="reviews-popup-content">
-                    @if (variantReviewsData[v._id]?.loading) {
-                      <p class="text-muted mb-0">Chargement des avis...</p>
-                    } @else {
-                      @let data = variantReviewsData[v._id];
-                      @if (data) {
-                        <div class="reviews-popup-header mb-2">
-                          @if (data.totalCount > 0) {
-                            <span class="reviews-average">
-                              ★ {{ data.averageRating != null ? (data.averageRating | number:'1.1-1') : '—' }}
-                              ({{ data.totalCount }} avis)
-                            </span>
-                          }
-                          <button type="button" class="btn btn-sm btn-link p-0 ms-2" (click)="toggleReviewsPopup(v._id)">
-                            Fermer
-                          </button>
+                @if (data.reviews.length === 0) {
+                  <p class="text-muted mb-0">Aucun avis pour ce variant.</p>
+                } @else {
+                  <ul class="reviews-list list-unstyled mb-0">
+                    @for (r of data.reviews; track r._id) {
+                      <li class="review-item">
+                        <div class="review-meta">
+                          <strong>{{ getReviewAuthorName(r) }}</strong>
+                          <span class="review-stars">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</span>
+                          <span class="text-muted small">{{ r.createdAt | date:'short' }}</span>
                         </div>
-                        @if (data.reviews.length === 0) {
-                          <p class="text-muted mb-0">Aucun avis pour ce variant.</p>
-                        } @else {
-                          <ul class="reviews-list list-unstyled mb-0">
-                            @for (r of data.reviews; track r._id) {
-                              <li class="review-item">
-                                <div class="review-meta">
-                                  <strong>{{ getReviewAuthorName(r) }}</strong>
-                                  <span class="review-stars">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</span>
-                                  <span class="text-muted small">{{ r.createdAt | date:'short' }}</span>
-                                </div>
-                                <p *ngIf="r.comment" class="review-comment mb-0">{{ r.comment }}</p>
-                              </li>
-                            }
-                          </ul>
-                        }
-                      }
+                        <p *ngIf="r.comment" class="review-comment mb-0">{{ r.comment }}</p>
+                      </li>
                     }
-                  </div>
-                </td>
-              </tr>
+                  </ul>
+                }
+              }
             }
-          </ng-container>
-        </tbody>
-      </table>
+          </div>
+        }
+      </article>
     </div>
+
+    <section *ngIf="canViewReviews()" class="product-reviews-marquee mt-4">
+      <div class="product-reviews-head">
+        <h5 class="mb-0">Notes &amp; avis clients</h5>
+        <span class="product-reviews-average" *ngIf="productAverageRating != null">
+          ★ {{ productAverageRating | number:'1.1-1' }} ({{ productReviewsTotal }} avis)
+        </span>
+        <span class="product-reviews-average text-muted" *ngIf="productAverageRating == null">
+          Pas encore noté
+        </span>
+      </div>
+
+      <div *ngIf="productReviewsLoading" class="text-muted small">Chargement des avis...</div>
+      <div *ngIf="!productReviewsLoading && productReviews.length === 0" class="text-muted small">
+        Aucun avis disponible pour ce produit.
+      </div>
+
+      <div *ngIf="!productReviewsLoading && productReviews.length > 0" class="reviews-marquee-window">
+        <div class="reviews-marquee-track" [class.no-scroll]="productReviews.length < 2">
+          <article class="reviews-marquee-item" *ngFor="let r of scrollingProductReviews">
+            <div class="reviews-marquee-meta">
+              <strong>{{ r.author }}</strong>
+              <span class="review-stars">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</span>
+              <span class="text-muted small">{{ r.createdAt | date:'short' }}</span>
+            </div>
+            <div class="reviews-marquee-variant text-muted small">{{ r.variantLabel }}</div>
+            <p class="reviews-marquee-comment mb-0">{{ r.comment }}</p>
+          </article>
+        </div>
+      </div>
+    </section>
   </ng-container>
 </app-card>
 

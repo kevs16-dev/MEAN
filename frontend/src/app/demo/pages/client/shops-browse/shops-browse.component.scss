@@ -5,79 +5,116 @@
 
 // Hero Section
 .hero-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0) 32%),
+    linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 4rem 0 3rem;
+  padding: 3.4rem 1.25rem 2.6rem;
   margin-bottom: 2rem;
 
+  .hero-content {
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+
   .hero-title {
-    font-size: 3rem;
+    font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 700;
     margin-bottom: 0.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 3px 14px rgba(0, 0, 0, 0.18);
+    letter-spacing: 0.2px;
   }
 
   .hero-subtitle {
-    font-size: 1.25rem;
-    opacity: 0.95;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    opacity: 0.92;
     margin-bottom: 0;
+    max-width: 760px;
   }
 }
 
 // Filters Section
 .filters-section {
-  background: white;
-  padding: 2rem 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: transparent;
+  padding: 0 1.25rem;
   margin-bottom: 2rem;
-  border-bottom: 1px solid #e9ecef;
+
+  .filters-panel {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 1rem;
+    border-radius: 14px;
+    border: 1px solid #e7ecf8;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 30px rgba(56, 73, 120, 0.08);
+    backdrop-filter: blur(4px);
+  }
 
   .form-label {
-    color: #495057;
-    font-size: 0.875rem;
+    color: #4b5870;
+    font-size: 0.78rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.65px;
     margin-bottom: 0.5rem;
   }
 
   .input-group-text {
-    background: #f8f9fa;
+    background: #f4f7ff;
     border-right: none;
-    color: #6c757d;
+    color: #5f6f8d;
+    border-color: #dce4f6;
+    height: 48px;
+    border-radius: 10px 0 0 10px;
   }
 
   .form-control,
   .form-select {
     border-left: none;
-    border-color: #dee2e6;
+    border-color: #dce4f6;
+    color: #2a3448;
+    border-radius: 0 10px 10px 0;
+    height: 48px;
+    font-size: 0.95rem;
+    background: #fff;
 
     &:focus {
       border-color: #667eea;
-      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+      box-shadow: 0 0 0 0.18rem rgba(102, 126, 234, 0.2);
     }
+  }
+
+  .form-select {
+    border-left: 1px solid #dce4f6;
+    border-radius: 10px;
   }
 
   .results-count {
     text-align: center;
-    padding: 0.75rem;
-    background: #f8f9fa;
-    border-radius: 0.5rem;
+    padding: 0.72rem;
+    background: linear-gradient(135deg, #f3f1ff 0%, #eef7ff 100%);
+    border-radius: 0.75rem;
+    border: 1px solid #dde7ff;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 
     .count-number {
       display: block;
-      font-size: 1.75rem;
+      font-size: 1.45rem;
       font-weight: 700;
-      color: #667eea;
+      color: #4f46e5;
       line-height: 1;
     }
 
     .count-label {
       display: block;
-      font-size: 0.75rem;
-      color: #6c757d;
+      font-size: 0.7rem;
+      color: #64748b;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 0.25rem;
+      letter-spacing: 0.55px;
+      margin-top: 0.2rem;
     }
   }
 }
@@ -221,7 +258,7 @@
 // Responsive
 @media (max-width: 768px) {
   .hero-section {
-    padding: 2rem 0 1.5rem;
+    padding: 2rem 0.9rem 1.5rem;
 
     .hero-title {
       font-size: 2rem;
@@ -233,7 +270,12 @@
   }
 
   .filters-section {
-    padding: 1.5rem 0;
+    padding: 0 0.9rem;
+
+    .filters-panel {
+      padding: 0.85rem;
+      border-radius: 12px;
+    }
 
     .results-count {
       margin-top: 1rem;

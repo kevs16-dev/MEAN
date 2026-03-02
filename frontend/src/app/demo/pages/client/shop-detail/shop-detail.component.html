@@ -29,7 +29,7 @@
           <img [src]="shop.logo" [alt]="shop.name" />
         </div>
         <h1 class="shop-detail-title">{{ shop.name }}</h1>
-        <span class="badge bg-primary">{{ getCategoryName() }}</span>
+        <span class="badge shop-category-badge">{{ getCategoryName() }}</span>
         <p class="shop-detail-location mt-2 mb-0">
           <i antIcon type="environment" theme="outline" class="me-1"></i>
           {{ getLocationString() }}
@@ -38,14 +38,14 @@
     </div>
 
     <div class="shop-detail-body">
-      <section *ngIf="shop.description" class="mb-4">
+      <section *ngIf="shop.description" class="shop-detail-section">
         <h5><i antIcon type="file-text" theme="outline" class="me-2"></i>Description</h5>
-        <p class="text-muted mb-0">{{ shop.description }}</p>
+        <p class="shop-detail-muted mb-0">{{ shop.description }}</p>
       </section>
 
-      <section class="mb-4" *ngIf="shop.contact?.phone || shop.contact?.email">
+      <section class="shop-detail-section" *ngIf="shop.contact?.phone || shop.contact?.email">
         <h5><i antIcon type="phone" theme="outline" class="me-2"></i>Contact</h5>
-        <ul class="list-unstyled mb-0">
+        <ul class="shop-contact-list list-unstyled mb-0">
           <li *ngIf="shop.contact?.phone">
             <i antIcon type="phone" theme="outline" class="me-2"></i>{{ shop.contact.phone }}
           </li>
@@ -56,14 +56,14 @@
         </ul>
       </section>
 
-      <section class="mb-4">
+      <section class="shop-detail-section">
         <h5><i antIcon type="clock-circle" theme="outline" class="me-2"></i>Horaires d'ouverture</h5>
         <div class="table-responsive">
-          <table class="table table-sm">
+          <table class="table table-sm opening-hours-table mb-0">
             <tbody>
               <tr *ngFor="let day of DAYS">
-                <td class="fw-semibold" style="width: 140px;">{{ day.label }}</td>
-                <td>{{ getOpeningHours(day.key) }}</td>
+                <td class="fw-semibold day-col">{{ day.label }}</td>
+                <td class="hours-col">{{ getOpeningHours(day.key) }}</td>
               </tr>
             </tbody>
           </table>
@@ -71,11 +71,11 @@
       </section>
 
       @if (canViewReviews()) {
-        <section class="mb-4">
+        <section class="shop-detail-section">
           <h5><span class="star-icon me-2">★</span>Avis &amp; Notes</h5>
           <div class="shop-reviews-section">
             @if (shopReviewsLoading) {
-              <p class="text-muted">Chargement des avis...</p>
+              <p class="shop-detail-muted mb-0">Chargement des avis...</p>
             } @else {
               <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
                 @if (shopReviewsTotal > 0) {
@@ -91,7 +91,7 @@
                 }
               </div>
               @if (shopReviews.length === 0) {
-                <p class="text-muted mb-0">Aucun avis pour cette boutique.</p>
+                <p class="shop-detail-muted mb-0">Aucun avis pour cette boutique.</p>
               } @else {
                 <ul class="shop-reviews-list list-unstyled mb-0">
                   @for (r of shopReviews; track r._id) {
@@ -114,11 +114,114 @@
       <div class="shop-detail-actions">
         <button type="button" class="btn btn-primary" (click)="goToProducts()">
           <i antIcon type="shopping" theme="outline" class="me-1"></i>
-          Voir les produits
+          Voir tous les produits
         </button>
       </div>
     </div>
   </div>
+
+  <section *ngIf="!isLoading && !error && shop" class="shop-products-section">
+    <div class="shop-products-head">
+      <div>
+        <h3>Produits de la boutique</h3>
+        <p>Retrouvez les articles disponibles dans cette boutique.</p>
+      </div>
+      <a class="btn btn-outline-primary btn-sm" [routerLink]="['/client/shops', shop._id, 'products']">
+        Voir la liste complète
+      </a>
+    </div>
+
+    <div *ngIf="isLoadingShopProducts" class="shop-products-empty-state">
+      Chargement des produits...
+    </div>
+    <div *ngIf="shopProductsSuccessMessage" class="alert alert-success py-2 mb-3">
+      {{ shopProductsSuccessMessage }}
+    </div>
+    <div *ngIf="shopProductsActionErrorMessage" class="alert alert-danger py-2 mb-3">
+      {{ shopProductsActionErrorMessage }}
+    </div>
+    <div *ngIf="!isLoadingShopProducts && shopProductsError" class="shop-products-empty-state shop-products-empty-error">
+      {{ shopProductsError }}
+    </div>
+    <div *ngIf="!isLoadingShopProducts && !shopProductsError && shopProducts.length === 0" class="shop-products-empty-state">
+      Aucun produit disponible pour cette boutique.
+    </div>
+
+    <div *ngIf="!isLoadingShopProducts && !shopProductsError && shopProducts.length > 0" class="shop-products-row">
+      <article
+        class="shop-product-card"
+        *ngFor="let product of shopProducts"
+        (click)="openProductDetail(product)"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="openProductDetail(product)"
+      >
+        <div class="shop-product-image-wrap">
+          <img class="shop-product-image" [src]="getProductImageUrl(product)" [alt]="product.name || 'Produit'" />
+        </div>
+
+        <div class="shop-product-body">
+          <div class="shop-product-title-row">
+            <h4 class="shop-product-title">{{ product.name || 'Produit' }}</h4>
+            <span class="shop-product-price" *ngIf="getProductPrice(product) != null">
+              {{ getProductPrice(product) | number:'1.2-2' }} €
+            </span>
+            <span class="shop-product-price shop-product-price-na" *ngIf="getProductPrice(product) == null">
+              Prix indisponible
+            </span>
+          </div>
+          <p class="shop-product-description">
+            {{
+              product.description
+                ? (product.description.length > 95 ? (product.description | slice:0:95) + '...' : product.description)
+                : 'Produit disponible dans cette boutique.'
+            }}
+          </p>
+
+          <div class="shop-product-rating">
+            <div class="rating-stars">
+              <span
+                *ngFor="let star of [1, 2, 3, 4, 5]"
+                class="star"
+                [class.filled]="isFilledProductStar(getProductRatingAverage(product), star)"
+              >
+                ★
+              </span>
+            </div>
+            <span class="rating-text" *ngIf="getProductRatingAverage(product) != null">
+              {{ getProductRatingAverage(product) | number:'1.1-1' }} ({{ getProductRatingCount(product) }})
+            </span>
+            <span class="rating-text" *ngIf="getProductRatingAverage(product) == null">Pas encore noté</span>
+          </div>
+
+          <div class="shop-product-meta">
+            <span
+              class="shop-product-stock"
+              [class.out-of-stock]="getProductStock(product) === 0"
+            >
+              {{ getProductStock(product) > 0 ? (getProductStock(product) + ' en stock') : 'Rupture de stock' }}
+            </span>
+          </div>
+
+          <div class="shop-product-actions" (click)="$event.stopPropagation()">
+            <div class="shop-product-qty-control">
+              <button type="button" class="qty-btn" (click)="decreaseProductQuantity(product, $event)">-</button>
+              <span class="qty-value">{{ getProductQuantity(product) }}</span>
+              <button type="button" class="qty-btn" (click)="increaseProductQuantity(product, $event)">+</button>
+            </div>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              [disabled]="getProductStock(product) === 0 || isOrderingProduct(product) || !isClient()"
+              (click)="orderProduct(product, $event)"
+            >
+              {{ isOrderingProduct(product) ? 'Ajout...' : 'Commander' }}
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
 </div>
 
 <!-- Modal Noter la boutique -->

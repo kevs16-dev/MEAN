@@ -44,46 +44,81 @@
       Aucun produit trouvé. Modifiez votre recherche.
     </div>
 
-    <div *ngIf="!isLoading && !error && products.length > 0" class="table-responsive">
-      <table class="table table-striped align-middle">
-        <thead>
-          <tr>
-            <th>Image</th>
-            <th>Nom</th>
-            <th>Description</th>
-            <th>Stock</th>
-            <th>Explorer</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of products">
-            <td>
-              <img *ngIf="getProductImageUrl(p)" [src]="getProductImageUrl(p)" alt="" class="product-list-thumb" />
-              <span *ngIf="!getProductImageUrl(p)" class="product-list-thumb product-list-thumb-placeholder">—</span>
-            </td>
-            <td>{{ p.name }}</td>
-            <td class="product-description-cell">{{ p.description || '—' }}</td>
-            <td>
+    <div *ngIf="productsSuccessMessage" class="alert alert-success py-2 mb-3">
+      {{ productsSuccessMessage }}
+    </div>
+    <div *ngIf="productsActionErrorMessage" class="alert alert-danger py-2 mb-3">
+      {{ productsActionErrorMessage }}
+    </div>
+
+    <div *ngIf="!isLoading && !error && products.length > 0" class="products-grid">
+      <article
+        class="shop-product-card"
+        *ngFor="let p of products"
+        (click)="openProductDetail(p)"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="openProductDetail(p)"
+      >
+        <div class="shop-product-image-wrap">
+          <img *ngIf="getProductImageUrl(p)" class="shop-product-image" [src]="getProductImageUrl(p)" [alt]="p?.name || 'Produit'" />
+          <div *ngIf="!getProductImageUrl(p)" class="shop-product-image shop-product-image-placeholder">—</div>
+        </div>
+
+        <div class="shop-product-body">
+          <div class="shop-product-title-row">
+            <h4 class="shop-product-title">{{ p?.name || 'Produit' }}</h4>
+            <span class="shop-product-price" *ngIf="getProductPrice(p) != null">{{ getProductPrice(p) | number:'1.2-2' }} €</span>
+            <span class="shop-product-price shop-product-price-na" *ngIf="getProductPrice(p) == null">Prix indisponible</span>
+          </div>
+
+          <p class="shop-product-description">
+            {{
+              p?.description
+                ? (p.description.length > 95 ? (p.description | slice:0:95) + '...' : p.description)
+                : 'Produit disponible dans cette boutique.'
+            }}
+          </p>
+
+          <div class="shop-product-rating">
+            <div class="rating-stars">
               <span
-                class="badge"
-                [ngClass]="getProductStockBadgeClass(p)"
-                [title]="'Stock disponible : ' + getTotalAvailableStock(p)"
+                *ngFor="let star of [1, 2, 3, 4, 5]"
+                class="star"
+                [class.filled]="isFilledProductStar(getProductRatingAverage(p), star)"
               >
-                {{ getProductStockLabel(p) }}
+                ★
               </span>
-            </td>
-            <td>
-              <button
-                type="button"
-                class="btn btn-outline-primary btn-sm"
-                (click)="viewVariants(p)"
-              >
-                Voir les variantes
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+            <span class="rating-text" *ngIf="getProductRatingAverage(p) != null">
+              {{ getProductRatingAverage(p) | number:'1.1-1' }} ({{ getProductRatingCount(p) }})
+            </span>
+            <span class="rating-text" *ngIf="getProductRatingAverage(p) == null">Pas encore noté</span>
+          </div>
+
+          <div class="shop-product-meta">
+            <span class="shop-product-stock" [class.out-of-stock]="getTotalAvailableStock(p) === 0">
+              {{ getProductStockLabel(p) }}
+            </span>
+          </div>
+
+          <div class="shop-product-actions" (click)="$event.stopPropagation()">
+            <div class="shop-product-qty-control">
+              <button type="button" class="qty-btn" (click)="decreaseProductQuantity(p, $event)">-</button>
+              <span class="qty-value">{{ getProductQuantity(p) }}</span>
+              <button type="button" class="qty-btn" (click)="increaseProductQuantity(p, $event)">+</button>
+            </div>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              [disabled]="getTotalAvailableStock(p) === 0 || isOrderingProduct(p)"
+              (click)="orderProduct(p, $event)"
+            >
+              {{ isOrderingProduct(p) ? 'Ajout...' : 'Commander' }}
+            </button>
+          </div>
+        </div>
+      </article>
     </div>
 
     <nav *ngIf="!isLoading && totalPages > 1" class="mt-3">
