@@ -101,14 +101,25 @@
     </div>
 
     <div *ngIf="!isLoadingFeaturedProducts && !featuredProductsError && featuredProducts.length > 0" class="featured-products-row">
-      <article class="featured-product-card" *ngFor="let item of visibleFeaturedProducts">
-        <a class="featured-product-image-wrap" [routerLink]="['/client/shops', item.shopId, 'products', item.productId]">
+      <article
+        class="featured-product-card"
+        *ngFor="let item of visibleFeaturedProducts"
+        (click)="openFeaturedDetail(item)"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="openFeaturedDetail(item)"
+      >
+        <div class="featured-product-image-wrap">
           <img class="featured-product-image" [src]="item.imageUrl" [alt]="item.name" />
-        </a>
+        </div>
 
         <div class="featured-product-body">
           <span class="featured-product-shop">{{ item.shopName }}</span>
-          <h4 class="featured-product-title">{{ item.name }}</h4>
+          <div class="featured-product-title-row">
+            <h4 class="featured-product-title">{{ item.name }}</h4>
+            <span class="featured-price" *ngIf="item.price != null">{{ item.price | number:'1.2-2' }} €</span>
+            <span class="featured-price" *ngIf="item.price == null">Prix indisponible</span>
+          </div>
           <p class="featured-product-description">
             {{ item.description ? (item.description.length > 95 ? (item.description | slice:0:95) + '...' : item.description) : 'Produit populaire du centre commercial.' }}
           </p>
@@ -127,24 +138,24 @@
             <span class="rating-text" *ngIf="item.rating == null">Pas encore noté</span>
           </div>
 
-          <div class="featured-product-meta">
-            <span class="featured-price" *ngIf="item.price != null">{{ item.price | number:'1.2-2' }} €</span>
-            <span class="featured-price" *ngIf="item.price == null">Prix indisponible</span>
+          <div class="featured-product-meta" (click)="$event.stopPropagation()">
             <span class="featured-sold">{{ item.soldCount }} vendus</span>
           </div>
 
-          <div class="featured-product-actions">
+          <div class="featured-product-actions" (click)="$event.stopPropagation()">
+            <div class="featured-qty-control">
+              <button type="button" class="qty-btn" (click)="decreaseFeaturedQuantity(item, $event)">-</button>
+              <span class="qty-value">{{ getFeaturedQuantity(item) }}</span>
+              <button type="button" class="qty-btn" (click)="increaseFeaturedQuantity(item, $event)">+</button>
+            </div>
             <button
               type="button"
               class="btn btn-primary btn-sm"
               [disabled]="!canAddFeaturedToCart(item)"
-              (click)="addFeaturedToCart(item)"
+              (click)="addFeaturedToCart(item, $event)"
             >
-              Ajouter au panier
+              Commander
             </button>
-            <a class="btn btn-outline-primary btn-sm" [routerLink]="['/client/shops', item.shopId, 'products', item.productId]">
-              Voir détail
-            </a>
           </div>
         </div>
       </article>

@@ -1,7 +1,7 @@
 // Angular import
 import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 
 // Project import
@@ -47,6 +47,7 @@ export class ClientHomeComponent implements OnInit, OnDestroy {
   private cartService = inject(CartService);
   private reviewService = inject(ReviewService);
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   banners: any[] = [];
   shopLogos: Array<{ name: string; image: string }> = [];
@@ -58,6 +59,7 @@ export class ClientHomeComponent implements OnInit, OnDestroy {
   featuredProductsErrorMessage: string | null = null;
   featuredStartIndex = 0;
   featuredVisibleCount = 3;
+  featuredQuantities: Record<string, number> = {};
   currentSlide = 0;
   private sliderTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -199,6 +201,11 @@ export class ClientHomeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (items) => {
           this.featuredProducts = items;
+          this.featuredQuantities = {};
+          this.featuredProducts.forEach((item) => {
+            const key = this.getFeaturedItemKey(item);
+            if (key) this.featuredQuantities[key] = 1;
+          });
           this.featuredStartIndex = 0;
           this.isLoadingFeaturedProducts = false;
         },
@@ -344,18 +351,22 @@ export class ClientHomeComponent implements OnInit, OnDestroy {
   }
 
   canAddFeaturedToCart(item: FeaturedProduct): boolean {
-    return this.isClient() && !!item.variantId && item.availableStock > 0;
+    const qty = this.getFeaturedQuantity(item);
+    return this.isClient() && !!item.variantId && item.availableStock > 0 && qty >= 1 && qty <= item.availableStock;
   }
 
-  addFeaturedToCart(item: FeaturedProduct): void {
+  addFeaturedToCart(item: FeaturedProduct, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
     if (!this.canAddFeaturedToCart(item) || !item.variantId) {
       return;
     }
+    const qty = this.getFeaturedQuantity(item);
     this.featuredProductsSuccessMessage = null;
     this.featuredProductsErrorMessage = null;
-    this.cartService.addItem(item.variantId, 1).subscribe({
+    this.cartService.addItem(item.variantId, qty).subscribe({
       next: () => {
-        this.featuredProductsSuccessMessage = `${item.name} ajouté au panier.`;
+        this.featuredProductsSuccessMessage = `${item.name} ajouté au panier (x${qty}).`;
         setTimeout(() => (this.featuredProductsSuccessMessage = null), 3000);
       },
       error: (err) => {
@@ -363,6 +374,42 @@ export class ClientHomeComponent implements OnInit, OnDestroy {
         setTimeout(() => (this.featuredProductsErrorMessage = null), 5000);
       }
     });
+  }
+
+  openFeaturedDetail(item: FeaturedProduct): void {
+    if (!item?.shopId || !item?.productId) return;
+    this.router.navigate(['/client/shops', item.shopId, 'products', item.productId]);
+  }
+
+  getFeaturedQuantity(item: FeaturedProduct): number {
+    const key = this.getFeaturedItemKey(item);
+    const value = Number(this.featuredQuantities[key]);
+    if (!key || !Number.isFinite(value) || value < 1) return 1;
+    return Math.floor(value);
+  }
+
+  decreaseFeaturedQuantity(item: FeaturedProduct, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.setFeaturedQuantity(item, this.getFeaturedQuantity(item) - 1);
+  }
+
+  increaseFeaturedQuantity(item: FeaturedProduct, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.setFeaturedQuantity(item, this.getFeaturedQuantity(item) + 1);
+  }
+
+  private setFeaturedQuantity(item: FeaturedProduct, qty: number): void {
+    const key = this.getFeaturedItemKey(item);
+    if (!key) return;
+    const max = item.availableStock > 0 ? item.availableStock : 1;
+    const normalized = Math.min(Math.max(Math.floor(Number(qty) || 1), 1), max);
+    this.featuredQuantities[key] = normalized;
+  }
+
+  private getFeaturedItemKey(item: FeaturedProduct): string {
+    return `${item.shopId}::${item.productId}`;
   }
 
   isFilledStar(rating: number | null, star: number): boolean {

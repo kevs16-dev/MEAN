@@ -1,7 +1,7 @@
 import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of, catchError } from 'rxjs';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { CardComponent } from '../../../../theme/shared/components/card/card.component';
 import { ProductService } from '../../../../service/product.service';
@@ -48,6 +48,11 @@ export class ProductDetailComponent implements OnInit {
   /** Avis variant : popup liste sous la ligne */
   expandedVariantId: string | null = null;
   variantReviewsData: Record<string, { reviews: Review[]; averageRating: number | null; totalCount: number; loading: boolean }> = {};
+  productReviewsLoading = false;
+  productAverageRating: number | null = null;
+  productReviewsTotal = 0;
+  productReviews: Array<{ author: string; rating: number; comment: string; createdAt: string; variantLabel: string }> = [];
+  scrollingProductReviews: Array<{ author: string; rating: number; comment: string; createdAt: string; variantLabel: string }> = [];
 
   ngOnInit(): void {
     this.shopId = this.route.snapshot.paramMap.get('shopId');
@@ -69,6 +74,7 @@ export class ProductDetailComponent implements OnInit {
         this.isLoading = false;
         if (this.canViewReviews() && this.variants.length > 0) {
           this.loadVariantReviewCounts();
+          this.loadProductReviewsFeed();
         }
       },
       error: (err) => {
@@ -283,6 +289,65 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
+  loadProductReviewsFeed(): void {
+    const safeVariants = this.variants.filter((v) => !!v?._id);
+    if (!safeVariants.length) {
+      this.productAverageRating = null;
+      this.productReviewsTotal = 0;
+      this.productReviews = [];
+      this.scrollingProductReviews = [];
+      return;
+    }
+
+    this.productReviewsLoading = true;
+    const requests = safeVariants.map((variant) =>
+      this.reviewService.getVariantReviews(variant._id, 1, 5).pipe(
+        catchError(() =>
+          of({
+            reviews: [],
+            total: 0,
+            page: 1,
+            limit: 5,
+            totalPages: 1,
+            averageRating: null,
+            totalCount: 0
+          })
+        )
+      )
+    );
+
+    forkJoin(requests).subscribe((responses) => {
+      const totalCount = responses.reduce((sum, res) => sum + Number(res?.totalCount || 0), 0);
+      if (totalCount > 0) {
+        const weighted =
+          responses.reduce((sum, res) => sum + Number(res?.averageRating || 0) * Number(res?.totalCount || 0), 0) / totalCount;
+        this.productAverageRating = Number(weighted.toFixed(1));
+      } else {
+        this.productAverageRating = null;
+      }
+      this.productReviewsTotal = totalCount;
+
+      const flatReviews = responses.flatMap((res, idx) => {
+        const variant = safeVariants[idx];
+        const variantLabel = variant?.sku || this.getVariantLabel(variant) || 'Variant';
+        const reviews = Array.isArray(res?.reviews) ? res.reviews : [];
+        return reviews.map((review) => ({
+          author: this.getReviewAuthorName(review),
+          rating: review.rating,
+          comment: review.comment || 'Aucun commentaire.',
+          createdAt: review.createdAt,
+          variantLabel
+        }));
+      });
+
+      this.productReviews = flatReviews
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 12);
+      this.scrollingProductReviews = this.productReviews.length > 1 ? [...this.productReviews, ...this.productReviews] : [...this.productReviews];
+      this.productReviewsLoading = false;
+    });
+  }
+
   toggleReviewsPopup(variantId: string): void {
     if (this.expandedVariantId === variantId) {
       this.expandedVariantId = null;
@@ -316,6 +381,14 @@ export class ProductDetailComponent implements OnInit {
     if (!u) return 'Anonyme';
     const parts = [u.prenom, u.nom].filter(Boolean);
     return parts.length ? parts.join(' ') : (u.username || 'Anonyme');
+  }
+
+  private getVariantLabel(v: any): string {
+    if (!Array.isArray(v?.attributes) || v.attributes.length === 0) return '';
+    return v.attributes
+      .map((a: any) => `${a?.name || ''}: ${a?.value || ''}`.trim())
+      .filter((x: string) => !!x)
+      .join(', ');
   }
 
   @HostListener('document:keydown.escape')

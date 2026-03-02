@@ -1,48 +1,52 @@
 <div class="shops-browse-container">
   <!-- Hero Section -->
   <div class="hero-section">
-    <div class="container-fluid px-4">
-      <h1 class="hero-title">Découvrez nos boutiques</h1>
-      <p class="hero-subtitle">Explorez notre centre commercial et trouvez vos magasins préférés</p>
+    <div class="container-fluid px-0">
+      <div class="hero-content">
+        <h1 class="hero-title">Découvrez nos boutiques</h1>
+        <p class="hero-subtitle">Explorez notre centre commercial et trouvez vos magasins préférés</p>
+      </div>
     </div>
   </div>
 
   <!-- Filters Section -->
   <div class="filters-section">
-    <div class="container-fluid px-4">
-      <div class="row g-3 align-items-end">
-        <div class="col-md-6">
-          <label class="form-label fw-semibold">Rechercher une boutique</label>
-          <div class="input-group">
-            <span class="input-group-text">
-              <i antIcon type="search" theme="outline"></i>
-            </span>
-            <input
-              type="text"
-              class="form-control form-control-lg"
-              placeholder="Nom, catégorie, étage..."
-              [(ngModel)]="searchTerm"
-              (input)="onSearch()"
-            />
+    <div class="container-fluid px-0">
+      <div class="filters-panel">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Rechercher une boutique</label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i antIcon type="search" theme="outline"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control form-control-lg"
+                placeholder="Nom, catégorie, étage..."
+                [(ngModel)]="searchTerm"
+                (input)="onSearch()"
+              />
+            </div>
           </div>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label fw-semibold">Catégorie</label>
-          <select
-            class="form-select form-select-lg"
-            [(ngModel)]="selectedCategory"
-            (change)="onCategoryChange()"
-          >
-            <option value="all">Toutes les catégories</option>
-            <option *ngFor="let cat of categories" [value]="cat._id">
-              {{ cat.name }}
-            </option>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <div class="results-count">
-            <span class="count-number">{{ filteredShops.length }}</span>
-            <span class="count-label">boutique{{ filteredShops.length > 1 ? 's' : '' }}</span>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Catégorie</label>
+            <select
+              class="form-select form-select-lg"
+              [(ngModel)]="selectedCategory"
+              (change)="onCategoryChange()"
+            >
+              <option value="all">Toutes les catégories</option>
+              <option *ngFor="let cat of categories" [value]="cat._id">
+                {{ cat.name }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <div class="results-count">
+              <span class="count-number">{{ filteredShops.length }}</span>
+              <span class="count-label">boutique{{ filteredShops.length > 1 ? 's' : '' }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -50,7 +54,7 @@
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="container-fluid px-4 py-5">
+  <div *ngIf="isLoading" class="container-fluid px-0 py-5">
     <div class="text-center">
       <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
         <span class="visually-hidden">Chargement...</span>
@@ -60,7 +64,7 @@
   </div>
 
   <!-- Error State -->
-  <div *ngIf="!isLoading && error" class="container-fluid px-4 py-5">
+  <div *ngIf="!isLoading && error" class="container-fluid px-0 py-5">
     <div class="alert alert-danger" role="alert">
       <i antIcon type="exclamation-circle" theme="outline" class="me-2"></i>
       {{ error }}
@@ -69,7 +73,7 @@
 
   <!-- Shops Grid -->
   <div *ngIf="!isLoading && !error" class="shops-grid-section">
-    <div class="container-fluid px-4">
+    <div class="container-fluid px-0">
       <div *ngIf="filteredShops.length === 0" class="empty-state">
         <div class="empty-state-icon">
           <i antIcon type="shop" theme="outline"></i>
