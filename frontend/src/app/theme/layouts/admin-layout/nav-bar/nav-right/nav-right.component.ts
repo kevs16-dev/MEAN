@@ -118,6 +118,10 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.authService.getUserRole() === 'CLIENT';
   }
 
+  isBoutique(): boolean {
+    return this.authService.getUserRole() === 'BOUTIQUE';
+  }
+
   ngOnInit() {
     this.utilisateur = this.userService.getUtilisateur();
     if (this.isClient()) {
@@ -262,6 +266,13 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
     this.authService.deconnexion();
   }
 
+  getDisplayName(): string {
+    const prenom = this.utilisateur?.prenom?.trim?.() || '';
+    const nom = this.utilisateur?.nom?.trim?.() || '';
+    const fullName = [prenom, nom].filter(Boolean).join(' ').trim();
+    return fullName || this.utilisateur?.username || 'Utilisateur';
+  }
+
   profile = [
     {
       icon: 'edit',
@@ -270,15 +281,8 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     {
       icon: 'user',
-      title: 'View Profile'
-    },
-    {
-      icon: 'profile',
-      title: 'Social Profile'
-    },
-    {
-      icon: 'wallet',
-      title: 'Billing'
+      title: 'Voir profil',
+      action: () => this.router.navigate(['/profil'])
     },
     {
       icon: 'logout',
@@ -287,27 +291,29 @@ export class NavRightComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   ];
 
-  setting = [
-    {
-      icon: 'question-circle',
-      title: 'Support'
-    },
-    {
-      icon: 'user',
-      title: 'Account Settings'
-    },
-    {
-      icon: 'lock',
-      title: 'Privacy Center'
-    },
-    {
-      icon: 'comment',
-      title: 'Feedback'
-    },
-    {
+  get setting() {
+    const items: Array<{ icon: string; title: string; action?: () => void }> = [];
+
+    if (this.isBoutique()) {
+      items.push({
+        icon: 'comment',
+        title: 'Note et Avis',
+        action: () => this.router.navigate(['/boutique/reviews'])
+      });
+    }
+
+    items.push({
       icon: 'unordered-list',
       title: 'Historique',
       action: () => this.openHistory()
-    }
-  ];
+    });
+
+    return items;
+  }
+
+  supportStatic = {
+    title: 'Support',
+    email: 'support@meanmall.mg',
+    phone: '+261 34 00 000 00'
+  };
 }

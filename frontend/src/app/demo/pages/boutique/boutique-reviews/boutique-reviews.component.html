@@ -1,0 +1,46 @@
+<app-card cardTitle="Note et Avis">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+      <h6 class="mb-1">Avis reçus par votre boutique</h6>
+      <p class="text-muted mb-0 small">Consultez les évaluations laissées par les clients.</p>
+    </div>
+    <button type="button" class="btn btn-outline-primary btn-sm" (click)="loadReviews()">Actualiser</button>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-4">Chargement des avis...</div>
+  <div *ngIf="!isLoading && error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="!isLoading && !error">
+    <div class="reviews-summary mb-3">
+      <div class="rating-stars">
+        <span
+          *ngFor="let star of [1, 2, 3, 4, 5]"
+          class="star"
+          [class.filled]="isFilledStar(averageRating, star)"
+        >
+          ★
+        </span>
+      </div>
+      <span class="reviews-average" *ngIf="averageRating != null">{{ averageRating | number:'1.1-1' }}</span>
+      <span class="reviews-average" *ngIf="averageRating == null">—</span>
+      <span class="text-muted">({{ totalCount }} avis)</span>
+    </div>
+
+    <div *ngIf="reviews.length === 0" class="alert alert-info mb-0">
+      Aucun avis disponible pour le moment.
+    </div>
+
+    <div *ngIf="reviews.length > 0" class="reviews-list">
+      <article class="review-card" *ngFor="let r of reviews">
+        <div class="review-meta">
+          <strong>{{ getReviewAuthorName(r) }}</strong>
+          <span class="review-stars">{{ '★'.repeat(r.rating) }}{{ '☆'.repeat(5 - r.rating) }}</span>
+          <span class="text-muted small">{{ r.createdAt | date:'short' }}</span>
+        </div>
+        <p class="review-comment mb-0" *ngIf="r.comment">{{ r.comment }}</p>
+        <p class="review-comment mb-0 text-muted" *ngIf="!r.comment">Aucun commentaire.</p>
+      </article>
+    </div>
+  </ng-container>
+</app-card>
+

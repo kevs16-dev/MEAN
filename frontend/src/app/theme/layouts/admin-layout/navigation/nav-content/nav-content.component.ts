@@ -20,6 +20,7 @@ import {
   ChromeOutline,
   FontSizeOutline,
   ProfileOutline,
+  UserOutline,
   BgColorsOutline,
   AntDesignOutline,
   CalendarOutline
@@ -42,6 +43,7 @@ export class NavContentComponent implements OnInit {
   NavCollapsedMob = output();
 
   navigations: NavigationItem[];
+  currentUserName = 'Utilisateur';
 
   // version
   title = 'Demo application for version numbering';
@@ -58,6 +60,7 @@ export class NavContentComponent implements OnInit {
         CreditCardOutline,
         FontSizeOutline,
         LoginOutline,
+        UserOutline,
         ProfileOutline,
         BgColorsOutline,
         AntDesignOutline,
@@ -67,6 +70,7 @@ export class NavContentComponent implements OnInit {
       ]
     );
     this.navigations = this.filterNavigationsByRole(NavigationItems, this.authService.getUserRole());
+    this.currentUserName = this.getDisplayName();
   }
 
   // Life cycle events
@@ -133,5 +137,13 @@ export class NavContentComponent implements OnInit {
     if (this.windowWidth < 1025 && nav && nav.classList.contains('mob-open')) {
       this.NavCollapsedMob.emit();
     }
+  }
+
+  private getDisplayName(): string {
+    const user = this.authService.getUser();
+    const prenom = user?.prenom?.trim?.() || '';
+    const nom = user?.nom?.trim?.() || '';
+    const fullName = [prenom, nom].filter(Boolean).join(' ').trim();
+    return fullName || user?.username || 'Utilisateur';
   }
 }
